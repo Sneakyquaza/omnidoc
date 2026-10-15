@@ -28,3 +28,9 @@ tempfile = "3"
 infer = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 uuid = { version = "1", features = ["v4"] }
+quick-xml = "0.42.0"
+pulldown-cmark = "0.13.4"
+scraper = "0.27.0"
+base64 = "0.23.1"
+encoding_rs = "0.8.42"
+zip = { version = "9.0.3", default-features = false, features = ["deflate"] }
