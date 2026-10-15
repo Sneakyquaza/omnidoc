@@ -1,0 +1,150 @@
+{
+  "loading": "Loading image…",
+  "loadError": "Unable to load the image.",
+  "svgNote": "SVG: raster edits apply to a rasterization and are saved through \"Save as…\" in a raster format.",
+  "viewport": {
+    "label": "Image area",
+    "textInput": "Annotation text"
+  },
+  "toolbar": {
+    "label": "Image tools",
+    "save": "Save",
+    "saveAs": "Save as / Convert…",
+    "exportPng": "Export as PNG…",
+    "stripMetadata": "Remove metadata",
+    "undo": "Undo",
+    "redo": "Redo",
+    "tools": "Tools",
+    "transform": "Transformations",
+    "cropOptions": "Crop options",
+    "annotationOptions": "Annotation options",
+    "rotateRight": "Rotate ↻ 90°",
+    "rotateLeft": "Rotate ↺ 90°",
+    "rotate180": "Rotate 180°",
+    "flipH": "Flip horizontal",
+    "flipV": "Flip vertical",
+    "resize": "Resize…",
+    "adjust": "Adjustments…",
+    "zoom": "Zoom",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "fit": "Fit",
+    "readOnly": "Read-only"
+  },
+  "tools": {
+    "select": "Select",
+    "crop": "Crop",
+    "arrow": "Arrow",
+    "rect": "Rectangle",
+    "ellipse": "Ellipse",
+    "pen": "Pen",
+    "text": "Text",
+    "highlight": "Highlighter"
+  },
+  "crop": {
+    "ratio": "Ratio",
+    "free": "Free",
+    "apply": "Crop (Enter)",
+    "cancel": "Cancel"
+  },
+  "options": {
+    "color": "Color",
+    "width": "Thickness",
+    "font": "Font",
+    "size": "Size"
+  },
+  "fonts": {
+    "sans-serif": "Sans-serif",
+    "serif": "Serif",
+    "monospace": "Monospace",
+    "cursive": "Cursive"
+  },
+  "panel": {
+    "title": "Image",
+    "info": "Information",
+    "dimensions": "Dimensions",
+    "format": "Format",
+    "alpha": "Transparency",
+    "yes": "Yes",
+    "no": "No",
+    "fileSize": "File size",
+    "exif": "EXIF",
+    "noExif": "No EXIF metadata.",
+    "exifTag": "Tag",
+    "exifValue": "Value",
+    "history": "History"
+  },
+  "history": {
+    "original": "Original image",
+    "rotate90": "Rotate 90° clockwise",
+    "rotate180": "Rotate 180°",
+    "rotate270": "Rotate 90° counter-clockwise",
+    "flipH": "Flip horizontal",
+    "flipV": "Flip vertical",
+    "crop": "Crop",
+    "resize": "Resize",
+    "adjust": "Adjustments",
+    "annotations": "Annotations"
+  },
+  "resize": {
+    "title": "Resize image",
+    "width": "Width (px)",
+    "height": "Height (px)",
+    "percent": "Scale (%)",
+    "keepRatio": "Keep proportions",
+    "apply": "Resize",
+    "invalid": "Dimensions must be between 1 and 32768 px."
+  },
+  "adjust": {
+    "title": "Adjustments",
+    "brightness": "Brightness",
+    "contrast": "Contrast",
+    "saturation": "Saturation",
+    "grayscale": "Grayscale",
+    "reset": "Reset",
+    "apply": "Apply"
+  },
+  "quality": {
+    "title": "{{format}} quality",
+    "label": "Quality: {{value}}",
+    "apply": "Save"
+  },
+  "exportPng": {
+    "title": "Export as PNG",
+    "scale": "Scale",
+    "apply": "Export"
+  },
+  "save": {
+    "done": "Saved: {{name}}",
+    "reencodeTitle": "Re-encode the image?",
+    "reencodeMessage": "The image will be re-encoded in its original format: metadata (EXIF…) will be removed and a lossy format may reduce quality.",
+    "reencodeConfirm": "Re-encode and save",
+    "unsupportedExtension": "Unsupported extension for saving."
+  },
+  "strip": {
+    "title": "Remove metadata?",
+    "message": "Metadata (EXIF…) will be removed from the file, in place. Unsaved edits are not affected.",
+    "confirm": "Remove",
+    "done": "Metadata removed."
+  },
+  "commands": {
+    "undo": "Image: undo",
+    "redo": "Image: redo",
+    "save": "Image: save",
+    "saveAs": "Image: save as / convert…",
+    "strip": "Image: remove metadata",
+    "exportPng": "Image: export SVG as PNG…",
+    "rotateRight": "Image: rotate right",
+    "rotateLeft": "Image: rotate left",
+    "rotate180": "Image: rotate 180°",
+    "flipH": "Image: flip horizontal",
+    "flipV": "Image: flip vertical",
+    "crop": "Image: crop",
+    "resize": "Image: resize…",
+    "adjust": "Image: adjustments…",
+    "zoomIn": "Image: zoom in",
+    "zoomOut": "Image: zoom out",
+    "fit": "Image: fit to window",
+    "actualSize": "Image: actual size (100%)"
+  }
+}

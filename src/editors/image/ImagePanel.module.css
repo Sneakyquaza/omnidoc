@@ -1,0 +1,83 @@
+.heading {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.info {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+}
+
+.info dt {
+  color: var(--color-text-muted);
+}
+
+.info dd {
+  margin: 0;
+}
+
+.muted {
+  margin: 0 0 8px;
+  color: var(--color-text-muted);
+}
+
+.exif {
+  width: 100%;
+  margin-bottom: 8px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.exif th,
+.exif td {
+  padding: 2px 4px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.exif th {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: block;
+  width: 100%;
+  padding: 3px 6px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.step:hover {
+  background: var(--color-hover);
+}
+
+.step:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.step[aria-current="step"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.undone .step {
+  opacity: 0.5;
+}

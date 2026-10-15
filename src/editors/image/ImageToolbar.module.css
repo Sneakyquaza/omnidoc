@@ -1,0 +1,65 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.tool[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 6px;
+}
+
+.option input,
+.option select {
+  padding: 2px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.option input[type="number"] {
+  width: 64px;
+}
+
+.option input[type="color"] {
+  width: 36px;
+  height: 26px;
+  padding: 0;
+}
+
+.option input:focus-visible,
+.option select:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.zoom {
+  min-width: 56px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
