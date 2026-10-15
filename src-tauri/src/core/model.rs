@@ -116,12 +116,16 @@ pub struct RichMeta {
 pub struct Workbook {
     pub sheets: Vec<Sheet>,
     pub csv: Option<CsvOptions>,
+    /// Éléments non conservés à l'ouverture (styles, graphiques, fusions…), pour avertir l'utilisateur.
+    #[serde(default)]
+    pub lossy: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     pub name: String,
+    /// Lignes denses, de longueurs éventuellement variables.
     pub rows: Vec<Vec<Cell>>,
     pub col_widths: Option<Vec<f64>>,
 }
@@ -130,8 +134,9 @@ pub struct Sheet {
 #[serde(rename_all = "camelCase")]
 pub struct Cell {
     pub v: CellValue,
-    /// Formule sans le "=" initial.
+    /// Formule sans le "=" initial, syntaxe Excel anglaise à virgules (`SUM(A1:B2)`).
     pub f: Option<String>,
+    /// Code de format de nombre Excel (ex. "0.00%") si connu.
     pub fmt: Option<String>,
 }
 
@@ -152,6 +157,12 @@ pub struct CsvOptions {
     pub quote: String,
     pub encoding: String,
     pub header: bool,
+    /// BOM UTF-8 présent à l'origine.
+    #[serde(default)]
+    pub bom: bool,
+    /// Fins de ligne CRLF (sinon LF).
+    #[serde(default)]
+    pub crlf: bool,
 }
 
 // --- Image ---
