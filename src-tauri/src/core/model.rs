@@ -229,6 +229,9 @@ pub struct DbTable {
     pub kind: DbTableKind,
     pub columns: Vec<DbColumn>,
     pub row_count: u64,
+    /// Faux si le comptage a dépassé le délai (`row_count` vaut alors 0 et est inconnu).
+    #[serde(default)]
+    pub row_count_exact: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]
@@ -312,6 +315,9 @@ pub struct EbookDoc {
     pub title: String,
     pub author: Option<String>,
     pub chapters: Vec<EbookChapter>,
+    /// Éléments du livre non conservés (ids : "css", "images-omitted", "remote-images").
+    #[serde(default)]
+    pub lossy: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -328,6 +334,9 @@ pub struct EbookChapter {
 #[serde(rename_all = "camelCase")]
 pub struct SlidesDoc {
     pub slides: Vec<Slide>,
+    /// Miniature du fichier (data URI), si présente.
+    #[serde(default)]
+    pub thumbnail: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]

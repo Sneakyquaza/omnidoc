@@ -235,12 +235,13 @@ mod tests {
     #[test]
     fn real_registry_falls_back_to_binary() {
         let r = Registry::new();
-        let d = r.detect(&FileProbe::from_bytes("x.zzz", b"abc")).unwrap();
+        let d = r
+            .detect(&FileProbe::from_bytes("x.zzz", &[0, 1, 2, 0xFF, 0x80]))
+            .unwrap();
         assert_eq!(d.handler_id, "binary");
         assert_eq!(d.model, ModelKind::Binary);
         assert_eq!(d.confidence, 1);
         assert!(!d.signature_mismatch);
-        assert_eq!(r.list().len(), 1);
     }
 
     #[test]

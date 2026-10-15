@@ -39,6 +39,10 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::allow_asset,
             commands::external_tools,
             commands::startup_paths,
+            formats::sqlite::db_rows,
+            formats::sqlite::db_query,
+            formats::sqlite::db_export_csv,
+            formats::sqlite::db_schema,
         ])
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
         .dangerously_cast_bigints_to_number()
