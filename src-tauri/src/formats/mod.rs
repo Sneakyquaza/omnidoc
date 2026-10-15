@@ -5,6 +5,9 @@ use crate::core::handler::FormatHandler;
 pub mod binary;
 pub mod records;
 pub mod text;
+pub mod image;
+pub mod pdf;
+pub mod svg;
 
 pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
     vec![
@@ -13,5 +16,8 @@ pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
         Box::new(text::MarkdownHandler),
         Box::new(records::RecordsHandler::ics()),
         Box::new(records::RecordsHandler::vcf()),
+        Box::new(image::ImageHandler),
+        Box::new(svg::SvgHandler),
+        Box::new(pdf::PdfHandler),
     ]
 }

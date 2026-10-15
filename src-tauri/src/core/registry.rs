@@ -242,6 +242,7 @@ mod tests {
         assert_eq!(d.model, ModelKind::Binary);
         assert_eq!(d.confidence, 1);
         assert!(!d.signature_mismatch);
+        assert!(!r.list().is_empty());
     }
 
     #[test]
