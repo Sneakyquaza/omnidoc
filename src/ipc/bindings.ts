@@ -48,6 +48,24 @@ export const commands = {
 	dbExportCsv: (path: string, table: string, dest: string) => __TAURI_INVOKE<null>("db_export_csv", { path, table, dest }),
 	/**  Instructions SQL de création (tables, vues, index, triggers). */
 	dbSchema: (path: string) => __TAURI_INVOKE<DbSchemaEntry[]>("db_schema", { path }),
+	archiveExtract: (path: string, entries: string[] | null, destDir: string) => __TAURI_INVOKE<number>("archive_extract", { path, entries, destDir }),
+	archiveReadEntry: (path: string, entry: string) => __TAURI_INVOKE<string>("archive_read_entry", { path, entry }),
+	archiveAdd: (path: string, files: string[], prefix: string) => __TAURI_INVOKE<null>("archive_add", { path, files, prefix }),
+	archiveRemove: (path: string, entries: string[]) => __TAURI_INVOKE<null>("archive_remove", { path, entries }),
+	archiveRename: (path: string, from: string, to: string) => __TAURI_INVOKE<null>("archive_rename", { path, from, to }),
+	/**  `format` : "zip" | "tar" | "tar.gz". */
+	archiveCreate: (dest: string, files: string[], format: string) => __TAURI_INVOKE<null>("archive_create", { dest, files, format }),
+	/**  Convertit une archive (tout format lisible) en "zip" | "tar" | "tar.gz". */
+	archiveConvert: (path: string, dest: string, format: string) => __TAURI_INVOKE<null>("archive_convert", { path, dest, format }),
+	/**  Data URI (`data:<mime>;base64,…`) de la première pochette, ou `null`. */
+	mediaCover: (path: string) => __TAURI_INVOKE<string | null>("media_cover", { path }),
+	/**  Remplace la pochette avant par l'image `image_path`, ou supprime toutes les pochettes si `null`. */
+	mediaSetCover: (path: string, imagePath: string | null) => __TAURI_INVOKE<null>("media_set_cover", { path, imagePath }),
+	/**  Extrait [start_ms, end_ms] sans réencodage (`-c copy`) vers `dest`. */
+	mediaTrim: (path: string, startMs: number, endMs: number, dest: string) => __TAURI_INVOKE<null>("media_trim", { path, startMs, endMs, dest }),
+	/**  Convertit vers `format` (extension de sortie : "mp3", "ogg", "flac", "wav", "mp4"…). */
+	mediaConvert: (path: string, dest: string, format: string) => __TAURI_INVOKE<null>("media_convert", { path, dest, format }),
+	mediaFfmpegAvailable: () => __TAURI_INVOKE<boolean>("media_ffmpeg_available"),
 };
 
 /* Types */

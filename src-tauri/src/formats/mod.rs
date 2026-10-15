@@ -2,21 +2,23 @@
 
 use crate::core::handler::FormatHandler;
 
+pub mod archive;
 pub mod binary;
-pub mod records;
-pub mod text;
-pub mod image;
-pub mod pdf;
-pub mod svg;
-pub mod sheet;
 pub mod epub;
+pub mod image;
+pub mod media;
 pub mod notebook;
+pub mod pdf;
+pub mod records;
+pub mod sheet;
 pub mod slides;
 pub mod sqlite;
+pub mod svg;
+pub mod text;
 pub mod zipxml;
 
 pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
-    vec![
+    let mut handlers: Vec<Box<dyn FormatHandler>> = vec![
         Box::new(binary::BinaryHandler),
         Box::new(text::TextHandler),
         Box::new(text::MarkdownHandler),
@@ -36,5 +38,8 @@ pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
         Box::new(slides::OdpHandler),
         Box::new(slides::PptxHandler),
         Box::new(sqlite::SqliteHandler),
-    ]
+        Box::new(media::MediaHandler),
+    ];
+    handlers.extend(archive::handlers());
+    handlers
 }

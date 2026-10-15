@@ -65,9 +65,44 @@ pub fn write_atomic(path: &Path, bytes: &[u8], backup_dir: Option<&Path>) -> Res
     Ok(())
 }
 
+/// Remplace `path` par le fichier temporaire `temp_path` (même volume, de préférence le même
+/// dossier) via un rename atomique, avec sauvegarde de l'original. `temp_path` est supprimé
+/// en cas d'échec.
+pub fn replace_with(path: &Path, temp_path: &Path) -> Result<()> {
+    let res = replace_with_in(path, temp_path, BACKUP_DIR.get().map(|p| p.as_path()));
+    if res.is_err() {
+        let _ = std::fs::remove_file(temp_path);
+    }
+    res
+}
+
+fn replace_with_in(path: &Path, temp_path: &Path, backup_dir: Option<&Path>) -> Result<()> {
+    if let Some(dir) = backup_dir {
+        backup_original(path, dir)?;
+    }
+    #[cfg(unix)]
+    if let Ok(meta) = std::fs::metadata(path) {
+        std::fs::set_permissions(temp_path, meta.permissions())?;
+    }
+    std::fs::rename(temp_path, path)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn replace_with_swaps_content() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("a.bin");
+        let t = dir.path().join("a.tmp");
+        std::fs::write(&f, "old").unwrap();
+        std::fs::write(&t, "new").unwrap();
+        replace_with_in(&f, &t, None).unwrap();
+        assert_eq!(std::fs::read(&f).unwrap(), b"new");
+        assert!(!t.exists());
+    }
 
     fn names(dir: &Path) -> Vec<String> {
         let mut v: Vec<String> = std::fs::read_dir(dir)

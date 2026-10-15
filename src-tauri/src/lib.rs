@@ -59,6 +59,18 @@ fn specta_builder() -> Builder<tauri::Wry> {
             formats::sqlite::db_query,
             formats::sqlite::db_export_csv,
             formats::sqlite::db_schema,
+            formats::archive::archive_extract,
+            formats::archive::archive_read_entry,
+            formats::archive::archive_add,
+            formats::archive::archive_remove,
+            formats::archive::archive_rename,
+            formats::archive::archive_create,
+            formats::archive::archive_convert,
+            formats::media::media_cover,
+            formats::media::media_set_cover,
+            formats::media::media_trim,
+            formats::media::media_convert,
+            formats::media::media_ffmpeg_available,
         ])
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
         .dangerously_cast_bigints_to_number()
