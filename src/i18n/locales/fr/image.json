@@ -1,0 +1,150 @@
+{
+  "loading": "Chargement de l'image…",
+  "loadError": "Impossible de charger l'image.",
+  "svgNote": "SVG : les modifications raster s'appliquent à une rasterisation et s'enregistrent via « Enregistrer sous… » dans un format raster.",
+  "viewport": {
+    "label": "Zone de l'image",
+    "textInput": "Texte de l'annotation"
+  },
+  "toolbar": {
+    "label": "Outils image",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous / Convertir…",
+    "exportPng": "Exporter en PNG…",
+    "stripMetadata": "Supprimer les métadonnées",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "tools": "Outils",
+    "transform": "Transformations",
+    "cropOptions": "Options de recadrage",
+    "annotationOptions": "Options d'annotation",
+    "rotateRight": "Pivoter ↻ 90°",
+    "rotateLeft": "Pivoter ↺ 90°",
+    "rotate180": "Pivoter 180°",
+    "flipH": "Miroir horizontal",
+    "flipV": "Miroir vertical",
+    "resize": "Redimensionner…",
+    "adjust": "Ajustements…",
+    "zoom": "Zoom",
+    "zoomOut": "Zoom arrière",
+    "zoomIn": "Zoom avant",
+    "fit": "Ajuster",
+    "readOnly": "Lecture seule"
+  },
+  "tools": {
+    "select": "Sélection",
+    "crop": "Recadrer",
+    "arrow": "Flèche",
+    "rect": "Rectangle",
+    "ellipse": "Ellipse",
+    "pen": "Crayon",
+    "text": "Texte",
+    "highlight": "Surligneur"
+  },
+  "crop": {
+    "ratio": "Ratio",
+    "free": "Libre",
+    "apply": "Recadrer (Entrée)",
+    "cancel": "Annuler"
+  },
+  "options": {
+    "color": "Couleur",
+    "width": "Épaisseur",
+    "font": "Police",
+    "size": "Taille"
+  },
+  "fonts": {
+    "sans-serif": "Sans empattement",
+    "serif": "Avec empattement",
+    "monospace": "Chasse fixe",
+    "cursive": "Cursive"
+  },
+  "panel": {
+    "title": "Image",
+    "info": "Informations",
+    "dimensions": "Dimensions",
+    "format": "Format",
+    "alpha": "Transparence",
+    "yes": "Oui",
+    "no": "Non",
+    "fileSize": "Taille du fichier",
+    "exif": "EXIF",
+    "noExif": "Aucune métadonnée EXIF.",
+    "exifTag": "Tag",
+    "exifValue": "Valeur",
+    "history": "Historique"
+  },
+  "history": {
+    "original": "Image d'origine",
+    "rotate90": "Rotation 90° horaire",
+    "rotate180": "Rotation 180°",
+    "rotate270": "Rotation 90° anti-horaire",
+    "flipH": "Miroir horizontal",
+    "flipV": "Miroir vertical",
+    "crop": "Recadrage",
+    "resize": "Redimensionnement",
+    "adjust": "Ajustements",
+    "annotations": "Annotations"
+  },
+  "resize": {
+    "title": "Redimensionner l'image",
+    "width": "Largeur (px)",
+    "height": "Hauteur (px)",
+    "percent": "Échelle (%)",
+    "keepRatio": "Conserver les proportions",
+    "apply": "Redimensionner",
+    "invalid": "Les dimensions doivent être comprises entre 1 et 32768 px."
+  },
+  "adjust": {
+    "title": "Ajustements",
+    "brightness": "Luminosité",
+    "contrast": "Contraste",
+    "saturation": "Saturation",
+    "grayscale": "Niveaux de gris",
+    "reset": "Réinitialiser",
+    "apply": "Appliquer"
+  },
+  "quality": {
+    "title": "Qualité {{format}}",
+    "label": "Qualité : {{value}}",
+    "apply": "Enregistrer"
+  },
+  "exportPng": {
+    "title": "Exporter en PNG",
+    "scale": "Échelle",
+    "apply": "Exporter"
+  },
+  "save": {
+    "done": "Enregistré : {{name}}",
+    "reencodeTitle": "Réencoder l'image ?",
+    "reencodeMessage": "L'image sera réencodée dans son format d'origine : les métadonnées (EXIF…) seront supprimées et un format avec perte peut dégrader la qualité.",
+    "reencodeConfirm": "Réencoder et enregistrer",
+    "unsupportedExtension": "Extension non prise en charge pour l'enregistrement."
+  },
+  "strip": {
+    "title": "Supprimer les métadonnées ?",
+    "message": "Les métadonnées (EXIF…) seront supprimées du fichier, directement sur place. Les modifications non enregistrées ne sont pas concernées.",
+    "confirm": "Supprimer",
+    "done": "Métadonnées supprimées."
+  },
+  "commands": {
+    "undo": "Image : annuler",
+    "redo": "Image : rétablir",
+    "save": "Image : enregistrer",
+    "saveAs": "Image : enregistrer sous / convertir…",
+    "strip": "Image : supprimer les métadonnées",
+    "exportPng": "Image : exporter le SVG en PNG…",
+    "rotateRight": "Image : pivoter à droite",
+    "rotateLeft": "Image : pivoter à gauche",
+    "rotate180": "Image : pivoter de 180°",
+    "flipH": "Image : miroir horizontal",
+    "flipV": "Image : miroir vertical",
+    "crop": "Image : recadrer",
+    "resize": "Image : redimensionner…",
+    "adjust": "Image : ajustements…",
+    "zoomIn": "Image : zoom avant",
+    "zoomOut": "Image : zoom arrière",
+    "fit": "Image : ajuster à la fenêtre",
+    "actualSize": "Image : taille réelle (100 %)"
+  }
+}
