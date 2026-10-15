@@ -1,0 +1,170 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 4px 8px;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.group + .group {
+  padding-left: 10px;
+  border-left: 1px solid var(--color-border);
+}
+
+.tool {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.tool:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.tool[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.tool:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tool:focus-visible,
+.textButton:focus-visible,
+.swatch:focus-visible,
+.select:focus-visible,
+.selectSmall:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.select,
+.selectSmall {
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.select {
+  max-width: 130px;
+}
+
+.selectSmall {
+  width: 64px;
+}
+
+.colorA {
+  font-weight: 700;
+  border-bottom: 3px solid var(--color-danger);
+  line-height: 1;
+}
+
+.hl {
+  background: #fff59d;
+  color: #1b1f24;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.zoomValue {
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.popoverRoot {
+  position: relative;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 180px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  box-shadow: var(--shadow);
+}
+
+.colorPanel,
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 24px);
+  gap: 6px;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.field input {
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.formActions {
+  display: flex;
+  gap: 6px;
+}
+
+.textButton {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.textButton:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.textButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
