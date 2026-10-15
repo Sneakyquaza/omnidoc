@@ -9,6 +9,11 @@ pub mod image;
 pub mod pdf;
 pub mod svg;
 pub mod sheet;
+pub mod epub;
+pub mod notebook;
+pub mod slides;
+pub mod sqlite;
+pub mod zipxml;
 
 pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
     vec![
@@ -26,5 +31,10 @@ pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
         Box::new(sheet::xlsx::ExcelHandler::xlsm()),
         Box::new(sheet::xlsx::ExcelHandler::xls()),
         Box::new(sheet::ods::OdsHandler),
+        Box::new(epub::EpubHandler),
+        Box::new(notebook::NotebookHandler),
+        Box::new(slides::OdpHandler),
+        Box::new(slides::PptxHandler),
+        Box::new(sqlite::SqliteHandler),
     ]
 }

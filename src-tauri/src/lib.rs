@@ -55,6 +55,10 @@ fn specta_builder() -> Builder<tauri::Wry> {
             formats::pdf::pdf_annotate,
             formats::pdf::pdf_list_annotations,
             formats::sheet::csv::sheet_export_csv,
+            formats::sqlite::db_rows,
+            formats::sqlite::db_query,
+            formats::sqlite::db_export_csv,
+            formats::sqlite::db_schema,
         ])
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
         .dangerously_cast_bigints_to_number()

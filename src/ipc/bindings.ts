@@ -40,6 +40,14 @@ export const commands = {
 	pdfListAnnotations: (path: string) => __TAURI_INVOKE<PdfAnnotation[]>("pdf_list_annotations", { path }),
 	/**  Exporte une feuille choisie en CSV avec le séparateur donné ("\t" pour tabulation). */
 	sheetExportCsv: (model: Workbook, sheetIndex: number, dest: string, delimiter: string) => __TAURI_INVOKE<null>("sheet_export_csv", { model, sheetIndex, dest, delimiter }),
+	/**  Lignes paginées d'une table ou vue (`limit` plafonné à 1000). */
+	dbRows: (path: string, table: string, offset: number, limit: number) => __TAURI_INVOKE<DbResult>("db_rows", { path, table, offset, limit }),
+	/**  Requête SELECT unique, en lecture seule (délai 5 s, `limit` plafonné à 1000). */
+	dbQuery: (path: string, sql: string, limit: number) => __TAURI_INVOKE<DbResult>("db_query", { path, sql, limit }),
+	/**  Exporte une table ou vue en CSV (RFC 4180, CRLF), écriture atomique. */
+	dbExportCsv: (path: string, table: string, dest: string) => __TAURI_INVOKE<null>("db_export_csv", { path, table, dest }),
+	/**  Instructions SQL de création (tables, vues, index, triggers). */
+	dbSchema: (path: string) => __TAURI_INVOKE<DbSchemaEntry[]>("db_schema", { path }),
 };
 
 /* Types */
@@ -99,14 +107,37 @@ export type DbDoc = {
 	tables: DbTable[],
 };
 
+/**  Entier SQLite : nombre si dans la plage sûre JS, sinon chaîne décimale. */
+export type DbInt = number | null | string;
+
+export type DbResult = {
+	columns: string[],
+	rows: DbValue[][],
+	/**  Nombre total de lignes si connu (comptage dans le délai imparti). */
+	total: number | null,
+};
+
+export type DbSchemaEntry = {
+	name: string,
+	sql: string,
+};
+
 export type DbTable = {
 	name: string,
 	kind: DbTableKind,
 	columns: DbColumn[],
 	rowCount: number,
+	/**  Faux si le comptage a dépassé le délai (`row_count` vaut alors 0 et est inconnu). */
+	rowCountExact?: boolean,
 };
 
 export type DbTableKind = "table" | "view";
+
+/**
+ *  Valeur de cellule : `{type: "null"|"int"|"real"|"text"|"blob", value}`.
+ *  Blob : `"<blob N octets> <64 premiers octets en hexa>"`.
+ */
+export type DbValue = { type: "null" } | { type: "int"; value: DbInt } | { type: "real"; value: number | null } | { type: "text"; value: string } | { type: "blob"; value: string };
 
 export type Detected = {
 	handlerId: string,
@@ -158,6 +189,8 @@ export type EbookDoc = {
 	title: string,
 	author: string | null,
 	chapters: EbookChapter[],
+	/**  Éléments du livre non conservés (ids : "css", "images-omitted", "remote-images"). */
+	lossy?: string[],
 };
 
 /**  Forme sérialisée d'une erreur : `{ code, message }`. */
@@ -324,6 +357,8 @@ export type Slide = {
 
 export type SlidesDoc = {
 	slides: Slide[],
+	/**  Miniature du fichier (data URI), si présente. */
+	thumbnail?: string | null,
 };
 
 export type TextDoc = {
