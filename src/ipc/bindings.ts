@@ -22,6 +22,9 @@ export const commands = {
 	externalTools: () => __TAURI_INVOKE<ExternalTool[]>("external_tools"),
 	/**  Fichiers passés en argument au lancement (flags ignorés). */
 	startupPaths: () => __TAURI_INVOKE<string[]>("startup_paths"),
+	textEncodings: () => __TAURI_INVOKE<string[]>("text_encodings"),
+	/**  Relit le fichier avec un encodage imposé (langage deviné comme à l'ouverture normale). */
+	textReopenWithEncoding: (path: string, encoding: string) => __TAURI_INVOKE<TextDoc>("text_reopen_with_encoding", { path, encoding }),
 };
 
 /* Types */
