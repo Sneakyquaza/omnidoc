@@ -3,6 +3,10 @@
     "title": "OmniDoc",
     "openFile": "Open a file…"
   },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
   "formats": {
     "binary": "Binary file"
   },
@@ -19,6 +23,124 @@
     "limit": "Limit exceeded",
     "external": "External tool error",
     "cancelled": "Operation cancelled",
-    "notFound": "Not found"
+    "notFound": "Not found",
+    "unknown": "Unexpected error"
+  },
+  "welcome": {
+    "subtitle": "Universal file editor",
+    "open": "Open a file…",
+    "drop": "or drag and drop files here",
+    "dropHere": "Drop files to open them",
+    "new": "New",
+    "recent": "Recent files",
+    "noRecent": "No recent files.",
+    "removeRecent": "Remove “{{name}}” from recent files"
+  },
+  "newDoc": {
+    "text": "Text document",
+    "rich": "Rich document",
+    "sheet": "Spreadsheet",
+    "markdown": "Markdown",
+    "json": "JSON",
+    "untitled": "Untitled {{n}}",
+    "sheetName": "Sheet 1"
+  },
+  "tabs": {
+    "label": "Open documents",
+    "close": "Close {{name}}"
+  },
+  "toolbar": {
+    "label": "Toolbar",
+    "open": "Open",
+    "save": "Save",
+    "saveAs": "Save as…",
+    "export": "Export to…",
+    "openAs": "Open as…",
+    "sidePanel": "Side panel",
+    "theme": "Theme: {{theme}}",
+    "palette": "Command palette"
+  },
+  "theme": {
+    "system": "system",
+    "light": "light",
+    "dark": "dark"
+  },
+  "openAs": {
+    "suggested": "Suggestions",
+    "all": "All formats"
+  },
+  "shell": {
+    "sidePanel": "Side panel"
+  },
+  "status": {
+    "readOnly": "Read-only",
+    "partialFidelity": "Partial fidelity",
+    "partialFidelityHint": "Some elements of the original format may be lost when saving.",
+    "unsaved": "Unsaved"
+  },
+  "banner": {
+    "externalChange": "File modified on disk.",
+    "reload": "Reload",
+    "ignore": "Ignore"
+  },
+  "save": {
+    "saved": "“{{name}}” saved",
+    "useExport": "Use “Export to…” to convert this document.",
+    "partialTitle": "Partial fidelity",
+    "partialMessage": "The {{format}} format does not preserve every element of the document. Saving in this format may cause losses.",
+    "partialConfirm": "Save anyway"
+  },
+  "export": {
+    "noTarget": "No export format available for this document.",
+    "done": "Exported to “{{name}}”"
+  },
+  "reopen": {
+    "title": "Reopen the file?",
+    "message": "Unsaved changes in “{{name}}” will be lost.",
+    "confirm": "Reopen"
+  },
+  "close": {
+    "title": "Save “{{name}}” before closing?",
+    "message": "Unsaved changes will be lost.",
+    "save": "Save",
+    "discard": "Don't save"
+  },
+  "quit": {
+    "title": "Quit OmniDoc?",
+    "message_one": "A document has unsaved changes.",
+    "message_other": "{{count}} documents have unsaved changes.",
+    "confirm": "Quit without saving"
+  },
+  "recovery": {
+    "title": "Restore documents?",
+    "message_one": "An unsaved document was recovered after an unexpected shutdown.",
+    "message_other": "{{count}} unsaved documents were recovered after an unexpected shutdown.",
+    "restore": "Restore",
+    "ignore": "Ignore"
+  },
+  "noEditor": {
+    "message": "No editor is available yet for this kind of document ({{kind}}).",
+    "openHex": "Open in hexadecimal"
+  },
+  "editor": {
+    "crashed": "The editor encountered an error."
+  },
+  "palette": {
+    "title": "Command palette",
+    "placeholder": "Search for a command…",
+    "noResult": "No command"
+  },
+  "commands": {
+    "open": "Open a file",
+    "save": "Save",
+    "saveAs": "Save as…",
+    "export": "Export to…",
+    "closeTab": "Close tab",
+    "nextTab": "Next tab",
+    "prevTab": "Previous tab",
+    "toggleSidePanel": "Show/hide side panel",
+    "cycleTheme": "Switch theme",
+    "toggleLanguage": "Switch language (FR/EN)",
+    "palette": "Command palette"
   }
 }

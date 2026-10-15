@@ -1,0 +1,89 @@
+.page {
+  flex: 1;
+  overflow: auto;
+  padding: 32px 48px;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+}
+
+.subtitle {
+  margin: 4px 0 24px;
+  color: var(--color-text-muted);
+}
+
+.drop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  border: 2px dashed var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-muted);
+}
+
+.dropActive {
+  border-color: var(--color-accent);
+  background: var(--color-hover);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(260px, 2fr);
+  gap: 32px;
+}
+
+.columns h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent {
+  display: flex;
+  align-items: center;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-hover);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.path {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--color-text-muted);
+}

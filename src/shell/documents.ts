@@ -1,0 +1,376 @@
+import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
+import type { DialogFilter } from "@tauri-apps/plugin-dialog";
+import i18n from "../i18n";
+import { commands } from "../ipc/bindings";
+import type {
+  Capabilities,
+  Detected,
+  DocumentModel,
+  HandlerInfo,
+  OpenedDocument,
+} from "../ipc/bindings";
+import { useRecent } from "../stores/recent";
+import { useTabs } from "../stores/tabs";
+import type { TabEntry } from "../stores/tabs";
+import { reportError } from "./errors";
+import { getHandlers } from "./handlers";
+import { NEW_DOCUMENTS } from "./newDocuments";
+import { basename, extOf } from "./paths";
+import { clearTabRuntime, getSerializer } from "./runtime";
+import { choose, confirm } from "./ui/dialogStore";
+import { pushToast } from "./ui/toastStore";
+
+const t = (key: string, opts?: Record<string, unknown>): string => i18n.t(key, opts);
+
+function getTab(id: string): TabEntry | undefined {
+  return useTabs.getState().tabs.find((tab) => tab.id === id);
+}
+
+function label(h: HandlerInfo): string {
+  return t(h.labelKey, { defaultValue: h.id });
+}
+
+function silently(p: Promise<unknown>): void {
+  p.catch(() => undefined);
+}
+
+function fromOpened(doc: OpenedDocument) {
+  return {
+    path: doc.path,
+    title: basename(doc.path),
+    handlerId: doc.handlerId,
+    modelKind: doc.model.kind,
+    readOnly: !doc.capabilities.write,
+    detected: doc.detected,
+    capabilities: doc.capabilities,
+    docId: doc.docId,
+    model: doc.model,
+    warnings: doc.warnings,
+  };
+}
+
+function showWarnings(warnings: string[]): void {
+  for (const w of warnings) pushToast({ kind: "info", text: t(w, { defaultValue: w }) });
+}
+
+/** Ouvre un fichier dans un onglet (ou active l'onglet existant). */
+export async function openPath(path: string, forcedHandler: string | null = null): Promise<void> {
+  const existing = useTabs.getState().tabs.find((tab) => tab.path === path);
+  if (existing && forcedHandler === null) {
+    useTabs.getState().activateTab(existing.id);
+    return;
+  }
+  try {
+    const doc = await commands.openDocument(path, forcedHandler);
+    if (existing) {
+      clearTabRuntime(existing.id);
+      useTabs.getState().reloadTab(existing.id, { ...fromOpened(doc), dirty: false });
+      useTabs.getState().activateTab(existing.id);
+    } else {
+      useTabs.getState().openTab(fromOpened(doc));
+    }
+    silently(commands.watchFile(doc.path));
+    useRecent.getState().add(doc.path);
+    showWarnings(doc.warnings);
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+export async function openPaths(paths: string[]): Promise<void> {
+  for (const p of paths) await openPath(p);
+}
+
+export async function openWithDialog(): Promise<void> {
+  try {
+    const selected = await openDialog({ multiple: true });
+    if (selected === null) return;
+    await openPaths(Array.isArray(selected) ? selected : [selected]);
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+/** Nouveau document vide (sans chemin). */
+export function newDocument(kindId: string): void {
+  const kind = NEW_DOCUMENTS.find((k) => k.id === kindId);
+  if (!kind) return;
+  const n = useTabs.getState().nextUntitled();
+  useTabs.getState().openTab({
+    path: null,
+    title: t("newDoc.untitled", { n }),
+    handlerId: kind.handlerId,
+    modelKind: kind.modelKind,
+    readOnly: false,
+    docId: crypto.randomUUID(),
+    model: kind.build(t("newDoc.sheetName")),
+  });
+}
+
+/** Rouvre l'onglet depuis le disque, avec un handler forcé (ou le sien si `null`). */
+export async function reopenTab(tabId: string, handlerId: string | null): Promise<void> {
+  const tab = getTab(tabId);
+  if (!tab?.path) return;
+  if (tab.dirty) {
+    const ok = await confirm({
+      title: t("reopen.title"),
+      message: t("reopen.message", { name: tab.title }),
+      confirmLabel: t("reopen.confirm"),
+      danger: true,
+    });
+    if (!ok) return;
+  }
+  try {
+    const doc = await commands.openDocument(tab.path, handlerId ?? tab.handlerId);
+    clearTabRuntime(tabId);
+    silently(commands.recoveryDiscard(tab.docId));
+    useTabs
+      .getState()
+      .reloadTab(tabId, { ...fromOpened(doc), dirty: false, fidelityConfirmed: false });
+    showWarnings(doc.warnings);
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+/** « Ouvrir comme… » */
+export function reopenTabAs(tabId: string, handlerId: string): Promise<void> {
+  return reopenTab(tabId, handlerId);
+}
+
+/** Recharge après modification externe (sans confirmation : l'utilisateur a cliqué sur la bannière). */
+export async function reloadFromDisk(tabId: string): Promise<void> {
+  const tab = getTab(tabId);
+  if (!tab?.path) return;
+  try {
+    const doc = await commands.openDocument(tab.path, tab.handlerId);
+    clearTabRuntime(tabId);
+    silently(commands.recoveryDiscard(tab.docId));
+    useTabs.getState().reloadTab(tabId, { ...fromOpened(doc), dirty: false });
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+export function ignoreExternalChange(tabId: string): void {
+  useTabs.getState().patchTab(tabId, { externalChange: false });
+}
+
+/** Modèle courant : sérialiseur de l'éditeur, sinon modèle d'ouverture. */
+export async function currentModel(tab: TabEntry): Promise<DocumentModel> {
+  const serialize = getSerializer(tab.id);
+  if (!serialize) return tab.model;
+  const m = (await serialize()) as object;
+  return { ...m, kind: tab.modelKind } as DocumentModel;
+}
+
+function writable(handlers: HandlerInfo[], tab: TabEntry): HandlerInfo[] {
+  return handlers.filter((h) => h.model === tab.modelKind && h.capabilities.write);
+}
+
+function filtersFor(handlers: HandlerInfo[]): DialogFilter[] {
+  return handlers
+    .filter((h) => h.extensions.length > 0)
+    .map((h) => ({ name: label(h), extensions: h.extensions }));
+}
+
+function pickHandler(
+  handlers: HandlerInfo[],
+  path: string,
+  preferred: string,
+): HandlerInfo | undefined {
+  const ext = extOf(path);
+  return (
+    handlers.find((h) => h.extensions.includes(ext)) ??
+    handlers.find((h) => h.id === preferred) ??
+    handlers[0]
+  );
+}
+
+/** Enregistrer sous… ; renvoie `true` si le fichier a été écrit. */
+export async function saveTabAs(tabId: string): Promise<boolean> {
+  const tab = getTab(tabId);
+  if (!tab) return false;
+  try {
+    const candidates = writable(await getHandlers(), tab);
+    if (candidates.length === 0) {
+      pushToast({ kind: "error", text: t("errors.readOnly"), detail: t("save.useExport") });
+      return false;
+    }
+    const current = candidates.find((h) => h.id === tab.handlerId) ?? candidates[0];
+    const ext = current?.extensions[0];
+    const defaultPath = tab.path ?? (ext ? `${tab.title}.${ext}` : tab.title);
+    const dest = await saveDialog({ defaultPath, filters: filtersFor(candidates) });
+    if (dest === null) return false;
+    const handler = pickHandler(candidates, dest, tab.handlerId);
+    if (!handler) return false;
+    const model = await currentModel(tab);
+    await commands.saveDocument(dest, handler.id, model);
+    if (tab.path && tab.path !== dest) silently(commands.unwatchFile(tab.path));
+    silently(commands.watchFile(dest));
+    useTabs.getState().patchTab(tabId, {
+      path: dest,
+      title: basename(dest),
+      handlerId: handler.id,
+      readOnly: false,
+      dirty: false,
+      externalChange: false,
+      capabilities: handler.capabilities,
+      fidelityConfirmed: true,
+    });
+    silently(commands.recoveryDiscard(tab.docId));
+    useRecent.getState().add(dest);
+    pushToast({ kind: "success", text: t("save.saved", { name: basename(dest) }) });
+    return true;
+  } catch (e) {
+    reportError(e);
+    return false;
+  }
+}
+
+/** Enregistrer (Ctrl+S) ; renvoie `true` si le fichier a été écrit. */
+export async function saveTab(tabId: string): Promise<boolean> {
+  const tab = getTab(tabId);
+  if (!tab) return false;
+  if (tab.path === null || !tab.capabilities?.write) return saveTabAs(tabId);
+  if (tab.capabilities.fidelity === "partial" && !tab.fidelityConfirmed) {
+    const ok = await confirm({
+      title: t("save.partialTitle"),
+      message: t("save.partialMessage", {
+        format: tab.detected
+          ? t(tab.detected.labelKey, { defaultValue: tab.handlerId })
+          : tab.handlerId,
+      }),
+      confirmLabel: t("save.partialConfirm"),
+    });
+    if (!ok) return false;
+    useTabs.getState().patchTab(tabId, { fidelityConfirmed: true });
+  }
+  try {
+    const model = await currentModel(tab);
+    await commands.saveDocument(tab.path, tab.handlerId, model);
+    useTabs.getState().patchTab(tabId, { dirty: false });
+    silently(commands.recoveryDiscard(tab.docId));
+    pushToast({ kind: "success", text: t("save.saved", { name: tab.title }) });
+    return true;
+  } catch (e) {
+    reportError(e);
+    return false;
+  }
+}
+
+/** Exporter vers… (conversion vers un autre format du même modèle). */
+export async function exportTab(tabId: string): Promise<void> {
+  const tab = getTab(tabId);
+  if (!tab) return;
+  try {
+    const all = await getHandlers();
+    const allowed = tab.capabilities?.exportTo ?? [];
+    let targets = all.filter((h) => allowed.includes(h.id) && h.capabilities.write);
+    if (targets.length === 0) targets = writable(all, tab);
+    if (targets.length === 0) {
+      pushToast({ kind: "error", text: t("export.noTarget") });
+      return;
+    }
+    const dest = await saveDialog({ filters: filtersFor(targets) });
+    if (dest === null) return;
+    const target = pickHandler(targets, dest, targets[0]?.id ?? "");
+    if (!target) return;
+    const model = await currentModel(tab);
+    await commands.exportDocument(model, tab.handlerId, target.id, dest);
+    pushToast({ kind: "success", text: t("export.done", { name: basename(dest) }) });
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+/** Ferme un onglet (confirmation si modifié) ; renvoie `true` si fermé. */
+export async function closeTabWithConfirm(tabId: string): Promise<boolean> {
+  const tab = getTab(tabId);
+  if (!tab) return true;
+  if (tab.dirty) {
+    useTabs.getState().activateTab(tabId);
+    const choice = await choose({
+      title: t("close.title", { name: tab.title }),
+      message: t("close.message"),
+      actions: [
+        { id: "cancel", label: t("common.cancel"), variant: "secondary" },
+        { id: "discard", label: t("close.discard"), variant: "danger" },
+        { id: "save", label: t("close.save"), variant: "primary" },
+      ],
+    });
+    if (choice === null || choice === "cancel") return false;
+    if (choice === "save" && !(await saveTab(tabId))) return false;
+  }
+  useTabs.getState().closeTab(tabId);
+  clearTabRuntime(tabId);
+  if (tab.path) silently(commands.unwatchFile(tab.path));
+  silently(commands.recoveryDiscard(tab.docId));
+  return true;
+}
+
+/** Autosave de récupération des onglets modifiés. */
+export async function autosaveDirtyTabs(): Promise<void> {
+  for (const tab of useTabs.getState().tabs.filter((x) => x.dirty)) {
+    try {
+      const model = await currentModel(tab);
+      await commands.recoveryStore(tab.docId, tab.path ?? "", model);
+    } catch {
+      // l'autosave ne doit jamais gêner l'utilisateur
+    }
+  }
+}
+
+function defaultHandlerFor(
+  handlers: HandlerInfo[],
+  kind: DocumentModel["kind"],
+): HandlerInfo | undefined {
+  const preferred = NEW_DOCUMENTS.find((k) => k.modelKind === kind)?.handlerId;
+  return (
+    handlers.find((h) => h.id === preferred) ??
+    handlers.find((h) => h.model === kind && h.capabilities.write)
+  );
+}
+
+/** Restaure les documents récupérés (ouverts comme onglets modifiés). */
+export async function restoreRecovery(
+  entries: Awaited<ReturnType<typeof commands.recoveryList>>,
+): Promise<void> {
+  const handlers = await getHandlers().catch(() => [] as HandlerInfo[]);
+  for (const entry of entries) {
+    if (useTabs.getState().tabs.some((tab) => tab.docId === entry.docId)) continue;
+    let detected: Detected | undefined;
+    let capabilities: Capabilities | undefined;
+    let handler: HandlerInfo | undefined;
+    let path: string | null = null;
+    if (entry.path !== "") {
+      try {
+        detected = await commands.detectFile(entry.path);
+        handler = handlers.find((h) => h.id === detected?.handlerId);
+        capabilities = handler?.capabilities;
+        path = entry.path;
+      } catch {
+        // fichier d'origine disparu : on restaure comme document sans chemin
+      }
+    }
+    handler ??= defaultHandlerFor(handlers, entry.model.kind);
+    const n = path === null ? useTabs.getState().nextUntitled() : 0;
+    useTabs.getState().openTab({
+      path,
+      title: path === null ? t("newDoc.untitled", { n }) : basename(path),
+      handlerId: handler?.id ?? detected?.handlerId ?? entry.model.kind,
+      modelKind: entry.model.kind,
+      readOnly: path !== null && capabilities !== undefined && !capabilities.write,
+      detected,
+      capabilities,
+      docId: entry.docId,
+      model: entry.model,
+      dirty: true,
+    });
+    if (path) silently(commands.watchFile(path));
+  }
+}
+
+export function handlerLabel(h: HandlerInfo): string {
+  return label(h);
+}

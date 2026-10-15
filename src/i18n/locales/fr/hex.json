@@ -1,0 +1,43 @@
+{
+  "grid": { "label": "Contenu hexadécimal" },
+  "columns": { "offset": "Offset  ", "ascii": "ASCII" },
+  "empty": "Le fichier est vide.",
+  "loadError": "Impossible de lire le fichier.",
+  "status": {
+    "offset": "Offset {{hex}} ({{dec}})",
+    "size": "Taille : {{size}} ({{bytes}} octets)"
+  },
+  "commands": {
+    "goto": "Hexadécimal : aller à l'offset",
+    "find": "Hexadécimal : rechercher"
+  },
+  "goto": {
+    "label": "Aller à l'offset",
+    "placeholder": "ex. 4096 ou 0x1000",
+    "go": "Aller",
+    "invalid": "Offset invalide (0 à {{max}})."
+  },
+  "find": {
+    "label": "Rechercher",
+    "placeholder": "ex. 4D 5A ou du texte",
+    "mode": "Type de recherche",
+    "hex": "Octets (hexa)",
+    "text": "Texte",
+    "next": "Suivant",
+    "invalid": "Motif invalide.",
+    "searching": "Recherche…",
+    "notFound": "Aucune occurrence.",
+    "wrapped": "Recherche reprise au début du fichier.",
+    "limit": "Recherche interrompue : limite de 64 Mio atteinte."
+  },
+  "bar": { "close": "Fermer" },
+  "info": {
+    "title": "Informations",
+    "path": "Chemin",
+    "type": "Type détecté",
+    "mime": "Type MIME",
+    "size": "Taille",
+    "alternatives": "Autres interprétations",
+    "openAs": "Ouvrir comme {{name}}"
+  }
+}

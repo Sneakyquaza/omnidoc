@@ -1,0 +1,43 @@
+{
+  "grid": { "label": "Hexadecimal content" },
+  "columns": { "offset": "Offset  ", "ascii": "ASCII" },
+  "empty": "The file is empty.",
+  "loadError": "Unable to read the file.",
+  "status": {
+    "offset": "Offset {{hex}} ({{dec}})",
+    "size": "Size: {{size}} ({{bytes}} bytes)"
+  },
+  "commands": {
+    "goto": "Hex: go to offset",
+    "find": "Hex: find"
+  },
+  "goto": {
+    "label": "Go to offset",
+    "placeholder": "e.g. 4096 or 0x1000",
+    "go": "Go",
+    "invalid": "Invalid offset (0 to {{max}})."
+  },
+  "find": {
+    "label": "Find",
+    "placeholder": "e.g. 4D 5A or text",
+    "mode": "Search type",
+    "hex": "Bytes (hex)",
+    "text": "Text",
+    "next": "Next",
+    "invalid": "Invalid pattern.",
+    "searching": "Searching…",
+    "notFound": "No match.",
+    "wrapped": "Search wrapped to the start of the file.",
+    "limit": "Search stopped: 64 MiB limit reached."
+  },
+  "bar": { "close": "Close" },
+  "info": {
+    "title": "Information",
+    "path": "Path",
+    "type": "Detected type",
+    "mime": "MIME type",
+    "size": "Size",
+    "alternatives": "Other interpretations",
+    "openAs": "Open as {{name}}"
+  }
+}

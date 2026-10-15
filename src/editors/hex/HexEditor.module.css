@@ -1,0 +1,150 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-family: var(--font-ui);
+}
+
+.barLabel {
+  margin-right: 6px;
+}
+
+.input {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.message {
+  color: var(--color-text-muted);
+}
+
+.header,
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  white-space: pre;
+}
+
+.header {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.scroller:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.offset {
+  width: 8ch;
+  color: var(--color-text-muted);
+}
+
+.bytes {
+  display: flex;
+}
+
+.byte {
+  display: inline-block;
+  width: 3ch;
+  text-align: center;
+  cursor: default;
+}
+
+.gap {
+  margin-right: 1.5ch;
+}
+
+.ascii {
+  display: flex;
+}
+
+.ascii > span {
+  display: inline-block;
+  width: 1ch;
+}
+
+.selected {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.match:not(.selected) {
+  background: var(--color-warning-bg);
+  outline: 1px solid var(--color-warning);
+}
+
+.empty {
+  padding: 24px;
+  color: var(--color-text-muted);
+  font-family: var(--font-ui);
+}
+
+.info {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 12px;
+  font-family: var(--font-ui);
+}
+
+.info dt {
+  margin-top: 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.info dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.subtitle {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+.alternatives {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -1,0 +1,21 @@
+.pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.pane > * {
+  flex: 1;
+  min-height: 0;
+}
+
+.loading {
+  flex: 1;
+}
+
+.error {
+  padding: 24px;
+  color: var(--color-danger);
+}

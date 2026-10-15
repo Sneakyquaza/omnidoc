@@ -1,0 +1,81 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.contextBar:empty {
+  display: none;
+}
+
+.contextBar {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.editor {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidePanel {
+  width: 280px;
+  overflow: auto;
+  padding: 12px;
+  background: var(--color-surface);
+}
+
+.sidePanel[hidden],
+.sidePanel:has(> div:empty) {
+  display: none;
+}
+
+.sidePanel:first-child {
+  border-right: 1px solid var(--color-border);
+}
+
+.sidePanel:last-child {
+  border-left: 1px solid var(--color-border);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--color-warning-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.banner span {
+  flex: 1;
+}
+
+.dropOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed var(--color-accent);
+  background: var(--color-overlay);
+  color: var(--color-text);
+  font-size: 20px;
+  pointer-events: none;
+}

@@ -3,6 +3,10 @@
     "title": "OmniDoc",
     "openFile": "Ouvrir un fichier…"
   },
+  "common": {
+    "cancel": "Annuler",
+    "close": "Fermer"
+  },
   "formats": {
     "binary": "Fichier binaire"
   },
@@ -19,6 +23,124 @@
     "limit": "Limite dépassée",
     "external": "Erreur d'outil externe",
     "cancelled": "Opération annulée",
-    "notFound": "Introuvable"
+    "notFound": "Introuvable",
+    "unknown": "Erreur inattendue"
+  },
+  "welcome": {
+    "subtitle": "Éditeur universel de fichiers",
+    "open": "Ouvrir un fichier…",
+    "drop": "ou glissez-déposez des fichiers ici",
+    "dropHere": "Déposez les fichiers pour les ouvrir",
+    "new": "Nouveau",
+    "recent": "Fichiers récents",
+    "noRecent": "Aucun fichier récent.",
+    "removeRecent": "Retirer « {{name}} » des récents"
+  },
+  "newDoc": {
+    "text": "Document texte",
+    "rich": "Document riche",
+    "sheet": "Tableur",
+    "markdown": "Markdown",
+    "json": "JSON",
+    "untitled": "Sans titre {{n}}",
+    "sheetName": "Feuille 1"
+  },
+  "tabs": {
+    "label": "Documents ouverts",
+    "close": "Fermer {{name}}"
+  },
+  "toolbar": {
+    "label": "Barre d'outils",
+    "open": "Ouvrir",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous…",
+    "export": "Exporter vers…",
+    "openAs": "Ouvrir comme…",
+    "sidePanel": "Panneau latéral",
+    "theme": "Thème : {{theme}}",
+    "palette": "Palette de commandes"
+  },
+  "theme": {
+    "system": "système",
+    "light": "clair",
+    "dark": "sombre"
+  },
+  "openAs": {
+    "suggested": "Suggestions",
+    "all": "Tous les formats"
+  },
+  "shell": {
+    "sidePanel": "Panneau latéral"
+  },
+  "status": {
+    "readOnly": "Lecture seule",
+    "partialFidelity": "Fidélité partielle",
+    "partialFidelityHint": "Certains éléments du format d'origine peuvent être perdus à l'enregistrement.",
+    "unsaved": "Non enregistré"
+  },
+  "banner": {
+    "externalChange": "Fichier modifié sur le disque.",
+    "reload": "Recharger",
+    "ignore": "Ignorer"
+  },
+  "save": {
+    "saved": "« {{name}} » enregistré",
+    "useExport": "Utilisez « Exporter vers… » pour convertir ce document.",
+    "partialTitle": "Fidélité partielle",
+    "partialMessage": "Le format {{format}} ne conserve pas tous les éléments du document. Enregistrer dans ce format peut entraîner des pertes.",
+    "partialConfirm": "Enregistrer quand même"
+  },
+  "export": {
+    "noTarget": "Aucun format d'export disponible pour ce document.",
+    "done": "Exporté vers « {{name}} »"
+  },
+  "reopen": {
+    "title": "Rouvrir le fichier ?",
+    "message": "Les modifications non enregistrées de « {{name}} » seront perdues.",
+    "confirm": "Rouvrir"
+  },
+  "close": {
+    "title": "Enregistrer « {{name}} » avant de fermer ?",
+    "message": "Les modifications non enregistrées seront perdues.",
+    "save": "Enregistrer",
+    "discard": "Ne pas enregistrer"
+  },
+  "quit": {
+    "title": "Quitter OmniDoc ?",
+    "message_one": "Un document contient des modifications non enregistrées.",
+    "message_other": "{{count}} documents contiennent des modifications non enregistrées.",
+    "confirm": "Quitter sans enregistrer"
+  },
+  "recovery": {
+    "title": "Restaurer les documents ?",
+    "message_one": "Un document non enregistré a été récupéré après une fermeture inattendue.",
+    "message_other": "{{count}} documents non enregistrés ont été récupérés après une fermeture inattendue.",
+    "restore": "Restaurer",
+    "ignore": "Ignorer"
+  },
+  "noEditor": {
+    "message": "Aucun éditeur n'est encore disponible pour ce type de document ({{kind}}).",
+    "openHex": "Ouvrir en hexadécimal"
+  },
+  "editor": {
+    "crashed": "L'éditeur a rencontré une erreur."
+  },
+  "palette": {
+    "title": "Palette de commandes",
+    "placeholder": "Rechercher une commande…",
+    "noResult": "Aucune commande"
+  },
+  "commands": {
+    "open": "Ouvrir un fichier",
+    "save": "Enregistrer",
+    "saveAs": "Enregistrer sous…",
+    "export": "Exporter vers…",
+    "closeTab": "Fermer l'onglet",
+    "nextTab": "Onglet suivant",
+    "prevTab": "Onglet précédent",
+    "toggleSidePanel": "Afficher/masquer le panneau latéral",
+    "cycleTheme": "Changer de thème",
+    "toggleLanguage": "Changer de langue (FR/EN)",
+    "palette": "Palette de commandes"
   }
 }

@@ -20,12 +20,7 @@ body {
 
 button {
   font: inherit;
-  color: var(--color-accent-text);
-  background: var(--color-accent);
-  border: 0;
-  border-radius: var(--radius);
-  padding: var(--space) calc(var(--space) * 2);
-  cursor: pointer;
+  color: inherit;
 }
 
 pre {
@@ -35,8 +30,4 @@ pre {
   border-radius: var(--radius);
   padding: var(--space);
   overflow: auto;
-}
-
-.app {
-  padding: calc(var(--space) * 3);
 }
