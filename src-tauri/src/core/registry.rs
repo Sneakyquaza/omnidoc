@@ -236,7 +236,6 @@ mod tests {
     fn real_registry_falls_back_to_binary() {
         let r = Registry::new();
         let d = r
-            .detect(&FileProbe::from_bytes("x.zzz", &[0u8, 1, 2, 3]))
             .detect(&FileProbe::from_bytes("x.zzz", &[0u8, 1, 2, 3, 0xFF]))
             .unwrap();
         assert_eq!(d.handler_id, "binary");

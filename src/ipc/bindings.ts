@@ -38,6 +38,8 @@ export const commands = {
 	pdfReorder: (path: string, order: number[], dest: string) => __TAURI_INVOKE<null>("pdf_reorder", { path, order, dest }),
 	pdfAnnotate: (path: string, annotations: PdfAnnotation[], dest: string) => __TAURI_INVOKE<null>("pdf_annotate", { path, annotations, dest }),
 	pdfListAnnotations: (path: string) => __TAURI_INVOKE<PdfAnnotation[]>("pdf_list_annotations", { path }),
+	/**  Exporte une feuille choisie en CSV avec le séparateur donné ("\t" pour tabulation). */
+	sheetExportCsv: (model: Workbook, sheetIndex: number, dest: string, delimiter: string) => __TAURI_INVOKE<null>("sheet_export_csv", { model, sheetIndex, dest, delimiter }),
 };
 
 /* Types */
@@ -69,8 +71,9 @@ export type Capabilities = {
 
 export type Cell = {
 	v: CellValue,
-	/**  Formule sans le "=" initial. */
+	/**  Formule sans le "=" initial, syntaxe Excel anglaise à virgules (`SUM(A1:B2)`). */
 	f: string | null,
+	/**  Code de format de nombre Excel (ex. "0.00%") si connu. */
 	fmt: string | null,
 };
 
@@ -81,6 +84,10 @@ export type CsvOptions = {
 	quote: string,
 	encoding: string,
 	header: boolean,
+	/**  BOM UTF-8 présent à l'origine. */
+	bom?: boolean,
+	/**  Fins de ligne CRLF (sinon LF). */
+	crlf?: boolean,
 };
 
 export type DbColumn = {
@@ -304,6 +311,7 @@ export type RichMeta = {
 
 export type Sheet = {
 	name: string,
+	/**  Lignes denses, de longueurs éventuellement variables. */
 	rows: Cell[][],
 	colWidths: (number | null)[] | null,
 };
@@ -331,5 +339,7 @@ export type TextDoc = {
 export type Workbook = {
 	sheets: Sheet[],
 	csv: CsvOptions | null,
+	/**  Éléments non conservés à l'ouverture (styles, graphiques, fusions…), pour avertir l'utilisateur. */
+	lossy?: string[],
 };
 
