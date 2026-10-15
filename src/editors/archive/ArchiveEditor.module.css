@@ -1,0 +1,207 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.notice {
+  margin: 0;
+  padding: 6px 12px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.barLabel {
+  margin-right: 6px;
+}
+
+.crumbs {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.crumbItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.crumb {
+  padding: 2px 6px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.crumb:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.crumb:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.crumb:focus-visible,
+.headCell:focus-visible,
+.treeItem:focus-visible,
+.scroller:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.input {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 90px 100px 70px 150px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.header {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.headCell {
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.headCell.num {
+  text-align: right;
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: default;
+  user-select: none;
+}
+
+.row:hover {
+  background: var(--color-hover);
+}
+
+.selected,
+.selected:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.cursor:not(.selected) {
+  outline: 1px dotted var(--color-text-muted);
+  outline-offset: -1px;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nameText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 24px;
+  color: var(--color-text-muted);
+}
+
+.tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.treeItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.treeItem:hover {
+  background: var(--color-hover);
+}
+
+.treeCurrent,
+.treeCurrent:hover {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.caret {
+  display: inline-block;
+  width: 12px;
+  text-align: center;
+}
+
+.treeName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
