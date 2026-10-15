@@ -1,0 +1,78 @@
+{
+  "tree": { "title": "Dossiers", "label": "Arborescence des dossiers", "root": "Racine" },
+  "list": {
+    "label": "Contenu de l'archive",
+    "empty": "Ce dossier est vide.",
+    "noMatch": "Aucun résultat.",
+    "folder": "Dossier"
+  },
+  "columns": {
+    "name": "Nom",
+    "size": "Taille",
+    "compressed": "Compressé",
+    "ratio": "Ratio",
+    "modified": "Modifié"
+  },
+  "breadcrumb": { "label": "Fil d'Ariane", "root": "Racine" },
+  "filter": { "label": "Filtrer par nom", "placeholder": "Filtrer par nom…" },
+  "actions": {
+    "extract": "Extraire",
+    "extractSelection": "Extraire la sélection",
+    "extractAll": "Tout extraire",
+    "addFiles": "Ajouter des fichiers…",
+    "addFolder": "Ajouter un dossier…",
+    "delete": "Supprimer",
+    "rename": "Renommer",
+    "convert": "Convertir en…",
+    "open": "Ouvrir",
+    "up": "Dossier parent"
+  },
+  "readOnly": "Cette archive est en lecture seule : les modifications ne sont pas possibles pour ce format. Utilisez « Convertir en… » pour obtenir une archive modifiable.",
+  "readOnlyHint": "Archive en lecture seule",
+  "extract": {
+    "title": "Choisir le dossier de destination",
+    "done_one": "{{count}} élément extrait",
+    "done_other": "{{count}} éléments extraits"
+  },
+  "add": {
+    "title": "Ajouter à l'archive",
+    "done": "Ajout effectué dans « {{dir}} »",
+    "root": "la racine"
+  },
+  "deleteDialog": {
+    "title": "Supprimer de l'archive",
+    "message_one": "Supprimer {{count}} élément de l'archive ? Cette action est définitive.",
+    "message_other": "Supprimer {{count}} éléments de l'archive ? Cette action est définitive.",
+    "confirm": "Supprimer",
+    "done_one": "{{count}} élément supprimé",
+    "done_other": "{{count}} éléments supprimés"
+  },
+  "renameBar": {
+    "label": "Nouveau nom",
+    "apply": "Renommer",
+    "invalid": "Nom invalide (vide ou contenant « / »).",
+    "exists": "Un élément porte déjà ce nom."
+  },
+  "convertDialog": {
+    "title": "Convertir l'archive",
+    "message": "Choisissez le format de la nouvelle archive.",
+    "saveTitle": "Enregistrer l'archive convertie",
+    "done": "Archive convertie : « {{name}} »"
+  },
+  "openError": "Impossible d'ouvrir cet élément.",
+  "status": {
+    "entries_one": "{{count}} élément",
+    "entries_other": "{{count}} éléments",
+    "files": "{{count}} fichier(s), {{size}}",
+    "format": "Format : {{format}}",
+    "selection_one": "{{count}} sélectionné",
+    "selection_other": "{{count}} sélectionnés"
+  },
+  "commands": {
+    "extract": "Archive : extraire",
+    "addFiles": "Archive : ajouter des fichiers",
+    "delete": "Archive : supprimer la sélection",
+    "rename": "Archive : renommer",
+    "convert": "Archive : convertir en…"
+  }
+}

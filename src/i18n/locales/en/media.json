@@ -1,0 +1,107 @@
+{
+  "player": {
+    "label": "Player",
+    "play": "Play",
+    "pause": "Pause",
+    "back": "Back 5 s",
+    "forward": "Forward 5 s",
+    "seek": "Playback position",
+    "volume": "Volume",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "speed": "Playback speed",
+    "fullscreen": "Fullscreen",
+    "loopA": "A-B loop: set A",
+    "loopB": "A-B loop: set B",
+    "loopClear": "A-B loop: clear ({{a}} – {{b}})",
+    "loopSelection": "Loop selection",
+    "noPath": "This document has no file: playback is not possible.",
+    "unsupported": "This audio/video format or its codec is not supported by your system's playback engine.",
+    "failed": "Media playback error.",
+    "shortcuts": "Space: play/pause · ← →: ±5 s"
+  },
+  "waveform": {
+    "label": "Waveform (click to seek, drag to select a range)",
+    "loading": "Computing waveform…",
+    "tooLarge": "File too large to display the waveform.",
+    "failed": "Waveform unavailable for this file."
+  },
+  "tags": {
+    "title": "Tags",
+    "readOnly": "Tags of this format (WebM, Matroska, AVI) cannot be edited.",
+    "fields": {
+      "title": "Title",
+      "artist": "Artist",
+      "album": "Album",
+      "albumArtist": "Album artist",
+      "year": "Year",
+      "track": "Track",
+      "trackTotal": "Total tracks",
+      "disc": "Disc",
+      "genre": "Genre",
+      "composer": "Composer",
+      "comment": "Comment",
+      "lyrics": "Lyrics"
+    },
+    "other": "Other tags",
+    "key": "Key",
+    "value": "Value",
+    "add": "Add a tag",
+    "remove": "Remove tag {{key}}",
+    "noOther": "No other tags."
+  },
+  "cover": {
+    "title": "Cover art",
+    "alt": "Media cover art",
+    "none": "No cover art",
+    "replace": "Replace…",
+    "remove": "Remove",
+    "pickTitle": "Choose a cover image",
+    "replaceConfirmTitle": "Replace cover art",
+    "replaceConfirmMessage": "The cover art will be written to the file immediately. Continue?",
+    "replaceConfirm": "Replace",
+    "removeConfirmTitle": "Remove cover art",
+    "removeConfirmMessage": "The cover art will be removed from the file immediately. Continue?",
+    "removeConfirm": "Remove",
+    "done": "Cover art updated",
+    "blocked": "Cover art cannot be changed for this format."
+  },
+  "info": {
+    "title": "Information",
+    "mime": "Type",
+    "duration": "Duration",
+    "tags": "Tags",
+    "pictures": "Embedded pictures",
+    "unknown": "unknown"
+  },
+  "trim": {
+    "title": "Trim",
+    "start": "Start (mm:ss.mmm)",
+    "end": "End (mm:ss.mmm)",
+    "fromPosition": "Use position",
+    "apply": "Trim…",
+    "saveTitle": "Save the clip",
+    "invalid": "Invalid range: check start and end (mm:ss.mmm).",
+    "done": "Clip saved: \"{{name}}\""
+  },
+  "convert": {
+    "menu": "Convert…",
+    "audio": "Audio",
+    "video": "Video",
+    "saveTitle": "Save the converted file",
+    "done": "Converted: \"{{name}}\""
+  },
+  "ffmpeg": {
+    "missing": "ffmpeg was not found: trimming and conversion are disabled. Install ffmpeg and restart OmniDoc.",
+    "hint": "Requires ffmpeg"
+  },
+  "status": {
+    "position": "{{position}} / {{duration}}",
+    "mime": "{{mime}}"
+  },
+  "commands": {
+    "playPause": "Media: play / pause",
+    "back": "Media: back 5 s",
+    "forward": "Media: forward 5 s"
+  }
+}

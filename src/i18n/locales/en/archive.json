@@ -1,0 +1,78 @@
+{
+  "tree": { "title": "Folders", "label": "Folder tree", "root": "Root" },
+  "list": {
+    "label": "Archive contents",
+    "empty": "This folder is empty.",
+    "noMatch": "No results.",
+    "folder": "Folder"
+  },
+  "columns": {
+    "name": "Name",
+    "size": "Size",
+    "compressed": "Compressed",
+    "ratio": "Ratio",
+    "modified": "Modified"
+  },
+  "breadcrumb": { "label": "Breadcrumb", "root": "Root" },
+  "filter": { "label": "Filter by name", "placeholder": "Filter by name…" },
+  "actions": {
+    "extract": "Extract",
+    "extractSelection": "Extract selection",
+    "extractAll": "Extract all",
+    "addFiles": "Add files…",
+    "addFolder": "Add folder…",
+    "delete": "Delete",
+    "rename": "Rename",
+    "convert": "Convert to…",
+    "open": "Open",
+    "up": "Parent folder"
+  },
+  "readOnly": "This archive is read-only: it cannot be modified in this format. Use \"Convert to…\" to get an editable archive.",
+  "readOnlyHint": "Read-only archive",
+  "extract": {
+    "title": "Choose the destination folder",
+    "done_one": "{{count}} item extracted",
+    "done_other": "{{count}} items extracted"
+  },
+  "add": {
+    "title": "Add to archive",
+    "done": "Added to \"{{dir}}\"",
+    "root": "the root"
+  },
+  "deleteDialog": {
+    "title": "Delete from archive",
+    "message_one": "Delete {{count}} item from the archive? This cannot be undone.",
+    "message_other": "Delete {{count}} items from the archive? This cannot be undone.",
+    "confirm": "Delete",
+    "done_one": "{{count}} item deleted",
+    "done_other": "{{count}} items deleted"
+  },
+  "renameBar": {
+    "label": "New name",
+    "apply": "Rename",
+    "invalid": "Invalid name (empty or containing \"/\").",
+    "exists": "An item already has this name."
+  },
+  "convertDialog": {
+    "title": "Convert archive",
+    "message": "Choose the format of the new archive.",
+    "saveTitle": "Save the converted archive",
+    "done": "Archive converted: \"{{name}}\""
+  },
+  "openError": "Unable to open this item.",
+  "status": {
+    "entries_one": "{{count}} item",
+    "entries_other": "{{count}} items",
+    "files": "{{count}} file(s), {{size}}",
+    "format": "Format: {{format}}",
+    "selection_one": "{{count}} selected",
+    "selection_other": "{{count}} selected"
+  },
+  "commands": {
+    "extract": "Archive: extract",
+    "addFiles": "Archive: add files",
+    "delete": "Archive: delete selection",
+    "rename": "Archive: rename",
+    "convert": "Archive: convert to…"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "player": {
+    "label": "Lecteur",
+    "play": "Lecture",
+    "pause": "Pause",
+    "back": "Reculer de 5 s",
+    "forward": "Avancer de 5 s",
+    "seek": "Position de lecture",
+    "volume": "Volume",
+    "mute": "Couper le son",
+    "unmute": "Rétablir le son",
+    "speed": "Vitesse de lecture",
+    "fullscreen": "Plein écran",
+    "loopA": "Boucle A-B : définir A",
+    "loopB": "Boucle A-B : définir B",
+    "loopClear": "Boucle A-B : effacer ({{a}} – {{b}})",
+    "loopSelection": "Boucler la sélection",
+    "noPath": "Ce document n'a pas de fichier : lecture impossible.",
+    "unsupported": "Ce format audio/vidéo ou son codec n'est pas pris en charge par le moteur de lecture de votre système.",
+    "failed": "Erreur de lecture du média.",
+    "shortcuts": "Espace : lecture/pause · ← → : ±5 s"
+  },
+  "waveform": {
+    "label": "Forme d'onde (cliquer pour se positionner, glisser pour sélectionner une plage)",
+    "loading": "Calcul de la forme d'onde…",
+    "tooLarge": "Fichier trop volumineux pour afficher la forme d'onde.",
+    "failed": "Forme d'onde indisponible pour ce fichier."
+  },
+  "tags": {
+    "title": "Tags",
+    "readOnly": "Les tags de ce format (WebM, Matroska, AVI) ne peuvent pas être modifiés.",
+    "fields": {
+      "title": "Titre",
+      "artist": "Artiste",
+      "album": "Album",
+      "albumArtist": "Artiste de l'album",
+      "year": "Année",
+      "track": "Piste",
+      "trackTotal": "Nombre de pistes",
+      "disc": "Disque",
+      "genre": "Genre",
+      "composer": "Compositeur",
+      "comment": "Commentaire",
+      "lyrics": "Paroles"
+    },
+    "other": "Autres tags",
+    "key": "Clé",
+    "value": "Valeur",
+    "add": "Ajouter un tag",
+    "remove": "Supprimer le tag {{key}}",
+    "noOther": "Aucun autre tag."
+  },
+  "cover": {
+    "title": "Pochette",
+    "alt": "Pochette du média",
+    "none": "Aucune pochette",
+    "replace": "Remplacer…",
+    "remove": "Supprimer",
+    "pickTitle": "Choisir une image de pochette",
+    "replaceConfirmTitle": "Remplacer la pochette",
+    "replaceConfirmMessage": "La pochette sera écrite immédiatement dans le fichier. Continuer ?",
+    "replaceConfirm": "Remplacer",
+    "removeConfirmTitle": "Supprimer la pochette",
+    "removeConfirmMessage": "La pochette sera retirée immédiatement du fichier. Continuer ?",
+    "removeConfirm": "Supprimer",
+    "done": "Pochette mise à jour",
+    "blocked": "Modification de la pochette impossible pour ce format."
+  },
+  "info": {
+    "title": "Informations",
+    "mime": "Type",
+    "duration": "Durée",
+    "tags": "Tags",
+    "pictures": "Images intégrées",
+    "unknown": "inconnue"
+  },
+  "trim": {
+    "title": "Découper",
+    "start": "Début (mm:ss.mmm)",
+    "end": "Fin (mm:ss.mmm)",
+    "fromPosition": "Prendre la position",
+    "apply": "Découper…",
+    "saveTitle": "Enregistrer l'extrait",
+    "invalid": "Plage invalide : vérifiez le début et la fin (mm:ss.mmm).",
+    "done": "Extrait enregistré : « {{name}} »"
+  },
+  "convert": {
+    "menu": "Convertir…",
+    "audio": "Audio",
+    "video": "Vidéo",
+    "saveTitle": "Enregistrer le fichier converti",
+    "done": "Converti : « {{name}} »"
+  },
+  "ffmpeg": {
+    "missing": "ffmpeg est introuvable : le découpage et la conversion sont désactivés. Installez ffmpeg et relancez OmniDoc.",
+    "hint": "Nécessite ffmpeg"
+  },
+  "status": {
+    "position": "{{position}} / {{duration}}",
+    "mime": "{{mime}}"
+  },
+  "commands": {
+    "playPause": "Média : lecture / pause",
+    "back": "Média : reculer de 5 s",
+    "forward": "Média : avancer de 5 s"
+  }
+}
