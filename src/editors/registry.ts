@@ -2,21 +2,13 @@ import type { ModelKind } from "../ipc/bindings";
 import type { AnyEditorView } from "./types";
 
 /**
- * Seul endroit qui liste les éditeurs : une ligne par éditeur
- * (remplacer `undefined` par `{ kind, namespace, load: () => import("./x/XEditor") }`).
+ * Seul endroit qui assemble les éditeurs : chaque éditeur déclare sa vue dans
+ * `src/editors/<nom>/view.ts` (`export default { kind, namespace, load }`),
+ * découverte automatiquement ici.
  */
-export const editors: Record<ModelKind, AnyEditorView | undefined> = {
-  text: undefined,
-  richText: undefined,
-  sheet: undefined,
-  image: undefined,
-  pdf: undefined,
-  archive: undefined,
-  media: undefined,
-  database: undefined,
-  records: undefined,
-  notebook: undefined,
-  ebook: undefined,
-  slides: undefined,
-  binary: { kind: "binary", namespace: "hex", load: () => import("./hex/HexEditor") },
-};
+const modules = import.meta.glob<{ default: AnyEditorView }>("./*/view.ts", { eager: true });
+
+export const editors: Partial<Record<ModelKind, AnyEditorView>> = {};
+for (const mod of Object.values(modules)) {
+  editors[mod.default.kind] = mod.default;
+}

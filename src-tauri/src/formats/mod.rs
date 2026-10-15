@@ -10,6 +10,7 @@ pub mod media;
 pub mod notebook;
 pub mod pdf;
 pub mod records;
+pub mod richtext;
 pub mod sheet;
 pub mod slides;
 pub mod sqlite;
@@ -41,5 +42,12 @@ pub fn all_handlers() -> Vec<Box<dyn FormatHandler>> {
         Box::new(media::MediaHandler),
     ];
     handlers.extend(archive::handlers());
+    handlers.extend([
+        Box::new(richtext::docx::DocxHandler) as Box<dyn FormatHandler>,
+        Box::new(richtext::odt::OdtHandler),
+        Box::new(richtext::markdown::MarkdownRichHandler),
+        Box::new(richtext::html::HtmlHandler),
+        Box::new(richtext::rtf::RtfHandler),
+    ]);
     handlers
 }
