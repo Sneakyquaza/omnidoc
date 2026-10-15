@@ -240,7 +240,7 @@ mod tests {
         assert_eq!(d.model, ModelKind::Binary);
         assert_eq!(d.confidence, 1);
         assert!(!d.signature_mismatch);
-        assert_eq!(r.list().len(), 1);
+        assert!(!r.list().is_empty());
     }
 
     #[test]

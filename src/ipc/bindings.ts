@@ -22,6 +22,19 @@ export const commands = {
 	externalTools: () => __TAURI_INVOKE<ExternalTool[]>("external_tools"),
 	/**  Fichiers passés en argument au lancement (flags ignorés). */
 	startupPaths: () => __TAURI_INVOKE<string[]>("startup_paths"),
+	imagePreviewPng: (path: string) => __TAURI_INVOKE<string>("image_preview_png", { path }),
+	imageSave: (dest: string, pngBase64: string, format: string, quality: number | null) => __TAURI_INVOKE<null>("image_save", { dest, pngBase64, format, quality }),
+	imageStripMetadata: (path: string, dest: string) => __TAURI_INVOKE<null>("image_strip_metadata", { path, dest }),
+	imageConvert: (path: string, dest: string, format: string, quality: number | null) => __TAURI_INVOKE<null>("image_convert", { path, dest, format, quality }),
+	svgRenderPng: (path: string, dest: string, scale: number | null) => __TAURI_INVOKE<null>("svg_render_png", { path, dest, scale }),
+	pdfMerge: (paths: string[], dest: string) => __TAURI_INVOKE<null>("pdf_merge", { paths, dest }),
+	pdfSplit: (path: string, ranges: PageRange[], destDir: string) => __TAURI_INVOKE<string[]>("pdf_split", { path, ranges, destDir }),
+	pdfExtract: (path: string, pages: number[], dest: string) => __TAURI_INVOKE<null>("pdf_extract", { path, pages, dest }),
+	pdfDeletePages: (path: string, pages: number[], dest: string) => __TAURI_INVOKE<null>("pdf_delete_pages", { path, pages, dest }),
+	pdfRotate: (path: string, pages: number[], degrees: number, dest: string) => __TAURI_INVOKE<null>("pdf_rotate", { path, pages, degrees, dest }),
+	pdfReorder: (path: string, order: number[], dest: string) => __TAURI_INVOKE<null>("pdf_reorder", { path, order, dest }),
+	pdfAnnotate: (path: string, annotations: PdfAnnotation[], dest: string) => __TAURI_INVOKE<null>("pdf_annotate", { path, annotations, dest }),
+	pdfListAnnotations: (path: string) => __TAURI_INVOKE<PdfAnnotation[]>("pdf_list_annotations", { path }),
 };
 
 /* Types */
@@ -214,6 +227,29 @@ export type OpenedDocument = {
 	detected: Detected,
 	/**  Clés i18n `warnings.*`. */
 	warnings: string[],
+};
+
+export type PageRange = {
+	start: number,
+	end: number,
+};
+
+/**  Annotation standard. Coordonnées en espace utilisateur PDF (origine en bas à gauche). */
+export type PdfAnnotation = {
+	/**  Page 1-based. */
+	page: number,
+	/**  "highlight" | "note" | "freeText" | "ink". */
+	kind: string,
+	/**  [x1, y1, x2, y2]. */
+	rect: [(number | null), (number | null), (number | null), (number | null)],
+	/**  QuadPoints (8 nombres par quadrilatère), highlight uniquement. */
+	quads: (number | null)[] | null,
+	/**  Composantes RGB 0..1. */
+	color: [(number | null), (number | null), (number | null)],
+	contents: string | null,
+	author: string | null,
+	/**  Traits à main levée : x,y,x,y… par trait (ink uniquement). */
+	inkList: ((number | null)[])[] | null,
 };
 
 export type PdfDoc = {

@@ -28,3 +28,9 @@ tempfile = "3"
 infer = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 uuid = { version = "1", features = ["v4"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp", "tiff", "ico"] }
+kamadak-exif = "0.6"
+base64 = "0.23"
+resvg = "0.48"
+usvg = "0.48"
+lopdf = "0.45"

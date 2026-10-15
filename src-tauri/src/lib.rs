@@ -39,6 +39,19 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::allow_asset,
             commands::external_tools,
             commands::startup_paths,
+            formats::image::image_preview_png,
+            formats::image::image_save,
+            formats::image::image_strip_metadata,
+            formats::image::image_convert,
+            formats::svg::svg_render_png,
+            formats::pdf::pdf_merge,
+            formats::pdf::pdf_split,
+            formats::pdf::pdf_extract,
+            formats::pdf::pdf_delete_pages,
+            formats::pdf::pdf_rotate,
+            formats::pdf::pdf_reorder,
+            formats::pdf::pdf_annotate,
+            formats::pdf::pdf_list_annotations,
         ])
         .error_handling(tauri_specta::ErrorHandlingMode::Throw)
         .dangerously_cast_bigints_to_number()
