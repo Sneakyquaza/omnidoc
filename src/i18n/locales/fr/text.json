@@ -1,0 +1,126 @@
+{
+  "editor": {
+    "label": "Contenu du fichier texte"
+  },
+  "readOnly": "Lecture seule : l'édition est désactivée.",
+  "large": {
+    "banner": "Fichier volumineux (plus de 20 Mio) : ouvert en lecture seule pour rester fluide.",
+    "enable": "Activer l'édition"
+  },
+  "toolbar": {
+    "wrap": "Retour à la ligne",
+    "format": "Formater",
+    "preview": "Aperçu",
+    "language": "Langage",
+    "encoding": "Encodage",
+    "reopen": "Rouvrir avec l'encodage…",
+    "saveWith": "Enregistrer avec l'encodage…",
+    "lineEnding": "Fins de ligne",
+    "indent": "Indentation"
+  },
+  "commands": {
+    "find": "Texte : rechercher",
+    "replace": "Texte : remplacer",
+    "goto": "Texte : aller à la ligne",
+    "wrap": "Texte : basculer le retour à la ligne",
+    "format": "Texte : formater (JSON/XML)",
+    "preview": "Markdown : afficher/masquer l'aperçu"
+  },
+  "status": {
+    "pos": "Ln {{line}}, Col {{col}}",
+    "selected": "{{count}} car. sélectionnés",
+    "cursors": "{{count}} curseurs",
+    "tabs": "Tabulations",
+    "spaces": "{{count}} espaces"
+  },
+  "lineEndings": {
+    "lf": "LF (Unix)",
+    "crlf": "CRLF (Windows)",
+    "cr": "CR (Mac classique)"
+  },
+  "encoding": {
+    "reopenTitle": "Rouvrir avec un autre encodage",
+    "reopenMessage": "Les modifications non enregistrées seront perdues. Rouvrir le fichier en {{encoding}} ?",
+    "reopenConfirm": "Rouvrir"
+  },
+  "format": {
+    "invalid": "Impossible de formater : le contenu est invalide."
+  },
+  "panel": {
+    "title": "Structure"
+  },
+  "tree": {
+    "label": "Arbre des données",
+    "invalid": "Arbre indisponible : la syntaxe est invalide.",
+    "expand": "Déplier",
+    "collapse": "Replier"
+  },
+  "outline": {
+    "label": "Plan du document",
+    "empty": "Aucun titre dans ce document."
+  },
+  "preview": {
+    "label": "Aperçu Markdown"
+  },
+  "info": {
+    "language": "Langage",
+    "encoding": "Encodage",
+    "lineEnding": "Fins de ligne",
+    "lines": "Lignes",
+    "chars": "Caractères"
+  },
+  "lint": {
+    "json": {
+      "invalidString": "Chaîne invalide",
+      "controlChar": "Caractère de contrôle interdit dans une chaîne",
+      "unterminatedString": "Chaîne non terminée",
+      "unexpectedEnd": "Fin de document inattendue",
+      "expectedKey": "Clé attendue (chaîne entre guillemets)",
+      "expectedColon": "« : » attendu",
+      "expectedCommaOrBrace": "« , » ou « } » attendu",
+      "expectedCommaOrBracket": "« , » ou « ] » attendu",
+      "unexpectedToken": "Élément inattendu"
+    }
+  },
+  "languages": {
+    "plaintext": "Texte brut",
+    "python": "Python",
+    "rust": "Rust",
+    "javascript": "JavaScript",
+    "typescript": "TypeScript",
+    "jsx": "JSX",
+    "tsx": "TSX",
+    "c": "C",
+    "cpp": "C++",
+    "csharp": "C#",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "go": "Go",
+    "ruby": "Ruby",
+    "php": "PHP",
+    "shell": "Shell",
+    "powershell": "PowerShell",
+    "batch": "Batch",
+    "css": "CSS",
+    "scss": "SCSS",
+    "less": "Less",
+    "html": "HTML",
+    "vue": "Vue",
+    "svelte": "Svelte",
+    "sql": "SQL",
+    "lua": "Lua",
+    "r": "R",
+    "swift": "Swift",
+    "dart": "Dart",
+    "scala": "Scala",
+    "perl": "Perl",
+    "json": "JSON",
+    "yaml": "YAML",
+    "toml": "TOML",
+    "xml": "XML",
+    "ini": "INI",
+    "markdown": "Markdown",
+    "dockerfile": "Dockerfile",
+    "makefile": "Makefile"
+  }
+}

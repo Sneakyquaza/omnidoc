@@ -1,0 +1,126 @@
+{
+  "editor": {
+    "label": "Text file content"
+  },
+  "readOnly": "Read-only: editing is disabled.",
+  "large": {
+    "banner": "Large file (over 20 MiB): opened read-only to stay responsive.",
+    "enable": "Enable editing"
+  },
+  "toolbar": {
+    "wrap": "Word wrap",
+    "format": "Format",
+    "preview": "Preview",
+    "language": "Language",
+    "encoding": "Encoding",
+    "reopen": "Reopen with encoding…",
+    "saveWith": "Save with encoding…",
+    "lineEnding": "Line endings",
+    "indent": "Indentation"
+  },
+  "commands": {
+    "find": "Text: find",
+    "replace": "Text: replace",
+    "goto": "Text: go to line",
+    "wrap": "Text: toggle word wrap",
+    "format": "Text: format (JSON/XML)",
+    "preview": "Markdown: toggle preview"
+  },
+  "status": {
+    "pos": "Ln {{line}}, Col {{col}}",
+    "selected": "{{count}} chars selected",
+    "cursors": "{{count}} cursors",
+    "tabs": "Tabs",
+    "spaces": "{{count}} spaces"
+  },
+  "lineEndings": {
+    "lf": "LF (Unix)",
+    "crlf": "CRLF (Windows)",
+    "cr": "CR (classic Mac)"
+  },
+  "encoding": {
+    "reopenTitle": "Reopen with another encoding",
+    "reopenMessage": "Unsaved changes will be lost. Reopen the file as {{encoding}}?",
+    "reopenConfirm": "Reopen"
+  },
+  "format": {
+    "invalid": "Cannot format: the content is invalid."
+  },
+  "panel": {
+    "title": "Structure"
+  },
+  "tree": {
+    "label": "Data tree",
+    "invalid": "Tree unavailable: invalid syntax.",
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "outline": {
+    "label": "Document outline",
+    "empty": "No headings in this document."
+  },
+  "preview": {
+    "label": "Markdown preview"
+  },
+  "info": {
+    "language": "Language",
+    "encoding": "Encoding",
+    "lineEnding": "Line endings",
+    "lines": "Lines",
+    "chars": "Characters"
+  },
+  "lint": {
+    "json": {
+      "invalidString": "Invalid string",
+      "controlChar": "Control character not allowed in a string",
+      "unterminatedString": "Unterminated string",
+      "unexpectedEnd": "Unexpected end of document",
+      "expectedKey": "Expected a key (double-quoted string)",
+      "expectedColon": "Expected \":\"",
+      "expectedCommaOrBrace": "Expected \",\" or \"}\"",
+      "expectedCommaOrBracket": "Expected \",\" or \"]\"",
+      "unexpectedToken": "Unexpected token"
+    }
+  },
+  "languages": {
+    "plaintext": "Plain text",
+    "python": "Python",
+    "rust": "Rust",
+    "javascript": "JavaScript",
+    "typescript": "TypeScript",
+    "jsx": "JSX",
+    "tsx": "TSX",
+    "c": "C",
+    "cpp": "C++",
+    "csharp": "C#",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "go": "Go",
+    "ruby": "Ruby",
+    "php": "PHP",
+    "shell": "Shell",
+    "powershell": "PowerShell",
+    "batch": "Batch",
+    "css": "CSS",
+    "scss": "SCSS",
+    "less": "Less",
+    "html": "HTML",
+    "vue": "Vue",
+    "svelte": "Svelte",
+    "sql": "SQL",
+    "lua": "Lua",
+    "r": "R",
+    "swift": "Swift",
+    "dart": "Dart",
+    "scala": "Scala",
+    "perl": "Perl",
+    "json": "JSON",
+    "yaml": "YAML",
+    "toml": "TOML",
+    "xml": "XML",
+    "ini": "INI",
+    "markdown": "Markdown",
+    "dockerfile": "Dockerfile",
+    "makefile": "Makefile"
+  }
+}

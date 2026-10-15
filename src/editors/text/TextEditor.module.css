@@ -1,0 +1,205 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-ui);
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.editor {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.preview {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  padding: 12px 20px;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.preview:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.preview pre {
+  padding: 8px 12px;
+  overflow: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+}
+
+.preview code {
+  font-family: var(--font-mono);
+}
+
+.preview blockquote {
+  margin-left: 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.preview table {
+  border-collapse: collapse;
+}
+
+.preview th,
+.preview td {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+}
+
+.preview a {
+  color: var(--color-accent);
+}
+
+.panelNote {
+  margin: 8px;
+  color: var(--color-text-muted);
+}
+
+.tree {
+  height: calc(100% - 32px);
+  min-height: 120px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.tree:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.treeRow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.treeRow:hover {
+  background: var(--color-hover);
+}
+
+.treeActive {
+  background: var(--color-hover);
+  box-shadow: inset 2px 0 0 var(--color-accent);
+}
+
+.treeToggle {
+  width: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.treeKey {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.treeValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text-muted);
+}
+
+.kind_string {
+  color: var(--color-success);
+}
+
+.kind_number,
+.kind_boolean {
+  color: var(--color-warning);
+}
+
+.kind_attribute {
+  color: var(--color-accent);
+}
+
+.outline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outlineItem {
+  display: block;
+  width: 100%;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-right: 6px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.outlineItem:hover {
+  background: var(--color-hover);
+}
+
+.info {
+  margin: 8px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.infoRow dt {
+  color: var(--color-text-muted);
+}
+
+.infoRow dd {
+  margin: 0;
+}
