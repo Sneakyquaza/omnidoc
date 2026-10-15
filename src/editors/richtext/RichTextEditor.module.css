@@ -1,0 +1,405 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-surface);
+}
+
+.banner {
+  padding: 6px 12px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.banner ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.desk {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px 16px 48px;
+}
+
+.page {
+  box-sizing: border-box;
+  width: 21cm;
+  max-width: none;
+  min-height: 29.7cm;
+  margin: 0 auto;
+  padding: 2.54cm;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--color-border);
+}
+
+.content :global(.ProseMirror) {
+  min-height: 24cm;
+  outline: none;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.content :global(.ProseMirror) > :first-child {
+  margin-top: 0;
+}
+
+.content :global(.ProseMirror p) {
+  margin: 0 0 0.6em;
+}
+
+.content :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.content :global(.ProseMirror h1),
+.content :global(.ProseMirror h2),
+.content :global(.ProseMirror h3),
+.content :global(.ProseMirror h4),
+.content :global(.ProseMirror h5),
+.content :global(.ProseMirror h6) {
+  font-family: var(--font-ui);
+  line-height: 1.25;
+  margin: 1.2em 0 0.4em;
+}
+
+.content :global(.ProseMirror h1) {
+  font-size: 2em;
+}
+.content :global(.ProseMirror h2) {
+  font-size: 1.6em;
+}
+.content :global(.ProseMirror h3) {
+  font-size: 1.35em;
+}
+.content :global(.ProseMirror h4) {
+  font-size: 1.15em;
+}
+.content :global(.ProseMirror h5) {
+  font-size: 1em;
+}
+.content :global(.ProseMirror h6) {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}
+
+.content :global(.ProseMirror blockquote) {
+  margin: 0.8em 0;
+  padding: 0.2em 1em;
+  border-left: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.content :global(.ProseMirror code) {
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  background: var(--color-hover);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.content :global(.ProseMirror pre) {
+  margin: 0.8em 0;
+  padding: 0.8em 1em;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  line-height: 1.45;
+}
+
+.content :global(.ProseMirror pre code) {
+  padding: 0;
+  background: none;
+}
+
+.content :global(.ProseMirror a) {
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: text;
+}
+
+.content :global(.ProseMirror mark) {
+  color: #1b1f24;
+  border-radius: 2px;
+}
+
+.content :global(.ProseMirror hr) {
+  margin: 1.2em 0;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.content :global(.ProseMirror img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.content :global(.ProseMirror img.ProseMirror-selectednode) {
+  outline: 2px solid var(--color-focus);
+}
+
+.content :global(.ProseMirror ul),
+.content :global(.ProseMirror ol) {
+  margin: 0 0 0.6em;
+  padding-left: 1.6em;
+}
+
+.content :global(.ProseMirror li > p) {
+  margin: 0;
+}
+
+.content :global(.ProseMirror ul[data-type="taskList"]) {
+  list-style: none;
+  padding-left: 0.2em;
+}
+
+.content :global(.ProseMirror ul[data-type="taskList"] li) {
+  display: flex;
+  gap: 0.5em;
+  align-items: flex-start;
+}
+
+.content :global(.ProseMirror ul[data-type="taskList"] li > label) {
+  flex: none;
+  margin-top: 0.25em;
+}
+
+.content :global(.ProseMirror ul[data-type="taskList"] li > div) {
+  flex: 1;
+}
+
+.content :global(.ProseMirror table) {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0.8em 0;
+}
+
+.content :global(.ProseMirror th),
+.content :global(.ProseMirror td) {
+  position: relative;
+  min-width: 2em;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.content :global(.ProseMirror th) {
+  background: var(--color-surface);
+  font-weight: 700;
+  text-align: left;
+}
+
+.content :global(.ProseMirror .selectedCell::after) {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.content :global(.omnidoc-search-match) {
+  background: #ffe08a;
+  color: #1b1f24;
+}
+
+.content :global(.omnidoc-search-current) {
+  background: #ff9f43;
+  color: #1b1f24;
+  outline: 1px solid var(--color-warning);
+}
+
+.outline,
+.stats {
+  padding: 4px 8px 8px;
+}
+
+.panelHeading {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.muted {
+  margin: 4px 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.outlineList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outlineItem {
+  display: block;
+  width: 100%;
+  padding: 3px 6px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outlineItem:hover {
+  background: var(--color-hover);
+}
+
+.outlineItem:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.stats dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.stats dt {
+  color: var(--color-text-muted);
+}
+
+.stats dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.searchBar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.searchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.searchInput {
+  width: 220px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.searchInput:focus-visible,
+.searchButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.searchButton {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.searchButton:hover:not(:disabled) {
+  background: var(--color-hover);
+}
+
+.searchButton[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+.searchButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.searchCount {
+  min-width: 60px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.searchCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+@media print {
+  :global(html.omnidoc-printing) body * {
+    visibility: hidden;
+  }
+
+  :global(html.omnidoc-printing) [data-omnidoc-print],
+  :global(html.omnidoc-printing) [data-omnidoc-print] * {
+    visibility: visible;
+  }
+
+  :global(html.omnidoc-printing) [data-omnidoc-print] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: #fff;
+    color: #000;
+    zoom: 1 !important;
+  }
+
+  :global(html.omnidoc-printing) [data-omnidoc-print] :global(.ProseMirror) {
+    min-height: 0;
+  }
+
+  :global(html.omnidoc-printing) [data-omnidoc-print] :global(.omnidoc-search-match),
+  :global(html.omnidoc-printing) [data-omnidoc-print] :global(.omnidoc-search-current) {
+    background: none;
+    outline: none;
+  }
+
+  @page {
+    margin: 2cm;
+  }
+}
