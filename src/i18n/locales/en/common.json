@@ -1,0 +1,24 @@
+{
+  "app": {
+    "title": "OmniDoc",
+    "openFile": "Open a file…"
+  },
+  "formats": {
+    "binary": "Binary file"
+  },
+  "warnings": {
+    "signatureMismatch": "The extension does not match the file content.",
+    "tooLargeHex": "File too large: opened in hexadecimal mode."
+  },
+  "errors": {
+    "io": "I/O error",
+    "unsupported": "Unsupported operation",
+    "readOnly": "Read-only format",
+    "tooLarge": "File too large",
+    "corrupt": "Corrupted file",
+    "limit": "Limit exceeded",
+    "external": "External tool error",
+    "cancelled": "Operation cancelled",
+    "notFound": "Not found"
+  }
+}

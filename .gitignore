@@ -1,0 +1,12 @@
+CLAUDE.md
+.claude/
+node_modules/
+dist/
+target/
+src-tauri/target/
+src-tauri/gen/
+*.log
+.DS_Store
+.vite/
+coverage/
+*.tsbuildinfo

@@ -1,0 +1,141 @@
+//! Écriture atomique + sauvegarde de l'original (une fois par chemin et par session).
+
+use std::collections::HashSet;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+
+use crate::error::{AppError, Result};
+
+static BACKED_UP: Mutex<Option<HashSet<PathBuf>>> = Mutex::new(None);
+static BACKUP_DIR: OnceLock<PathBuf> = OnceLock::new();
+
+/// Dossier de sauvegarde utilisé par `write` (défini une fois au démarrage).
+pub fn set_backup_dir(dir: PathBuf) {
+    let _ = BACKUP_DIR.set(dir);
+}
+
+/// Écriture atomique avec le dossier de sauvegarde de l'application.
+pub fn write(path: &Path, bytes: &[u8]) -> Result<()> {
+    write_atomic(path, bytes, BACKUP_DIR.get().map(|p| p.as_path()))
+}
+
+fn backup_key(path: &Path) -> PathBuf {
+    std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
+}
+
+/// Copie l'original dans `backup_dir` si ce chemin n'a pas déjà été sauvegardé durant la session.
+fn backup_original(path: &Path, backup_dir: &Path) -> Result<()> {
+    if !path.is_file() {
+        return Ok(());
+    }
+    let key = backup_key(path);
+    let mut guard = BACKED_UP.lock().unwrap_or_else(|e| e.into_inner());
+    let done = guard.get_or_insert_with(HashSet::new);
+    if done.contains(&key) {
+        return Ok(());
+    }
+    std::fs::create_dir_all(backup_dir)?;
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "document".into());
+    let stamp = chrono::Local::now().format("%Y%m%d-%H%M%S");
+    std::fs::copy(path, backup_dir.join(format!("{stamp}-{name}")))?;
+    done.insert(key);
+    Ok(())
+}
+
+pub fn write_atomic(path: &Path, bytes: &[u8], backup_dir: Option<&Path>) -> Result<()> {
+    if let Some(dir) = backup_dir {
+        backup_original(path, dir)?;
+    }
+    let parent = match path.parent() {
+        Some(p) if !p.as_os_str().is_empty() => p,
+        _ => Path::new("."),
+    };
+    let mut tmp = tempfile::NamedTempFile::new_in(parent)?;
+    tmp.write_all(bytes)?;
+    tmp.as_file().sync_all()?;
+    #[cfg(unix)]
+    if let Ok(meta) = std::fs::metadata(path) {
+        tmp.as_file().set_permissions(meta.permissions())?;
+    }
+    tmp.persist(path).map_err(|e| AppError::Io(e.error))?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn names(dir: &Path) -> Vec<String> {
+        let mut v: Vec<String> = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        v.sort();
+        v
+    }
+
+    #[test]
+    fn writes_and_rewrites_without_leftovers() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("a.txt");
+        write_atomic(&f, b"one", None).unwrap();
+        assert_eq!(std::fs::read(&f).unwrap(), b"one");
+        write_atomic(&f, b"two", None).unwrap();
+        assert_eq!(std::fs::read(&f).unwrap(), b"two");
+        assert_eq!(names(dir.path()), vec!["a.txt"]);
+    }
+
+    #[test]
+    fn backup_is_made_once_per_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let backups = tempfile::tempdir().unwrap();
+        let f = dir.path().join("doc.txt");
+        // Fichier absent : pas de sauvegarde
+        write_atomic(&f, b"v1", Some(backups.path())).unwrap();
+        assert!(names(backups.path()).is_empty());
+        // 1re réécriture : sauvegarde de v1
+        write_atomic(&f, b"v2", Some(backups.path())).unwrap();
+        let list = names(backups.path());
+        assert_eq!(list.len(), 1);
+        assert!(list[0].ends_with("-doc.txt"));
+        assert_eq!(std::fs::read(backups.path().join(&list[0])).unwrap(), b"v1");
+        // 2e réécriture : pas de nouvelle sauvegarde
+        write_atomic(&f, b"v3", Some(backups.path())).unwrap();
+        assert_eq!(names(backups.path()).len(), 1);
+        assert_eq!(std::fs::read(&f).unwrap(), b"v3");
+    }
+
+    #[test]
+    fn failure_leaves_no_partial_file() {
+        let dir = tempfile::tempdir().unwrap();
+        // Cible = dossier existant : le rename échoue, rien ne doit rester.
+        let target = dir.path().join("sub");
+        std::fs::create_dir(&target).unwrap();
+        assert!(write_atomic(&target, b"data", None).is_err());
+        assert_eq!(names(dir.path()), vec!["sub"]);
+        // Dossier parent inexistant
+        assert!(write_atomic(&dir.path().join("no/dir/f"), b"x", None).is_err());
+        // L'original reste intact si l'écriture échoue
+        let f = dir.path().join("keep.txt");
+        std::fs::write(&f, "orig").unwrap();
+        assert!(write_atomic(&f.join("child"), b"x", None).is_err());
+        assert_eq!(std::fs::read(&f).unwrap(), b"orig");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn keeps_permissions() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("run.sh");
+        std::fs::write(&f, "a").unwrap();
+        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o750)).unwrap();
+        write_atomic(&f, b"b", None).unwrap();
+        let mode = std::fs::metadata(&f).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o750);
+    }
+}
