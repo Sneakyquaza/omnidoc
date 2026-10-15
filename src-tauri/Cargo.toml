@@ -28,3 +28,9 @@ tempfile = "3"
 infer = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 uuid = { version = "1", features = ["v4"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
+tar = "0.4.46"
+flate2 = "1.1.10"
+sevenz-rust2 = "0.24.0"
+lofty = "0.25.4"
+base64 = "0.23.1"
