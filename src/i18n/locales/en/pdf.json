@@ -1,0 +1,130 @@
+{
+  "encrypted": "This PDF is encrypted: viewing and editing are not available.",
+  "loadError": "Unable to read this PDF.",
+  "viewer": { "label": "Document pages" },
+  "toolbar": {
+    "label": "PDF tools",
+    "page": "Page",
+    "zoom": "Zoom",
+    "fitWidth": "Fit width",
+    "fitPage": "Fit page",
+    "search": "Search"
+  },
+  "commands": {
+    "find": "PDF: search",
+    "goto": "PDF: go to page",
+    "zoomIn": "PDF: zoom in",
+    "zoomOut": "PDF: zoom out",
+    "fitWidth": "PDF: fit width",
+    "fitPage": "PDF: fit page",
+    "rotateView": "Rotate view"
+  },
+  "tools": {
+    "select": "Select",
+    "highlight": "Highlight",
+    "note": "Note",
+    "freeText": "Free text",
+    "ink": "Draw",
+    "color": "Annotation color"
+  },
+  "sidebar": {
+    "title": "Navigation",
+    "thumbs": "Thumbnails",
+    "outline": "Outline",
+    "annotations": "Annotations"
+  },
+  "thumbnails": { "label": "Page thumbnails", "page": "Page {{page}}" },
+  "outline": { "label": "Document outline", "none": "This document has no outline." },
+  "annotations": {
+    "label": "Annotations",
+    "none": "No annotations.",
+    "page": "page {{page}}",
+    "pendingTag": "(pending)",
+    "remove": "Remove pending annotation",
+    "kind": {
+      "highlight": "Highlight",
+      "note": "Note",
+      "freeText": "Free text",
+      "ink": "Drawing"
+    }
+  },
+  "text": {
+    "noteTitle": "Add a note",
+    "freeTextTitle": "Add free text",
+    "label": "Text",
+    "add": "Add"
+  },
+  "search": {
+    "label": "Search in document",
+    "placeholder": "Search…",
+    "searching": "Searching…",
+    "none": "No results",
+    "count": "{{current}} / {{total}}",
+    "prev": "Previous",
+    "next": "Next",
+    "close": "Close"
+  },
+  "pages": {
+    "menu": "Pages",
+    "rotateLeft": "Rotate selection 90° left",
+    "rotateRight": "Rotate selection 90° right",
+    "delete": "Delete pages",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "extract": "Extract to a new PDF…",
+    "split": "Split…",
+    "merge": "Merge with other PDFs…",
+    "exportPng": "Export as PNG images…"
+  },
+  "split": {
+    "title": "Split PDF",
+    "label": "Page ranges (1 to {{count}}), e.g. “1-3, 4-10”: one file per range",
+    "choose": "Choose folder…",
+    "error": {
+      "empty": "Enter at least one range.",
+      "syntax": "Invalid syntax: use for example “1-3, 5, 7-9”.",
+      "bounds": "Page outside the document (1 to {{max}}).",
+      "order": "A range must start before it ends."
+    }
+  },
+  "merge": {
+    "title": "Merge PDFs",
+    "files": "Files to merge",
+    "currentTag": "(current document)",
+    "up": "Move up",
+    "down": "Move down",
+    "remove": "Remove",
+    "add": "Add PDFs…",
+    "append": "Append to the end of the current document (replaces the original)",
+    "submit": "Merge"
+  },
+  "annotate": {
+    "confirmTitle": "Save annotations",
+    "confirmMessage": "{{count}} annotation(s) will be written to the PDF. The original is backed up automatically. Bookmarks and forms in the document will be removed.",
+    "save": "Save (replace)",
+    "saveAs": "Save as…",
+    "saveButton": "Save annotations"
+  },
+  "ops": {
+    "confirmTitle": "Modify the PDF",
+    "confirmMessage": "This operation replaces the file (the original is backed up automatically). Bookmarks and forms in the document will be removed.",
+    "rotate": "Rotate",
+    "delete": "Delete",
+    "reorder": "Reorder",
+    "merge": "Merge",
+    "deleteAll": "Cannot delete all pages.",
+    "saved": "Saved: {{name}}",
+    "exported": "{{count}} image(s) exported.",
+    "splitDone": "{{count}} file(s) created in {{dir}}.",
+    "extractName": "Extract of {{name}}",
+    "mergeName": "Merged.pdf"
+  },
+  "pending": {
+    "blocked": "Save the pending annotations first (or remove them) before modifying pages."
+  },
+  "status": {
+    "page": "Page {{page}} / {{count}}",
+    "zoom": "Zoom {{pct}}%",
+    "pending": "{{count}} pending annotation(s)"
+  }
+}

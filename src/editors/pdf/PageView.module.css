@@ -1,0 +1,37 @@
+.page {
+  position: relative;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.canvas {
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.overlay[data-active="true"] {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* Les règles de .textLayer (position absolue, transform) ne doivent pas s'appliquer aux marques. */
+.mark {
+  position: static !important;
+  font-size: inherit !important;
+  transform: none !important;
+  background: color-mix(in srgb, var(--color-warning) 55%, transparent);
+  color: transparent;
+}
+
+.markCurrent {
+  background: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  outline: 1px solid var(--color-accent);
+}

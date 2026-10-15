@@ -1,0 +1,130 @@
+{
+  "encrypted": "Ce PDF est chiffré : l'affichage et les modifications ne sont pas disponibles.",
+  "loadError": "Impossible de lire ce PDF.",
+  "viewer": { "label": "Pages du document" },
+  "toolbar": {
+    "label": "Outils PDF",
+    "page": "Page",
+    "zoom": "Zoom",
+    "fitWidth": "Ajuster à la largeur",
+    "fitPage": "Ajuster à la page",
+    "search": "Rechercher"
+  },
+  "commands": {
+    "find": "PDF : rechercher",
+    "goto": "PDF : aller à la page",
+    "zoomIn": "PDF : zoom avant",
+    "zoomOut": "PDF : zoom arrière",
+    "fitWidth": "PDF : ajuster à la largeur",
+    "fitPage": "PDF : ajuster à la page",
+    "rotateView": "Pivoter l'affichage"
+  },
+  "tools": {
+    "select": "Sélection",
+    "highlight": "Surligner",
+    "note": "Note",
+    "freeText": "Texte libre",
+    "ink": "Dessin",
+    "color": "Couleur d'annotation"
+  },
+  "sidebar": {
+    "title": "Navigation",
+    "thumbs": "Miniatures",
+    "outline": "Plan",
+    "annotations": "Annotations"
+  },
+  "thumbnails": { "label": "Miniatures des pages", "page": "Page {{page}}" },
+  "outline": { "label": "Plan du document", "none": "Ce document n'a pas de plan." },
+  "annotations": {
+    "label": "Annotations",
+    "none": "Aucune annotation.",
+    "page": "page {{page}}",
+    "pendingTag": "(en attente)",
+    "remove": "Retirer l'annotation en attente",
+    "kind": {
+      "highlight": "Surlignage",
+      "note": "Note",
+      "freeText": "Texte libre",
+      "ink": "Dessin"
+    }
+  },
+  "text": {
+    "noteTitle": "Ajouter une note",
+    "freeTextTitle": "Ajouter un texte libre",
+    "label": "Texte",
+    "add": "Ajouter"
+  },
+  "search": {
+    "label": "Rechercher dans le document",
+    "placeholder": "Rechercher…",
+    "searching": "Recherche…",
+    "none": "Aucun résultat",
+    "count": "{{current}} / {{total}}",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "close": "Fermer"
+  },
+  "pages": {
+    "menu": "Pages",
+    "rotateLeft": "Pivoter la sélection de 90° à gauche",
+    "rotateRight": "Pivoter la sélection de 90° à droite",
+    "delete": "Supprimer les pages",
+    "moveUp": "Déplacer vers le haut",
+    "moveDown": "Déplacer vers le bas",
+    "extract": "Extraire vers un nouveau PDF…",
+    "split": "Découper…",
+    "merge": "Fusionner avec d'autres PDF…",
+    "exportPng": "Exporter en images PNG…"
+  },
+  "split": {
+    "title": "Découper le PDF",
+    "label": "Plages de pages (1 à {{count}}), ex. « 1-3, 4-10 » : un fichier par plage",
+    "choose": "Choisir le dossier…",
+    "error": {
+      "empty": "Saisissez au moins une plage.",
+      "syntax": "Syntaxe invalide : utilisez par exemple « 1-3, 5, 7-9 ».",
+      "bounds": "Page hors du document (1 à {{max}}).",
+      "order": "Le début d'une plage doit précéder sa fin."
+    }
+  },
+  "merge": {
+    "title": "Fusionner des PDF",
+    "files": "Fichiers à fusionner",
+    "currentTag": "(document actuel)",
+    "up": "Monter",
+    "down": "Descendre",
+    "remove": "Retirer",
+    "add": "Ajouter des PDF…",
+    "append": "Ajouter à la fin du document actuel (remplace l'original)",
+    "submit": "Fusionner"
+  },
+  "annotate": {
+    "confirmTitle": "Enregistrer les annotations",
+    "confirmMessage": "{{count}} annotation(s) seront écrites dans le PDF. L'original est sauvegardé automatiquement. Les signets et formulaires du document seront retirés.",
+    "save": "Enregistrer (remplacer)",
+    "saveAs": "Enregistrer sous…",
+    "saveButton": "Enregistrer les annotations"
+  },
+  "ops": {
+    "confirmTitle": "Modifier le PDF",
+    "confirmMessage": "Cette opération remplace le fichier (l'original est sauvegardé automatiquement). Les signets et formulaires du document seront retirés.",
+    "rotate": "Pivoter",
+    "delete": "Supprimer",
+    "reorder": "Réordonner",
+    "merge": "Fusionner",
+    "deleteAll": "Impossible de supprimer toutes les pages.",
+    "saved": "Enregistré : {{name}}",
+    "exported": "{{count}} image(s) exportée(s).",
+    "splitDone": "{{count}} fichier(s) créé(s) dans {{dir}}.",
+    "extractName": "Extrait de {{name}}",
+    "mergeName": "Fusion.pdf"
+  },
+  "pending": {
+    "blocked": "Enregistrez d'abord les annotations en attente (ou retirez-les) avant de modifier les pages."
+  },
+  "status": {
+    "page": "Page {{page}} / {{count}}",
+    "zoom": "Zoom {{pct}} %",
+    "pending": "{{count}} annotation(s) en attente"
+  }
+}
