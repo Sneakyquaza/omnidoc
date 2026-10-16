@@ -8,6 +8,7 @@ import { reportError } from "../../shell/errors";
 import { basename } from "../../shell/paths";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
 import { clampIndex, isSafeThumbnail, slideBullets, slideTitle } from "./logic";
@@ -113,12 +114,16 @@ export default function SlidesEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <Button icon="slides" onClick={present} disabled={count === 0}>
-          {t("present")}
-        </Button>
-        <Button icon="export" onClick={() => void exportMd()}>
-          {t("export.md")}
-        </Button>
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <Button icon="slides" onClick={present} disabled={count === 0}>
+              {t("present")}
+            </Button>
+            <Button icon="export" onClick={() => void exportMd()}>
+              {t("export.md")}
+            </Button>
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={t("thumbs.title")} side="left">
         {isSafeThumbnail(model.thumbnail) ? (

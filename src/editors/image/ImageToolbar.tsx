@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { EditorToolbar } from "../../shell/slots";
 import { Button, IconButton } from "../../shell/ui/Button";
+import type { IconName } from "../../shell/ui/icons";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { RATIOS } from "./geometry";
 import type { RatioKey } from "./geometry";
 import { DEFAULT_OPTIONS, FONTS, TOOLS } from "./tools";
@@ -44,6 +46,17 @@ interface Props {
   actions: ImageToolbarActions;
 }
 
+const TOOL_ICONS: Record<Tool, IconName> = {
+  select: "pointer",
+  crop: "crop",
+  arrow: "arrowDiag",
+  rect: "square",
+  ellipse: "circle",
+  pen: "pen",
+  text: "textColor",
+  highlight: "highlight",
+};
+
 export function ImageToolbar(p: Props) {
   const { t } = useTranslation("image");
   const a = p.actions;
@@ -53,8 +66,8 @@ export function ImageToolbar(p: Props) {
 
   return (
     <EditorToolbar>
-      <div className={styles.bar} role="toolbar" aria-label={t("toolbar.label")}>
-        <div className={styles.group}>
+      <ToolBar label={t("toolbar.label")}>
+        <ToolGroup>
           <IconButton
             icon="save"
             label={t("toolbar.save")}
@@ -65,57 +78,75 @@ export function ImageToolbar(p: Props) {
           {p.isSvg && (
             <IconButton icon="export" label={t("toolbar.exportPng")} onClick={a.exportPng} />
           )}
-          <Button variant="ghost" disabled={!p.canStrip} onClick={a.stripMetadata}>
-            {t("toolbar.stripMetadata")}
-          </Button>
-        </div>
-        <div className={styles.group}>
-          <Button variant="ghost" disabled={ro || !p.canUndo} onClick={a.undo}>
-            {t("toolbar.undo")}
-          </Button>
-          <Button variant="ghost" disabled={ro || !p.canRedo} onClick={a.redo}>
-            {t("toolbar.redo")}
-          </Button>
-        </div>
-        <div className={styles.group} role="group" aria-label={t("toolbar.tools")}>
+          <IconButton
+            icon="eraser"
+            label={t("toolbar.stripMetadata")}
+            disabled={!p.canStrip}
+            onClick={a.stripMetadata}
+          />
+        </ToolGroup>
+        <ToolGroup>
+          <IconButton
+            icon="undo"
+            label={t("toolbar.undo")}
+            disabled={ro || !p.canUndo}
+            onClick={a.undo}
+          />
+          <IconButton
+            icon="redo"
+            label={t("toolbar.redo")}
+            disabled={ro || !p.canRedo}
+            onClick={a.redo}
+          />
+        </ToolGroup>
+        <ToolGroup label={t("toolbar.tools")}>
           {TOOLS.map((tool) => (
-            <Button
+            <IconButton
               key={tool}
-              variant="ghost"
-              className={styles.tool}
-              aria-pressed={p.tool === tool}
+              icon={TOOL_ICONS[tool]}
+              label={t(`tools.${tool}`)}
+              pressed={p.tool === tool}
               disabled={ro && tool !== "select"}
               onClick={() => p.setTool(tool)}
-            >
-              {t(`tools.${tool}`)}
-            </Button>
+            />
           ))}
-        </div>
-        <div className={styles.group} role="group" aria-label={t("toolbar.transform")}>
-          <Button variant="ghost" disabled={ro} onClick={() => a.rotate(1)}>
-            {t("toolbar.rotateRight")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={() => a.rotate(3)}>
-            {t("toolbar.rotateLeft")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={() => a.rotate(2)}>
-            {t("toolbar.rotate180")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={() => a.flip("h")}>
-            {t("toolbar.flipH")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={() => a.flip("v")}>
-            {t("toolbar.flipV")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={a.resize}>
-            {t("toolbar.resize")}
-          </Button>
-          <Button variant="ghost" disabled={ro} onClick={a.adjust}>
-            {t("toolbar.adjust")}
-          </Button>
-        </div>
+        </ToolGroup>
+        <ToolGroup label={t("toolbar.transform")}>
+          <IconButton
+            icon="rotateCw"
+            label={t("toolbar.rotateRight")}
+            disabled={ro}
+            onClick={() => a.rotate(1)}
+          />
+          <IconButton
+            icon="rotateCcw"
+            label={t("toolbar.rotateLeft")}
+            disabled={ro}
+            onClick={() => a.rotate(3)}
+          />
+          <IconButton
+            icon="refresh"
+            label={t("toolbar.rotate180")}
+            disabled={ro}
+            onClick={() => a.rotate(2)}
+          />
+          <IconButton
+            icon="flipH"
+            label={t("toolbar.flipH")}
+            disabled={ro}
+            onClick={() => a.flip("h")}
+          />
+          <IconButton
+            icon="flipV"
+            label={t("toolbar.flipV")}
+            disabled={ro}
+            onClick={() => a.flip("v")}
+          />
+          <IconButton icon="resize" label={t("toolbar.resize")} disabled={ro} onClick={a.resize} />
+          <IconButton icon="adjust" label={t("toolbar.adjust")} disabled={ro} onClick={a.adjust} />
+        </ToolGroup>
         {p.tool === "crop" && (
-          <div className={styles.group} role="group" aria-label={t("toolbar.cropOptions")}>
+          <ToolGroup label={t("toolbar.cropOptions")}>
             <label className={styles.option}>
               <span>{t("crop.ratio")}</span>
               <select value={p.ratio} onChange={(e) => p.setRatio(e.target.value as RatioKey)}>
@@ -132,10 +163,10 @@ export function ImageToolbar(p: Props) {
             <Button disabled={!p.hasCrop} onClick={a.cancelCrop}>
               {t("crop.cancel")}
             </Button>
-          </div>
+          </ToolGroup>
         )}
         {(showStroke || showText) && (
-          <div className={styles.group} role="group" aria-label={t("toolbar.annotationOptions")}>
+          <ToolGroup label={t("toolbar.annotationOptions")}>
             <label className={styles.option}>
               <span>{t("options.color")}</span>
               <input
@@ -193,27 +224,25 @@ export function ImageToolbar(p: Props) {
                 </label>
               </>
             )}
-          </div>
+          </ToolGroup>
         )}
-        <div className={styles.group} role="group" aria-label={t("toolbar.zoom")}>
-          <Button variant="ghost" onClick={a.zoomOut} aria-label={t("toolbar.zoomOut")}>
-            −
-          </Button>
+        <ToolGroup label={t("toolbar.zoom")}>
+          <IconButton icon="zoomOut" label={t("toolbar.zoomOut")} onClick={a.zoomOut} />
           <span className={styles.zoom} aria-live="polite">
             {p.zoomLabel}
           </span>
-          <Button variant="ghost" onClick={a.zoomIn} aria-label={t("toolbar.zoomIn")}>
-            +
-          </Button>
-          <Button variant="ghost" onClick={a.fit}>
-            {t("toolbar.fit")}
-          </Button>
+          <IconButton icon="zoomIn" label={t("toolbar.zoomIn")} onClick={a.zoomIn} />
+          <IconButton icon="scan" label={t("toolbar.fit")} onClick={a.fit} />
           <Button variant="ghost" onClick={a.actualSize}>
             100 %
           </Button>
-        </div>
-        {ro && <span className={styles.badge}>{t("toolbar.readOnly")}</span>}
-      </div>
+        </ToolGroup>
+        {ro && (
+          <ToolGroup>
+            <span className={styles.badge}>{t("toolbar.readOnly")}</span>
+          </ToolGroup>
+        )}
+      </ToolBar>
     </EditorToolbar>
   );
 }

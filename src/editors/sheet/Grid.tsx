@@ -9,6 +9,7 @@ import { colToName, normalizeRange } from "./formula/ref";
 import type { RangeBox } from "./formula/ref";
 import { formatCell } from "./numfmt";
 import type { Locale } from "./numfmt";
+import { Icon } from "../../shell/ui/icons";
 import styles from "./SheetEditor.module.css";
 
 export const ROW_H = 22;
@@ -359,7 +360,7 @@ export function Grid(props: GridProps) {
                       props.onFilterButton(ci.index, e.currentTarget.getBoundingClientRect())
                     }
                   >
-                    ▾
+                    <Icon name="chevronDown" size={12} />
                   </button>
                 )}
               </div>

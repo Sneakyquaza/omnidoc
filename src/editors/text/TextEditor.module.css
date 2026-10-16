@@ -5,16 +5,6 @@
   min-height: 0;
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
 .banner {
   display: flex;
   align-items: center;

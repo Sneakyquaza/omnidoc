@@ -7,6 +7,7 @@ import { reportError } from "../../shell/errors";
 import { basename } from "../../shell/paths";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
 import { extractOutline, isSafeImageUri, renderMarkdown, sanitizeHtml } from "./logic";
@@ -146,12 +147,16 @@ export default function NotebookEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <Button icon="export" onClick={() => void exportAs("md")}>
-          {t("export.md")}
-        </Button>
-        <Button icon="export" onClick={() => void exportAs("html")}>
-          {t("export.html")}
-        </Button>
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <Button icon="export" onClick={() => void exportAs("md")}>
+              {t("export.md")}
+            </Button>
+            <Button icon="export" onClick={() => void exportAs("html")}>
+              {t("export.html")}
+            </Button>
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={t("outline.title")} side="left">
         {outline.length === 0 ? <p className={styles.muted}>{t("outline.empty")}</p> : null}

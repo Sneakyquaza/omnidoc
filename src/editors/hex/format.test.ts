@@ -4,7 +4,6 @@ import {
   describeValues,
   findInBuffer,
   formatOffset,
-  formatSize,
   hex,
   parseHexPattern,
   parseOffset,
@@ -15,8 +14,6 @@ describe("formatage hexadécimal", () => {
     expect(hex(10)).toBe("0A");
     expect(hex(255, 4)).toBe("00FF");
     expect(formatOffset(4096)).toBe("0x00001000");
-    expect(formatSize(512)).toBe("512 B");
-    expect(formatSize(1536)).toBe("1.5 KiB");
     expect(asciiChar(65)).toBe("A");
     expect(asciiChar(0)).toBe(".");
     expect(asciiChar(0x7f)).toBe(".");

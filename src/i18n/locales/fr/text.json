@@ -8,6 +8,7 @@
     "enable": "Activer l'édition"
   },
   "toolbar": {
+    "label": "Outils texte",
     "wrap": "Retour à la ligne",
     "format": "Formater",
     "preview": "Aperçu",

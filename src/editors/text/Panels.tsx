@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { Icon } from "../../shell/ui/icons";
 import { markdownOutline } from "./outline";
 import { buildTree, flattenTree } from "./tree";
 import type { TreeNode } from "./tree";
@@ -117,7 +118,7 @@ export function TreePanel({ language, source }: { language: string; source: Pane
                   toggle(node.id);
                 }}
               >
-                {row.expanded ? "▾" : "▸"}
+                <Icon name={row.expanded ? "chevronDown" : "chevronRight"} size={12} />
               </button>
               <span className={styles.treeKey}>{node.label}</span>
               {node.value !== undefined && (

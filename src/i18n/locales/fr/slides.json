@@ -1,4 +1,5 @@
 {
+  "toolbar": { "label": "Outils de présentation" },
   "textOnly": "Aperçu texte uniquement : mise en page, images et animations ne sont pas affichées.",
   "stage": "Diapositive courante",
   "empty": "Cette présentation ne contient aucune diapositive.",

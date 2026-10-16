@@ -5,6 +5,7 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import type { PageRange } from "../../ipc/bindings";
 import { basename } from "../../shell/paths";
 import { Button } from "../../shell/ui/Button";
+import { Icon } from "../../shell/ui/icons";
 import { parsePageRanges } from "./ranges";
 import styles from "./Dialogs.module.css";
 
@@ -204,7 +205,7 @@ export function MergeDialog({
               onClick={() => move(i, -1)}
               aria-label={t("merge.up")}
             >
-              ↑
+              <Icon name="arrowUp" />
             </Button>
             <Button
               variant="ghost"
@@ -212,7 +213,7 @@ export function MergeDialog({
               onClick={() => move(i, 1)}
               aria-label={t("merge.down")}
             >
-              ↓
+              <Icon name="arrowDown" />
             </Button>
             <Button
               variant="ghost"
@@ -220,7 +221,7 @@ export function MergeDialog({
               onClick={() => setPaths((l) => l.filter((_, k) => k !== i))}
               aria-label={t("merge.remove")}
             >
-              ×
+              <Icon name="close" />
             </Button>
           </li>
         ))}

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { RecordComponent } from "../../ipc/bindings";
 import { Button } from "../../shell/ui/Button";
+import { Icon } from "../../shell/ui/icons";
 import { AdvancedProps, Field, Section } from "./fields";
 import type { Change } from "./fields";
 import {
@@ -104,7 +105,7 @@ function TypedList({
               disabled={readOnly}
               onClick={() => onChange((c) => removeProp(c, i))}
             >
-              ×
+              <Icon name="close" size={14} />
             </Button>
           </div>
         );
@@ -290,7 +291,7 @@ export function ContactForm({ comp, onChange, readOnly }: Props) {
                   disabled={readOnly}
                   onClick={() => onChange((c) => removeProp(c, i))}
                 >
-                  ×
+                  <Icon name="close" size={14} />
                 </Button>
               </div>
               <div className={styles.grid}>

@@ -2,6 +2,7 @@
   "frame": "Book content",
   "empty": "This book has no chapters.",
   "toc": { "title": "Table of contents", "empty": "No chapters.", "untitled": "Chapter {{n}}" },
+  "toolbar": { "label": "Reader tools" },
   "nav": { "prev": "Previous chapter", "next": "Next chapter" },
   "settings": {
     "font": "Font",

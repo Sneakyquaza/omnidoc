@@ -1,4 +1,5 @@
 {
+  "toolbar": { "label": "Notebook tools" },
   "document": "Notebook content",
   "empty": "This notebook has no cells.",
   "cell": { "label": "Cell {{n}}" },

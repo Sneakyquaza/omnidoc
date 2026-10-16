@@ -8,6 +8,7 @@
     "enable": "Enable editing"
   },
   "toolbar": {
+    "label": "Text tools",
     "wrap": "Word wrap",
     "format": "Format",
     "preview": "Preview",

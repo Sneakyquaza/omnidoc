@@ -40,6 +40,7 @@ import i18n from "../../i18n";
 import { reportError } from "../../shell/errors";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { Menu } from "../../shell/ui/Menu";
 import type { MenuItem } from "../../shell/ui/Menu";
 import { confirm } from "../../shell/ui/dialogStore";
@@ -576,50 +577,50 @@ export default function TextEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <div className={styles.toolbar}>
-          <Button
-            aria-pressed={wrap}
-            variant={wrap ? "primary" : "secondary"}
-            onClick={() => setWrap((w) => !w)}
-          >
-            {t("toolbar.wrap")}
-          </Button>
-          {canFormat && (
-            <Button onClick={format} disabled={effectiveReadOnly}>
-              {t("toolbar.format")}
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <Button icon="wrap" aria-pressed={wrap} onClick={() => setWrap((w) => !w)}>
+              {t("toolbar.wrap")}
             </Button>
-          )}
-          {isMarkdown && (
-            <Button
-              aria-pressed={preview}
-              data-testid="text-preview-toggle"
-              variant={preview ? "primary" : "secondary"}
-              onClick={() => setPreview((p) => !p)}
-            >
-              {t("toolbar.preview")}
-            </Button>
-          )}
-          <Menu label={t("toolbar.language")} icon="text" items={languageItems} />
-          <Menu
-            label={t("toolbar.reopen")}
-            icon="openAs"
-            items={reopenItems}
-            disabled={tab.path === null || encodings.length === 0}
-          />
-          <Menu
-            label={t("toolbar.saveWith")}
-            icon="saveAs"
-            items={saveItems}
-            disabled={effectiveReadOnly || encodings.length === 0}
-          />
-          <Menu
-            label={t("toolbar.lineEnding")}
-            icon="file"
-            items={lineEndingItems}
-            disabled={effectiveReadOnly}
-          />
-          <Menu label={t("toolbar.indent")} icon="file" items={indentItems} />
-        </div>
+            {canFormat && (
+              <Button icon="wand" onClick={format} disabled={effectiveReadOnly}>
+                {t("toolbar.format")}
+              </Button>
+            )}
+            {isMarkdown && (
+              <Button
+                icon="eye"
+                aria-pressed={preview}
+                data-testid="text-preview-toggle"
+                onClick={() => setPreview((p) => !p)}
+              >
+                {t("toolbar.preview")}
+              </Button>
+            )}
+          </ToolGroup>
+          <ToolGroup>
+            <Menu label={t("toolbar.language")} icon="text" items={languageItems} />
+            <Menu
+              label={t("toolbar.reopen")}
+              icon="openAs"
+              items={reopenItems}
+              disabled={tab.path === null || encodings.length === 0}
+            />
+            <Menu
+              label={t("toolbar.saveWith")}
+              icon="saveAs"
+              items={saveItems}
+              disabled={effectiveReadOnly || encodings.length === 0}
+            />
+            <Menu
+              label={t("toolbar.lineEnding")}
+              icon="enter"
+              items={lineEndingItems}
+              disabled={effectiveReadOnly}
+            />
+            <Menu label={t("toolbar.indent")} icon="indent" items={indentItems} />
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={t("panel.title")}>
         {TREE_LANGUAGES.includes(meta.language) ? (

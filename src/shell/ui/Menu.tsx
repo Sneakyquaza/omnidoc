@@ -17,11 +17,13 @@ export interface MenuItem {
 interface MenuProps {
   label: string;
   icon: IconName;
+  /** Déclencheur réduit à l'icône (menu « … »). */
+  iconOnly?: boolean;
   items: MenuItem[];
   disabled?: boolean;
 }
 
-export function Menu({ label, icon, items, disabled }: MenuProps) {
+export function Menu({ label, icon, iconOnly, items, disabled }: MenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -62,7 +64,7 @@ export function Menu({ label, icon, items, disabled }: MenuProps) {
       <button
         ref={triggerRef}
         type="button"
-        className={styles.trigger}
+        className={`${styles.trigger} ${iconOnly ? styles.iconOnly : ""}`}
         data-testid={`menu-${icon}`}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -79,7 +81,7 @@ export function Menu({ label, icon, items, disabled }: MenuProps) {
         }}
       >
         <Icon name={icon} />
-        <span className={styles.label}>{label}</span>
+        {!iconOnly && <span className={styles.label}>{label}</span>}
       </button>
       {open && (
         <div

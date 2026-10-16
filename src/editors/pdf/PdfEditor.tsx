@@ -8,7 +8,9 @@ import type { PdfAnnotation, PdfDoc } from "../../ipc/bindings";
 import { reportError } from "../../shell/errors";
 import { basename } from "../../shell/paths";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
-import { Button } from "../../shell/ui/Button";
+import { Button, IconButton } from "../../shell/ui/Button";
+import type { IconName } from "../../shell/ui/icons";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { choose } from "../../shell/ui/dialogStore";
 import { Menu } from "../../shell/ui/Menu";
 import type { MenuItem } from "../../shell/ui/Menu";
@@ -44,6 +46,13 @@ const MIN_PCT = 50;
 const MAX_PCT = 400;
 const ZOOM_PRESETS = [50, 75, 100, 125, 150, 200, 300, 400];
 const TOOLS: Tool[] = ["select", "highlight", "note", "freeText", "ink"];
+const TOOL_ICONS: Record<Tool, IconName> = {
+  select: "pointer",
+  highlight: "highlight",
+  note: "note",
+  freeText: "textColor",
+  ink: "pen",
+};
 const DEFAULT_COLORS: Record<Tool, string> = {
   select: "#ffd400",
   highlight: "#ffd400",
@@ -573,103 +582,103 @@ export default function PdfEditor({
   return (
     <div className={styles.root} aria-busy={busy || doc.loading}>
       <EditorToolbar>
-        <div className={styles.toolbar} role="group" aria-label={t("toolbar.label")}>
-          <label className={styles.pageNav}>
-            <span className={styles.srOnly}>{t("toolbar.page")}</span>
-            <input
-              ref={pageInputRef}
-              className={styles.pageInput}
-              inputMode="numeric"
-              value={pageText ?? String(shownPage)}
-              onFocus={(e) => e.currentTarget.select()}
-              onChange={(e) => setPageText(e.target.value)}
-              onBlur={() => setPageText(null)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const n = Number(pageText ?? shownPage);
-                  if (Number.isFinite(n)) goToPage(n);
-                  setPageText(null);
-                  e.currentTarget.blur();
-                }
-              }}
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <label className={styles.pageNav}>
+              <span className={styles.srOnly}>{t("toolbar.page")}</span>
+              <input
+                ref={pageInputRef}
+                className={styles.pageInput}
+                inputMode="numeric"
+                value={pageText ?? String(shownPage)}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setPageText(e.target.value)}
+                onBlur={() => setPageText(null)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const n = Number(pageText ?? shownPage);
+                    if (Number.isFinite(n)) goToPage(n);
+                    setPageText(null);
+                    e.currentTarget.blur();
+                  }
+                }}
+              />
+              <span>/ {pageCount}</span>
+            </label>
+          </ToolGroup>
+          <ToolGroup>
+            <IconButton
+              icon="zoomOut"
+              label={t("commands.zoomOut")}
+              onClick={() => actions.current.zoomBy(0.8)}
             />
-            <span>/ {pageCount}</span>
-          </label>
-          <Button
-            variant="ghost"
-            aria-label={t("commands.zoomOut")}
-            title={t("commands.zoomOut")}
-            onClick={() => actions.current.zoomBy(0.8)}
-          >
-            −
-          </Button>
-          <select
-            className={styles.select}
-            aria-label={t("toolbar.zoom")}
-            value={zoomValue}
-            onChange={(e) => {
-              const v = e.target.value;
-              setZoom(
-                v === "width" || v === "page" ? { mode: v } : { mode: "custom", pct: Number(v) },
-              );
-            }}
-          >
-            <option value="width">{t("toolbar.fitWidth")}</option>
-            <option value="page">{t("toolbar.fitPage")}</option>
-            {zoom.mode !== "custom" || ZOOM_PRESETS.includes(pct) ? null : (
-              <option value={String(pct)}>{pct} %</option>
-            )}
-            {ZOOM_PRESETS.map((z) => (
-              <option key={z} value={String(z)}>
-                {z} %
-              </option>
-            ))}
-          </select>
-          <Button
-            variant="ghost"
-            aria-label={t("commands.zoomIn")}
-            title={t("commands.zoomIn")}
-            onClick={() => actions.current.zoomBy(1.25)}
-          >
-            +
-          </Button>
-          <Button variant="ghost" onClick={() => setRotation((r) => (r + 90) % 360)}>
-            {t("commands.rotateView")}
-          </Button>
-          <Button
-            variant="ghost"
-            aria-pressed={search.open}
-            onClick={() => search.setOpen(!search.open)}
-          >
-            {t("toolbar.search")}
-          </Button>
-          <span className={styles.sep} />
-          {TOOLS.map((id) => (
-            <Button
-              key={id}
-              data-testid={`pdf-tool-${id}`}
-              variant={tool === id ? "primary" : "ghost"}
-              aria-pressed={tool === id}
-              onClick={() => {
-                setTool(id);
-                if (id !== "select") setColor(DEFAULT_COLORS[id]);
+            <select
+              className={styles.select}
+              aria-label={t("toolbar.zoom")}
+              value={zoomValue}
+              onChange={(e) => {
+                const v = e.target.value;
+                setZoom(
+                  v === "width" || v === "page" ? { mode: v } : { mode: "custom", pct: Number(v) },
+                );
               }}
             >
-              {t(`tools.${id}`)}
-            </Button>
-          ))}
-          <label className={styles.colorLabel}>
-            <span className={styles.srOnly}>{t("tools.color")}</span>
-            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
-          </label>
-          <span className={styles.sep} />
-          <Menu label={t("pages.menu")} icon="file" items={pagesMenu} disabled={busy || !pdf} />
-          {pending.length > 0 && (
-            <Button variant="primary" disabled={busy} onClick={() => void saveAnnotations()}>
-              {t("annotate.saveButton")} ({pending.length})
-            </Button>
-          )}
-        </div>
+              <option value="width">{t("toolbar.fitWidth")}</option>
+              <option value="page">{t("toolbar.fitPage")}</option>
+              {zoom.mode !== "custom" || ZOOM_PRESETS.includes(pct) ? null : (
+                <option value={String(pct)}>{pct} %</option>
+              )}
+              {ZOOM_PRESETS.map((z) => (
+                <option key={z} value={String(z)}>
+                  {z} %
+                </option>
+              ))}
+            </select>
+            <IconButton
+              icon="zoomIn"
+              label={t("commands.zoomIn")}
+              onClick={() => actions.current.zoomBy(1.25)}
+            />
+            <IconButton
+              icon="rotateCw"
+              label={t("commands.rotateView")}
+              onClick={() => setRotation((r) => (r + 90) % 360)}
+            />
+            <IconButton
+              icon="search"
+              label={t("toolbar.search")}
+              pressed={search.open}
+              onClick={() => search.setOpen(!search.open)}
+            />
+          </ToolGroup>
+          <ToolGroup>
+            {TOOLS.map((id) => (
+              <IconButton
+                key={id}
+                data-testid={`pdf-tool-${id}`}
+                icon={TOOL_ICONS[id]}
+                label={t(`tools.${id}`)}
+                pressed={tool === id}
+                onClick={() => {
+                  setTool(id);
+                  if (id !== "select") setColor(DEFAULT_COLORS[id]);
+                }}
+              />
+            ))}
+            <label className={styles.colorLabel}>
+              <span className={styles.srOnly}>{t("tools.color")}</span>
+              <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
+            </label>
+          </ToolGroup>
+          <ToolGroup>
+            <Menu label={t("pages.menu")} icon="file" items={pagesMenu} disabled={busy || !pdf} />
+            {pending.length > 0 && (
+              <Button variant="primary" disabled={busy} onClick={() => void saveAnnotations()}>
+                {t("annotate.saveButton")} ({pending.length})
+              </Button>
+            )}
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
 
       <EditorSidePanel title={t("sidebar.title")} side="left">

@@ -6,6 +6,7 @@
     "empty": "Aucun chapitre.",
     "untitled": "Chapitre {{n}}"
   },
+  "toolbar": { "label": "Outils de lecture" },
   "nav": { "prev": "Chapitre précédent", "next": "Chapitre suivant" },
   "settings": {
     "font": "Police",

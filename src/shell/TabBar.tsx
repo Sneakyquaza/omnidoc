@@ -12,6 +12,7 @@ export function TabBar() {
   const activeId = useTabs((s) => s.activeId);
   const activate = useTabs((s) => s.activateTab);
   const move = useTabs((s) => s.moveTab);
+  const showHome = useTabs((s) => s.showHome);
   const listRef = useRef<HTMLDivElement>(null);
   const [dragId, setDragId] = useState<string | null>(null);
 
@@ -34,68 +35,83 @@ export function TabBar() {
     e.preventDefault();
   }
 
+  if (tabs.length === 0) return null;
+
   return (
-    <div className={styles.bar} role="tablist" aria-label={t("tabs.label")} ref={listRef}>
-      {tabs.map((tab, index) => {
-        const active = tab.id === activeId;
-        return (
-          <div
-            key={tab.id}
-            className={`${styles.tab} ${active ? styles.active : ""}`}
-            draggable
-            onDragStart={() => setDragId(tab.id)}
-            onDragOver={(e) => dragId && e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              if (dragId) move(dragId, index);
-              setDragId(null);
-            }}
-            onDragEnd={() => setDragId(null)}
-            onAuxClick={(e) => {
-              if (e.button === 1) {
+    <div className={styles.bar}>
+      <div className={styles.list} role="tablist" aria-label={t("tabs.label")} ref={listRef}>
+        {tabs.map((tab, index) => {
+          const active = tab.id === activeId;
+          return (
+            <div
+              key={tab.id}
+              className={`${styles.tab} ${active ? styles.active : ""}`}
+              draggable
+              onDragStart={() => setDragId(tab.id)}
+              onDragOver={(e) => dragId && e.preventDefault()}
+              onDrop={(e) => {
                 e.preventDefault();
-                void closeTabWithConfirm(tab.id);
-              }
-            }}
-          >
-            <button
-              type="button"
-              role="tab"
-              data-testid="tab"
-              data-tab={tab.id}
-              aria-selected={active}
-              tabIndex={active ? 0 : -1}
-              className={styles.label}
-              title={tab.path ?? tab.title}
-              onClick={() => activate(tab.id)}
-              onKeyDown={(e) => onKeyDown(e, index, tab.id)}
+                if (dragId) move(dragId, index);
+                setDragId(null);
+              }}
+              onDragEnd={() => setDragId(null)}
+              onAuxClick={(e) => {
+                if (e.button === 1) {
+                  e.preventDefault();
+                  void closeTabWithConfirm(tab.id);
+                }
+              }}
             >
-              <Icon name={tab.modelKind} />
-              <span className={styles.title}>{tab.title}</span>
-              {tab.dirty && (
-                <span
-                  className={styles.dirty}
-                  data-testid="tab-dirty"
-                  role="img"
-                  aria-label={t("status.unsaved")}
-                >
-                  •
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className={styles.close}
-              aria-label={t("tabs.close", { name: tab.title })}
-              title={t("tabs.close", { name: tab.title })}
-              tabIndex={active ? 0 : -1}
-              onClick={() => void closeTabWithConfirm(tab.id)}
-            >
-              <Icon name="close" size={12} />
-            </button>
-          </div>
-        );
-      })}
+              <button
+                type="button"
+                role="tab"
+                data-testid="tab"
+                data-tab={tab.id}
+                aria-selected={active}
+                tabIndex={active ? 0 : -1}
+                className={styles.label}
+                title={tab.path ?? tab.title}
+                onClick={() => activate(tab.id)}
+                onKeyDown={(e) => onKeyDown(e, index, tab.id)}
+              >
+                <Icon name={tab.modelKind} />
+                <span className={styles.title}>{tab.title}</span>
+                {tab.dirty && (
+                  <span
+                    className={styles.dirty}
+                    data-testid="tab-dirty"
+                    role="img"
+                    aria-label={t("status.unsaved")}
+                  >
+                    •
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                className={styles.close}
+                aria-label={t("tabs.close", { name: tab.title })}
+                title={t("tabs.close", { name: tab.title })}
+                tabIndex={active ? 0 : -1}
+                onClick={() => void closeTabWithConfirm(tab.id)}
+              >
+                <Icon name="close" size={12} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        className={styles.add}
+        data-testid="tab-home"
+        aria-label={t("tabs.home")}
+        title={t("tabs.home")}
+        aria-pressed={activeId === null}
+        onClick={showHome}
+      >
+        <Icon name="plus" />
+      </button>
     </div>
   );
 }

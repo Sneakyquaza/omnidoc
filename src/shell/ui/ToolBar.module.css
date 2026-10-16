@@ -1,0 +1,49 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 0;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-left: 1px solid var(--color-border);
+}
+
+.group:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* Contrôles de formulaire de barre d'outils : même hauteur que les boutons (28 px). */
+.group select,
+.group input[type="number"],
+.group input[type="text"] {
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.group input[type="color"] {
+  box-sizing: border-box;
+  width: 32px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.group select:focus-visible,
+.group input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}

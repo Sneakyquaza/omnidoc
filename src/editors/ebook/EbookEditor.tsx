@@ -5,7 +5,8 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import type { EbookDoc } from "../../ipc/bindings";
 import { reportError } from "../../shell/errors";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
-import { Button } from "../../shell/ui/Button";
+import { Button, IconButton } from "../../shell/ui/Button";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { confirm } from "../../shell/ui/dialogStore";
 import type { EditorProps } from "../types";
 import {
@@ -65,6 +66,24 @@ export default function EbookEditor({
   const pending = useRef<Pending>({ fraction: position?.fraction ?? 0 });
   const chapterRef = useRef(chapter);
   const countRef = useRef(count);
+
+  // Thème « auto » : se re-rend quand l'application change de thème (attribut data-theme).
+  const [, setThemeTick] = useState(0);
+  const fractionRef = useRef(fraction);
+  useEffect(() => {
+    fractionRef.current = fraction;
+  }, [fraction]);
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      pending.current = { fraction: fractionRef.current };
+      setThemeTick((n) => n + 1);
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   const palette = settings.theme === "auto" ? autoPalette() : PALETTES[settings.theme];
   const html = model.chapters[chapter]?.html ?? "";
@@ -241,96 +260,93 @@ export default function EbookEditor({
   return (
     <div className={styles.root} onKeyDown={onRootKey}>
       <EditorToolbar>
-        <Button
-          variant="ghost"
-          aria-label={t("nav.prev")}
-          title={t("nav.prev")}
-          disabled={chapter === 0}
-          onClick={() => goTo(chapter - 1)}
-        >
-          ‹
-        </Button>
-        <Button
-          variant="ghost"
-          aria-label={t("nav.next")}
-          title={t("nav.next")}
-          disabled={chapter >= count - 1}
-          onClick={() => goTo(chapter + 1)}
-        >
-          ›
-        </Button>
-        <select
-          className={styles.select}
-          aria-label={t("settings.font")}
-          value={settings.font}
-          onChange={(e) => update({ font: e.target.value as ReaderFont })}
-        >
-          <option value="serif">{t("settings.serif")}</option>
-          <option value="sans">{t("settings.sans")}</option>
-        </select>
-        <Button
-          variant="ghost"
-          aria-label={t("settings.smaller")}
-          title={t("settings.smaller")}
-          disabled={settings.size <= MIN_SIZE}
-          onClick={() => update({ size: clampSize(settings.size - 1) })}
-        >
-          A−
-        </Button>
-        <span aria-live="polite">{settings.size}</span>
-        <Button
-          variant="ghost"
-          aria-label={t("settings.larger")}
-          title={t("settings.larger")}
-          disabled={settings.size >= MAX_SIZE}
-          onClick={() => update({ size: clampSize(settings.size + 1) })}
-        >
-          A+
-        </Button>
-        <select
-          className={styles.select}
-          aria-label={t("settings.lineHeight")}
-          value={settings.lineHeight}
-          onChange={(e) => update({ lineHeight: Number(e.target.value) })}
-        >
-          {[1.3, 1.6, 1.9].map((v) => (
-            <option key={v} value={v}>
-              {t("settings.lineHeightValue", { v })}
-            </option>
-          ))}
-        </select>
-        <select
-          className={styles.select}
-          aria-label={t("settings.width")}
-          value={settings.width}
-          onChange={(e) => update({ width: Number(e.target.value) })}
-        >
-          {[520, 680, 860].map((v) => (
-            <option key={v} value={v}>
-              {t("settings.widthValue", { v })}
-            </option>
-          ))}
-        </select>
-        <select
-          className={styles.select}
-          aria-label={t("settings.theme")}
-          value={settings.theme}
-          onChange={(e) => update({ theme: e.target.value as ReaderTheme })}
-        >
-          {(["auto", "light", "sepia", "dark"] as const).map((v) => (
-            <option key={v} value={v}>
-              {t(`settings.themes.${v}`)}
-            </option>
-          ))}
-        </select>
-        <Button
-          onClick={() => {
-            setSearchOpen((o) => !o);
-            setTimeout(() => searchInputRef.current?.select(), 0);
-          }}
-        >
-          {t("search.button")}
-        </Button>
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <IconButton
+              icon="chevronLeft"
+              label={t("nav.prev")}
+              disabled={chapter === 0}
+              onClick={() => goTo(chapter - 1)}
+            />
+            <IconButton
+              icon="chevronRight"
+              label={t("nav.next")}
+              disabled={chapter >= count - 1}
+              onClick={() => goTo(chapter + 1)}
+            />
+          </ToolGroup>
+          <ToolGroup>
+            <select
+              className={styles.select}
+              aria-label={t("settings.font")}
+              value={settings.font}
+              onChange={(e) => update({ font: e.target.value as ReaderFont })}
+            >
+              <option value="serif">{t("settings.serif")}</option>
+              <option value="sans">{t("settings.sans")}</option>
+            </select>
+            <IconButton
+              icon="zoomOut"
+              label={t("settings.smaller")}
+              disabled={settings.size <= MIN_SIZE}
+              onClick={() => update({ size: clampSize(settings.size - 1) })}
+            />
+            <span aria-live="polite">{settings.size}</span>
+            <IconButton
+              icon="zoomIn"
+              label={t("settings.larger")}
+              disabled={settings.size >= MAX_SIZE}
+              onClick={() => update({ size: clampSize(settings.size + 1) })}
+            />
+            <select
+              className={styles.select}
+              aria-label={t("settings.lineHeight")}
+              value={settings.lineHeight}
+              onChange={(e) => update({ lineHeight: Number(e.target.value) })}
+            >
+              {[1.3, 1.6, 1.9].map((v) => (
+                <option key={v} value={v}>
+                  {t("settings.lineHeightValue", { v })}
+                </option>
+              ))}
+            </select>
+            <select
+              className={styles.select}
+              aria-label={t("settings.width")}
+              value={settings.width}
+              onChange={(e) => update({ width: Number(e.target.value) })}
+            >
+              {[520, 680, 860].map((v) => (
+                <option key={v} value={v}>
+                  {t("settings.widthValue", { v })}
+                </option>
+              ))}
+            </select>
+            <select
+              className={styles.select}
+              aria-label={t("settings.theme")}
+              value={settings.theme}
+              onChange={(e) => update({ theme: e.target.value as ReaderTheme })}
+            >
+              {(["auto", "light", "sepia", "dark"] as const).map((v) => (
+                <option key={v} value={v}>
+                  {t(`settings.themes.${v}`)}
+                </option>
+              ))}
+            </select>
+          </ToolGroup>
+          <ToolGroup>
+            <Button
+              icon="search"
+              onClick={() => {
+                setSearchOpen((o) => !o);
+                setTimeout(() => searchInputRef.current?.select(), 0);
+              }}
+            >
+              {t("search.button")}
+            </Button>
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={t("toc.title")} side="left">
         {count === 0 ? <p className={styles.muted}>{t("toc.empty")}</p> : null}

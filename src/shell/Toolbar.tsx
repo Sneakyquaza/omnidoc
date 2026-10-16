@@ -13,6 +13,7 @@ import {
 import { useHandlers } from "./handlers";
 import { Button, IconButton } from "./ui/Button";
 import { Menu } from "./ui/Menu";
+import { ToolBar, ToolGroup } from "./ui/ToolBar";
 import type { MenuItem } from "./ui/Menu";
 import styles from "./Toolbar.module.css";
 
@@ -58,52 +59,65 @@ export function Toolbar() {
   }
 
   return (
-    <div className={styles.toolbar} role="toolbar" aria-label={t("toolbar.label")}>
-      <Button variant="ghost" icon="open" onClick={() => void openWithDialog()}>
-        {t("toolbar.open")}
-      </Button>
-      <Button
-        variant="ghost"
-        icon="save"
-        disabled={!tab}
-        onClick={() => tab && void saveTab(tab.id)}
-      >
-        {t("toolbar.save")}
-      </Button>
-      <Button
-        variant="ghost"
-        icon="saveAs"
-        disabled={!tab}
-        onClick={() => tab && void saveTabAs(tab.id)}
-      >
-        {t("toolbar.saveAs")}
-      </Button>
-      <Button
-        variant="ghost"
-        icon="export"
-        disabled={!tab}
-        onClick={() => tab && exportTab(tab.id)}
-      >
-        {t("toolbar.export")}
-      </Button>
-      <Menu label={t("toolbar.openAs")} icon="openAs" items={openAsItems} disabled={!tab?.path} />
-      <span className={styles.spacer} />
-      <IconButton
-        icon="panel"
-        label={t("toolbar.sidePanel")}
-        pressed={sidePanelOpen}
-        onClick={toggleSidePanel}
-      />
-      <IconButton
-        icon={THEME_ICON[theme]}
-        label={t("toolbar.theme", { theme: t(`theme.${theme}`) })}
-        onClick={cycleTheme}
-      />
-      <IconButton
-        icon="command"
-        label={t("toolbar.palette")}
-        onClick={() => setPaletteOpen(true)}
-      />
+    <div className={styles.toolbar}>
+      <ToolBar label={t("toolbar.label")}>
+        <ToolGroup>
+          <Button variant="ghost" icon="open" onClick={() => void openWithDialog()}>
+            {t("toolbar.open")}
+          </Button>
+          <Button
+            variant="ghost"
+            icon="save"
+            disabled={!tab}
+            onClick={() => tab && void saveTab(tab.id)}
+          >
+            {t("toolbar.save")}
+          </Button>
+          <Button
+            variant="ghost"
+            icon="saveAs"
+            disabled={!tab}
+            onClick={() => tab && void saveTabAs(tab.id)}
+          >
+            {t("toolbar.saveAs")}
+          </Button>
+        </ToolGroup>
+        <ToolGroup>
+          <Button
+            variant="ghost"
+            icon="export"
+            disabled={!tab}
+            onClick={() => tab && exportTab(tab.id)}
+          >
+            {t("toolbar.export")}
+          </Button>
+          <Menu
+            label={t("toolbar.openAs")}
+            icon="openAs"
+            items={openAsItems}
+            disabled={!tab?.path}
+          />
+        </ToolGroup>
+        <span className={styles.spacer} />
+        <ToolGroup>
+          <IconButton
+            icon="panel"
+            label={t("toolbar.sidePanel")}
+            pressed={sidePanelOpen}
+            onClick={toggleSidePanel}
+          />
+          <IconButton
+            icon={THEME_ICON[theme]}
+            label={t("toolbar.theme", { theme: t(`theme.${theme}`) })}
+            onClick={cycleTheme}
+          />
+          <IconButton
+            icon="command"
+            label={t("toolbar.palette")}
+            onClick={() => setPaletteOpen(true)}
+          />
+        </ToolGroup>
+      </ToolBar>
     </div>
   );
 }

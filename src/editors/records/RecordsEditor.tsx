@@ -4,6 +4,7 @@ import type { RecordComponent, RecordsDoc } from "../../ipc/bindings";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
 import { confirm } from "../../shell/ui/dialogStore";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import type { EditorProps } from "../types";
 import { ContactForm } from "./ContactForm";
 import { EventForm } from "./EventForm";
@@ -221,24 +222,39 @@ export default function RecordsEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        {format === "vcf" ? (
-          <Button icon="plus" disabled={readOnly} onClick={addContact}>
-            {t("vcf.add")}
-          </Button>
-        ) : (
-          <>
-            <Button icon="plus" disabled={readOnly} onClick={() => addItem("VEVENT")}>
-              {t("ics.addEvent")}
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            {format === "vcf" ? (
+              <Button icon="plus" disabled={readOnly} onClick={addContact}>
+                {t("vcf.add")}
+              </Button>
+            ) : (
+              <>
+                <Button icon="plus" disabled={readOnly} onClick={() => addItem("VEVENT")}>
+                  {t("ics.addEvent")}
+                </Button>
+                <Button icon="plus" disabled={readOnly} onClick={() => addItem("VTODO")}>
+                  {t("ics.addTodo")}
+                </Button>
+              </>
+            )}
+          </ToolGroup>
+          <ToolGroup>
+            <Button
+              variant="danger"
+              icon="trash"
+              disabled={readOnly || !selected}
+              onClick={() => void remove()}
+            >
+              {t("delete.button")}
             </Button>
-            <Button icon="plus" disabled={readOnly} onClick={() => addItem("VTODO")}>
-              {t("ics.addTodo")}
-            </Button>
-          </>
-        )}
-        <Button variant="danger" disabled={readOnly || !selected} onClick={() => void remove()}>
-          {t("delete.button")}
-        </Button>
-        {readOnly ? <span className={styles.hint}>{t("readOnly")}</span> : null}
+          </ToolGroup>
+          {readOnly ? (
+            <ToolGroup>
+              <span className={styles.hint}>{t("readOnly")}</span>
+            </ToolGroup>
+          ) : null}
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={format === "vcf" ? t("vcf.title") : t("ics.title")} side="left">
         <input

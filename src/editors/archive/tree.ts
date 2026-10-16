@@ -107,25 +107,6 @@ export function ratio(size: number, compressedSize: number | null): number | nul
   return Math.max(0, Math.round((1 - compressedSize / size) * 100));
 }
 
-export function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`;
-  const units = ["Kio", "Mio", "Gio", "Tio"];
-  let value = bytes;
-  let unit = -1;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit++;
-  }
-  return `${value >= 100 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`;
-}
-
-export function formatDate(iso: string | null): string {
-  if (iso === null) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" });
-}
-
 function compareBy(key: SortKey): (a: TreeNode, b: TreeNode) => number {
   switch (key) {
     case "size":

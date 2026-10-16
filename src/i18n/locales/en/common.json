@@ -76,7 +76,8 @@
   },
   "tabs": {
     "label": "Open documents",
-    "close": "Close {{name}}"
+    "close": "Close {{name}}",
+    "home": "Start page: new document and recent files"
   },
   "toolbar": {
     "label": "Toolbar",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatBytes, formatFromPath, isLossy, saveFormatOf, stripDataUri, toHex } from "./formats";
+import { formatFromPath, isLossy, saveFormatOf, stripDataUri, toHex } from "./formats";
 
 describe("formats d'image", () => {
   it("déduit le format de l'extension", () => {
@@ -16,8 +16,6 @@ describe("formats d'image", () => {
   });
   it("utilitaires", () => {
     expect(toHex(255, 0, 16)).toBe("#ff0010");
-    expect(formatBytes(1536)).toBe("1.5 KiB");
-    expect(formatBytes(12)).toBe("12 B");
     expect(stripDataUri("data:image/png;base64,AAAA")).toBe("AAAA");
   });
 });

@@ -6,13 +6,6 @@
   font-size: 13px;
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-}
-
 .notice {
   margin: 0;
   padding: 6px 12px;

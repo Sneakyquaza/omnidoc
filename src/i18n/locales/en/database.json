@@ -1,4 +1,5 @@
 {
+  "toolbar": { "label": "Database tools" },
   "tabs": { "label": "Database views", "data": "Data", "query": "Query", "schema": "Schema" },
   "sidebar": {
     "title": "Tables and views",

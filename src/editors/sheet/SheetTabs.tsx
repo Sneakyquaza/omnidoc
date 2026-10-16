@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { Icon } from "../../shell/ui/icons";
 import { ContextMenu } from "./Popups";
 import styles from "./SheetEditor.module.css";
 
@@ -125,7 +126,7 @@ export function SheetTabs(p: SheetTabsProps) {
                     }
                   }}
                 >
-                  ×
+                  <Icon name="close" size={12} />
                 </span>
               )}
             </button>

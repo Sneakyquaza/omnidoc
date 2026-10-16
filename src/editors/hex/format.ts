@@ -13,18 +13,6 @@ export function asciiChar(byte: number): string {
   return byte >= 0x20 && byte <= 0x7e ? String.fromCharCode(byte) : ".";
 }
 
-/** Taille lisible (« 1.5 KiB »). */
-export function formatSize(n: number): string {
-  const units = ["B", "KiB", "MiB", "GiB", "TiB"];
-  let value = n;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit++;
-  }
-  return unit === 0 ? `${n} B` : `${value.toFixed(1)} ${units[unit]}`;
-}
-
 /** Décimal, ou hexadécimal préfixé « 0x ». */
 export function parseOffset(input: string): number | null {
   const s = input.trim();

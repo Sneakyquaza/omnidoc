@@ -8,7 +8,6 @@ import {
   filterNodes,
   findNode,
   flattenDirs,
-  formatSize,
   ratio,
   sortNodes,
 } from "./tree";
@@ -71,13 +70,6 @@ describe("sortNodes", () => {
 });
 
 describe("utilitaires", () => {
-  it("formate les tailles", () => {
-    expect(formatSize(0)).toBe("0 o");
-    expect(formatSize(1023)).toBe("1023 o");
-    expect(formatSize(1536)).toBe("1.5 Kio");
-    expect(formatSize(5 * 1024 * 1024)).toBe("5.0 Mio");
-    expect(formatSize(200 * 1024)).toBe("200 Kio");
-  });
   it("calcule le ratio", () => {
     expect(ratio(100, 25)).toBe(75);
     expect(ratio(0, 0)).toBeNull();

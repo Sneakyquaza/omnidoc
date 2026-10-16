@@ -2,7 +2,11 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 10px;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 10px;
+  font: inherit;
+  line-height: 1;
   border: 1px solid transparent;
   border-radius: var(--radius);
   background: transparent;
@@ -46,10 +50,12 @@
 }
 
 .icon {
-  padding: 5px;
+  justify-content: center;
+  width: 28px;
+  padding: 0;
 }
 
-.icon[aria-pressed="true"] {
-  background: var(--color-hover);
-  color: var(--color-accent);
+.button[aria-pressed="true"]:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
 }

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { RecordComponent } from "../../ipc/bindings";
 import { Button } from "../../shell/ui/Button";
+import { Icon } from "../../shell/ui/icons";
 import {
   addProp,
   formatParams,
@@ -164,7 +165,7 @@ export function AdvancedProps({
             disabled={readOnly}
             onClick={() => onChange((c) => removeProp(c, i))}
           >
-            ×
+            <Icon name="close" size={14} />
           </Button>
         </div>
       ))}

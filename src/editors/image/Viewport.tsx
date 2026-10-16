@@ -142,9 +142,10 @@ export function Viewport(props: ViewportProps) {
     ctx.beginPath();
     ctx.rect(panX, panY, iw * zoom, ih * zoom);
     ctx.clip();
-    ctx.fillStyle = "#ffffff";
+    const dark = document.documentElement.dataset.theme === "dark";
+    ctx.fillStyle = dark ? "#3b4048" : "#ffffff";
     ctx.fillRect(panX, panY, iw * zoom, ih * zoom);
-    ctx.fillStyle = "#d4d4d8";
+    ctx.fillStyle = dark ? "#2a2e35" : "#d4d4d8";
     const cell = 10;
     const x0 = Math.max(panX, 0);
     const y0 = Math.max(panY, 0);

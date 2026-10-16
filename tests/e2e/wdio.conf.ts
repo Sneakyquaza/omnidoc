@@ -69,13 +69,13 @@ function copyToWork(name: string, prefix: string): string {
   return dest;
 }
 
-function capability(file: string, spec: string) {
+function capability(file: string | null, spec: string) {
   return {
     browserName: "wry",
     "wdio:enforceWebDriverClassic": true,
     "wdio:maxInstances": 1,
     "wdio:specs": [path.join(here, "specs", spec)],
-    "tauri:options": { application, args: [file] },
+    "tauri:options": { application, args: file ? [file] : [] },
   };
 }
 
@@ -113,12 +113,14 @@ const capabilities = [
           .readdirSync(fixtures)
           .sort()
           .map((name) => capability(copyToWork(name, "open"), "open.e2e.ts")),
+        // Sans fichier : écran d'accueil.
+        capability(null, "welcome.e2e.ts"),
         ...writable.map((ext) => capability(copyToWork(`sample.${ext}`, "save"), "save.e2e.ts")),
         ...journeys.map(([spec, name]) =>
           capability(copyToWork(name, spec.split(".")[0] ?? "journey"), spec),
         ),
       ]),
-].filter((c) => !only || only.test(c["tauri:options"].args[0] ?? ""));
+].filter((c) => !only || only.test(c["tauri:options"].args[0] ?? "welcome"));
 
 let driver: ChildProcess | undefined;
 

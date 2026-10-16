@@ -11,7 +11,9 @@ import { basename } from "../../shell/paths";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
 import { choose, confirm } from "../../shell/ui/dialogStore";
+import { formatDate, formatSize } from "../../shell/format";
 import { Icon } from "../../shell/ui/icons";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
 import {
@@ -22,8 +24,6 @@ import {
   filterNodes,
   findNode,
   flattenDirs,
-  formatDate,
-  formatSize,
   joinPath,
   parentPath,
   ratio,
@@ -378,51 +378,58 @@ export default function ArchiveEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <div className={styles.toolbar} role="toolbar" aria-label={tab.title}>
-          <Button
-            icon="export"
-            disabled={busy}
-            data-testid="archive-extract"
-            onClick={() => void extractSelectionOrAll()}
-          >
-            {hasSelection ? t("actions.extractSelection") : t("actions.extractAll")}
-          </Button>
-          <Button
-            icon="plus"
-            data-testid="archive-add-files"
-            disabled={!writable || busy}
-            title={writeHint}
-            onClick={() => void addFiles(false)}
-          >
-            {t("actions.addFiles")}
-          </Button>
-          <Button
-            icon="open"
-            disabled={!writable || busy}
-            title={writeHint}
-            onClick={() => void addFiles(true)}
-          >
-            {t("actions.addFolder")}
-          </Button>
-          <Button
-            icon="close"
-            disabled={!writable || !hasSelection || busy}
-            title={writeHint}
-            onClick={() => void remove()}
-          >
-            {t("actions.delete")}
-          </Button>
-          <Button
-            disabled={!writable || selected.size !== 1 || busy}
-            title={writeHint}
-            onClick={startRename}
-          >
-            {t("actions.rename")} (F2)
-          </Button>
-          <Button icon="archive" disabled={busy} onClick={() => void convert()}>
-            {t("actions.convert")}
-          </Button>
-        </div>
+        <ToolBar label={tab.title}>
+          <ToolGroup>
+            <Button
+              icon="export"
+              disabled={busy}
+              data-testid="archive-extract"
+              onClick={() => void extractSelectionOrAll()}
+            >
+              {hasSelection ? t("actions.extractSelection") : t("actions.extractAll")}
+            </Button>
+          </ToolGroup>
+          <ToolGroup>
+            <Button
+              icon="plus"
+              data-testid="archive-add-files"
+              disabled={!writable || busy}
+              title={writeHint}
+              onClick={() => void addFiles(false)}
+            >
+              {t("actions.addFiles")}
+            </Button>
+            <Button
+              icon="newFolder"
+              disabled={!writable || busy}
+              title={writeHint}
+              onClick={() => void addFiles(true)}
+            >
+              {t("actions.addFolder")}
+            </Button>
+            <Button
+              icon="trash"
+              disabled={!writable || !hasSelection || busy}
+              title={writeHint}
+              onClick={() => void remove()}
+            >
+              {t("actions.delete")}
+            </Button>
+            <Button
+              icon="edit"
+              disabled={!writable || selected.size !== 1 || busy}
+              title={writeHint}
+              onClick={startRename}
+            >
+              {t("actions.rename")} (F2)
+            </Button>
+          </ToolGroup>
+          <ToolGroup>
+            <Button icon="archive" disabled={busy} onClick={() => void convert()}>
+              {t("actions.convert")}
+            </Button>
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
 
       <EditorSidePanel title={t("tree.title")} side="left">
@@ -454,7 +461,9 @@ export default function ArchiveEditor({
                       toggleExpanded(row.node.path);
                     }}
                   >
-                    {row.hasSubdirs && row.node.path !== "" ? (open ? "▾" : "▸") : ""}
+                    {row.hasSubdirs && row.node.path !== "" ? (
+                      <Icon name={open ? "chevronDown" : "chevronRight"} size={12} />
+                    ) : null}
                   </span>
                   <span className={styles.treeName}>
                     {row.node.path === "" ? t("tree.root") : row.node.name}
@@ -546,7 +555,9 @@ export default function ArchiveEditor({
             onClick={() => toggleSort(key)}
           >
             {t(`columns.${key}`)}
-            {sort.key === key && <span aria-hidden="true">{sort.dir === "asc" ? " ▲" : " ▼"}</span>}
+            {sort.key === key && (
+              <Icon name={sort.dir === "asc" ? "chevronUp" : "chevronDown"} size={12} />
+            )}
           </button>
         ))}
       </div>
@@ -582,7 +593,7 @@ export default function ArchiveEditor({
                   onDoubleClick={() => void openNode(node)}
                 >
                   <span role="gridcell" className={styles.name} title={node.path}>
-                    <Icon name={node.isDir ? "open" : "file"} />
+                    <Icon name={node.isDir ? "folder" : "file"} />
                     <span className={styles.nameText}>{filter === "" ? node.name : node.path}</span>
                   </span>
                   <span role="gridcell" className={styles.num}>
