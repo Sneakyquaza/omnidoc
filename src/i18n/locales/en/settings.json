@@ -1,0 +1,52 @@
+{
+  "title": "Settings",
+  "close": "Close",
+  "appearance": {
+    "title": "Appearance",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": "Language",
+    "languageAuto": "Automatic (system)",
+    "uiScale": "Interface font size ({{value}}%)"
+  },
+  "editing": {
+    "title": "Editing",
+    "autosave": "Recovery autosave",
+    "autosaveOff": "Off",
+    "autosaveEvery_one": "Every {{count}} second",
+    "autosaveEvery_other": "Every {{count}} seconds",
+    "confirmPartial": "Confirm saving in a partial-fidelity format",
+    "fontFamily": "Code editor font",
+    "fontFamilyPlaceholder": "Default monospace",
+    "fontSize": "Editor font size (px)"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "hint": "Click a shortcut, then press the new key combination (Esc to cancel).",
+    "press": "Press a key…",
+    "none": "None",
+    "edit": "Change the shortcut of “{{name}}”",
+    "clear": "Remove the shortcut of “{{name}}”",
+    "reset": "Restore the shortcut of “{{name}}”",
+    "remove": "Remove",
+    "resetOne": "Restore",
+    "resetAll": "Reset all",
+    "conflict": "Already used by “{{name}}”: change that shortcut first."
+  },
+  "files": {
+    "title": "Files",
+    "recent_one": "{{count}} recent file",
+    "recent_other": "{{count}} recent files",
+    "clearRecent": "Clear recent files"
+  },
+  "about": {
+    "title": "About",
+    "version": "version {{version}}",
+    "license": "MIT license. Works offline, no telemetry.",
+    "openRepo": "Open the repository in the browser"
+  }
+}

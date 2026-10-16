@@ -10,8 +10,10 @@ import type {
   OpenedDocument,
 } from "../ipc/bindings";
 import { useRecent } from "../stores/recent";
+import { useSettings } from "../stores/settings";
 import { useTabs } from "../stores/tabs";
 import type { TabEntry } from "../stores/tabs";
+import { useUi } from "../stores/ui";
 import { reportError } from "./errors";
 import { getHandlers } from "./handlers";
 import { NEW_DOCUMENTS } from "./newDocuments";
@@ -233,7 +235,11 @@ export async function saveTab(tabId: string): Promise<boolean> {
   const tab = getTab(tabId);
   if (!tab) return false;
   if (tab.path === null || !tab.capabilities?.write) return saveTabAs(tabId);
-  if (tab.capabilities.fidelity === "partial" && !tab.fidelityConfirmed) {
+  if (
+    tab.capabilities.fidelity === "partial" &&
+    !tab.fidelityConfirmed &&
+    useSettings.getState().confirmPartialSave
+  ) {
     const ok = await confirm({
       title: t("save.partialTitle"),
       message: t("save.partialMessage", {
@@ -259,25 +265,62 @@ export async function saveTab(tabId: string): Promise<boolean> {
   }
 }
 
-/** Exporter vers… (conversion vers un autre format du même modèle). */
-export async function exportTab(tabId: string): Promise<void> {
+/** Exporter vers… : ouvre le dialogue unifié (cibles internes + moteurs externes). */
+export function exportTab(tabId: string): void {
+  if (getTab(tabId)) useUi.getState().setExportTabId(tabId);
+}
+
+/** Export interne : conversion du modèle courant vers le handler cible. */
+export async function exportInternal(tabId: string, targetId: string): Promise<void> {
   const tab = getTab(tabId);
   if (!tab) return;
   try {
-    const all = await getHandlers();
-    const allowed = tab.capabilities?.exportTo ?? [];
-    let targets = all.filter((h) => allowed.includes(h.id) && h.capabilities.write);
-    if (targets.length === 0) targets = writable(all, tab);
-    if (targets.length === 0) {
-      pushToast({ kind: "error", text: t("export.noTarget") });
-      return;
-    }
-    const dest = await saveDialog({ filters: filtersFor(targets) });
-    if (dest === null) return;
-    const target = pickHandler(targets, dest, targets[0]?.id ?? "");
+    const target = (await getHandlers()).find((h) => h.id === targetId);
     if (!target) return;
+    const stem = tab.title.replace(/\.[^.]+$/, "");
+    const ext = target.extensions[0];
+    const dest = await saveDialog({
+      defaultPath: ext ? `${stem}.${ext}` : stem,
+      filters: filtersFor([target]),
+    });
+    if (dest === null) return;
     const model = await currentModel(tab);
     await commands.exportDocument(model, tab.handlerId, target.id, dest);
+    pushToast({ kind: "success", text: t("export.done", { name: basename(dest) }) });
+  } catch (e) {
+    reportError(e);
+  }
+}
+
+/** Export par un moteur externe : le fichier sur disque est l'entrée (enregistrement préalable). */
+export async function exportExternal(
+  tabId: string,
+  tool: string,
+  ext: string,
+  formatLabel: string,
+): Promise<void> {
+  let tab = getTab(tabId);
+  if (!tab) return;
+  if (tab.dirty || tab.path === null) {
+    const ok = await confirm({
+      title: t("export.saveFirstTitle"),
+      message: t("export.saveFirstMessage", { name: tab.title }),
+      confirmLabel: t("export.saveFirstConfirm"),
+    });
+    if (!ok || !(await saveTab(tabId))) return;
+    tab = getTab(tabId);
+  }
+  const src = tab?.path;
+  if (!tab || !src) return;
+  try {
+    const stem = tab.title.replace(/\.[^.]+$/, "");
+    const dest = await saveDialog({
+      defaultPath: `${stem}.${ext}`,
+      filters: [{ name: formatLabel, extensions: [ext] }],
+    });
+    if (dest === null) return;
+    pushToast({ kind: "info", text: t("export.converting", { name: basename(dest) }) });
+    await commands.convertExternal(tool, src, dest, ext);
     pushToast({ kind: "success", text: t("export.done", { name: basename(dest) }) });
   } catch (e) {
     reportError(e);

@@ -62,3 +62,55 @@ export function formatShortcut(shortcut: string, mac: boolean = isMac()): string
     .filter(Boolean)
     .join("+");
 }
+
+/** Applique les surcharges de l'utilisateur (par id) ; chaîne vide = raccourci retiré. */
+export function applyShortcutOverrides<T extends { id: string; shortcut?: string }>(
+  items: T[],
+  overrides: Record<string, string>,
+): T[] {
+  return items.map((item) => {
+    const override = overrides[item.id];
+    if (override === undefined) return item;
+    return { ...item, shortcut: override === "" ? undefined : override };
+  });
+}
+
+const MODIFIER_KEYS = ["control", "shift", "alt", "meta", "altgraph", "os"];
+
+/** Notation « Mod+Shift+S » d'un événement clavier ; `null` si ce n'est pas un raccourci valide. */
+export function eventToShortcut(e: KeyEventLike): string | null {
+  const key = e.key;
+  if (MODIFIER_KEYS.includes(key.toLowerCase()) || key === "Dead" || key === "Unidentified") {
+    return null;
+  }
+  const mod = e.ctrlKey || e.metaKey;
+  // Une lettre seule n'est pas un raccourci : elle servirait à la saisie.
+  if (key.length === 1 && key !== " " && !mod && !e.altKey) return null;
+  if (key === "Tab" && !mod && !e.altKey) return null;
+  const name =
+    key === " " ? "Space" : key === "+" ? "Plus" : key.length === 1 ? key.toUpperCase() : key;
+  return [mod ? "Mod" : "", e.altKey ? "Alt" : "", e.shiftKey ? "Shift" : "", name]
+    .filter(Boolean)
+    .join("+");
+}
+
+/** Identifiants (autres que `id`) dont le raccourci effectif est identique. */
+export function findShortcutConflicts(
+  items: Array<{ id: string; shortcut?: string }>,
+  id: string,
+  shortcut: string,
+): string[] {
+  const target = parseShortcut(shortcut);
+  return items
+    .filter((i) => {
+      if (i.id === id || i.shortcut === undefined) return false;
+      const p = parseShortcut(i.shortcut);
+      return (
+        p.key === target.key &&
+        p.mod === target.mod &&
+        p.shift === target.shift &&
+        p.alt === target.alt
+      );
+    })
+    .map((i) => i.id);
+}

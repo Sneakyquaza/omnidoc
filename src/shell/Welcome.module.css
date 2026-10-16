@@ -5,8 +5,16 @@
 }
 
 .title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
-  font-size: 28px;
+  font-size: calc(28px * var(--ui-scale, 1));
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
 }
 
 .subtitle {
@@ -38,7 +46,7 @@
 
 .columns h2 {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: calc(14px * var(--ui-scale, 1));
   color: var(--color-text-muted);
   text-transform: uppercase;
 }
@@ -78,7 +86,7 @@
 
 .path {
   overflow: hidden;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-scale, 1));
   color: var(--color-text-muted);
   text-overflow: ellipsis;
   white-space: nowrap;

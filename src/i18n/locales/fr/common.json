@@ -121,7 +121,16 @@
   },
   "export": {
     "noTarget": "Aucun format d'export disponible pour ce document.",
-    "done": "Exporté vers « {{name}} »"
+    "done": "Exporté vers « {{name}} »",
+    "title": "Exporter « {{name}} » vers…",
+    "internal": "Formats pris en charge par OmniDoc",
+    "external": "Conversion par un moteur externe",
+    "externalNeedsSave": "Les conversions externes utilisent le fichier enregistré sur le disque : le document sera d'abord enregistré.",
+    "detecting": "Détection des moteurs externes…",
+    "converting": "Conversion vers « {{name}} » en cours…",
+    "saveFirstTitle": "Enregistrer d'abord ?",
+    "saveFirstMessage": "La conversion utilise le fichier sur le disque. Enregistrer « {{name}} » avant de convertir ?",
+    "saveFirstConfirm": "Enregistrer et convertir"
   },
   "reopen": {
     "title": "Rouvrir le fichier ?",
@@ -170,6 +179,7 @@
     "toggleSidePanel": "Afficher/masquer le panneau latéral",
     "cycleTheme": "Changer de thème",
     "toggleLanguage": "Changer de langue (FR/EN)",
-    "palette": "Palette de commandes"
+    "palette": "Palette de commandes",
+    "settings": "Ouvrir les paramètres"
   }
 }

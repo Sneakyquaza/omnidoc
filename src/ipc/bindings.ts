@@ -20,6 +20,8 @@ export const commands = {
 	/**  Autorise le protocole `asset:` à servir ce fichier (lecture média/PDF/image). */
 	allowAsset: (path: string) => __TAURI_INVOKE<null>("allow_asset", { path }),
 	externalTools: () => __TAURI_INVOKE<ExternalTool[]>("external_tools"),
+	/**  Conversion par un moteur externe détecté (LibreOffice, pandoc) ; `src` est le fichier sur disque. */
+	convertExternal: (tool: string, src: string, dest: string, targetExt: string) => __TAURI_INVOKE<null>("convert_external", { tool, src, dest, targetExt }),
 	/**  Fichiers passés en argument au lancement (flags ignorés). */
 	startupPaths: () => __TAURI_INVOKE<string[]>("startup_paths"),
 	textEncodings: () => __TAURI_INVOKE<string[]>("text_encodings"),

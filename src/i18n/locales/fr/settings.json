@@ -1,0 +1,52 @@
+{
+  "title": "Paramètres",
+  "close": "Fermer",
+  "appearance": {
+    "title": "Apparence",
+    "theme": "Thème",
+    "themes": {
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "language": "Langue",
+    "languageAuto": "Automatique (système)",
+    "uiScale": "Taille de la police de l'interface ({{value}} %)"
+  },
+  "editing": {
+    "title": "Édition",
+    "autosave": "Sauvegarde automatique de récupération",
+    "autosaveOff": "Désactivée",
+    "autosaveEvery_one": "Toutes les {{count}} seconde",
+    "autosaveEvery_other": "Toutes les {{count}} secondes",
+    "confirmPartial": "Confirmer l'enregistrement dans un format à fidélité partielle",
+    "fontFamily": "Police des éditeurs de code",
+    "fontFamilyPlaceholder": "Monospace par défaut",
+    "fontSize": "Taille de police des éditeurs (px)"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "hint": "Cliquez sur un raccourci puis appuyez sur la nouvelle combinaison (Échap pour annuler).",
+    "press": "Appuyez sur une touche…",
+    "none": "Aucun",
+    "edit": "Modifier le raccourci de « {{name}} »",
+    "clear": "Retirer le raccourci de « {{name}} »",
+    "reset": "Rétablir le raccourci de « {{name}} »",
+    "remove": "Retirer",
+    "resetOne": "Rétablir",
+    "resetAll": "Tout réinitialiser",
+    "conflict": "Déjà utilisé par « {{name}} » : modifiez d'abord ce raccourci."
+  },
+  "files": {
+    "title": "Fichiers",
+    "recent_one": "{{count}} fichier récent",
+    "recent_other": "{{count}} fichiers récents",
+    "clearRecent": "Effacer les fichiers récents"
+  },
+  "about": {
+    "title": "À propos",
+    "version": "version {{version}}",
+    "license": "Licence MIT. Fonctionne hors ligne, sans télémétrie.",
+    "openRepo": "Ouvrir le dépôt dans le navigateur"
+  }
+}

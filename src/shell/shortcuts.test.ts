@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { findByShortcut, formatShortcut, matchesShortcut, parseShortcut } from "./shortcuts";
+import {
+  applyShortcutOverrides,
+  eventToShortcut,
+  findByShortcut,
+  findShortcutConflicts,
+  formatShortcut,
+  matchesShortcut,
+  parseShortcut,
+} from "./shortcuts";
 
 const ev = (
   key: string,
@@ -45,5 +53,31 @@ describe("raccourcis", () => {
     expect(formatShortcut("Mod+Shift+P", false)).toBe("Ctrl+Shift+P");
     expect(formatShortcut("Mod+Shift+P", true)).toBe("⌘⇧P");
     expect(formatShortcut("Ctrl+Tab", false)).toBe("Ctrl+Tab");
+  });
+});
+
+describe("raccourcis configurables", () => {
+  it("applique les surcharges et retire les raccourcis vides", () => {
+    const items = [{ id: "a", shortcut: "Mod+A" }, { id: "b", shortcut: "Mod+B" }, { id: "c" }];
+    const out = applyShortcutOverrides(items, { a: "Mod+Shift+X", b: "", c: "F5" });
+    expect(out.map((i) => i.shortcut)).toEqual(["Mod+Shift+X", undefined, "F5"]);
+  });
+
+  it("capture un événement en notation canonique", () => {
+    expect(eventToShortcut(ev("s", { ctrlKey: true, shiftKey: true }))).toBe("Mod+Shift+S");
+    expect(eventToShortcut(ev("F5"))).toBe("F5");
+    expect(eventToShortcut(ev("Control", { ctrlKey: true }))).toBeNull();
+    expect(eventToShortcut(ev("a"))).toBeNull();
+    expect(eventToShortcut(ev(",", { metaKey: true }))).toBe("Mod+,");
+  });
+
+  it("détecte les conflits", () => {
+    const items = [
+      { id: "a", shortcut: "Mod+S" },
+      { id: "b", shortcut: "Mod+Shift+S" },
+      { id: "c" },
+    ];
+    expect(findShortcutConflicts(items, "c", "ctrl+s")).toEqual(["a"]);
+    expect(findShortcutConflicts(items, "a", "Mod+S")).toEqual([]);
   });
 });

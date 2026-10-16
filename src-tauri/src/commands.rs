@@ -18,6 +18,7 @@ use crate::core::registry::{Detected, HandlerInfo, Registry};
 use crate::core::watch::FileWatcher;
 use crate::error::{AppError, Result};
 use crate::external::{self, ExternalTool};
+use crate::external_convert;
 
 pub struct AppState {
     pub registry: Arc<Registry>,
@@ -228,8 +229,44 @@ pub async fn external_tools() -> Result<Vec<ExternalTool>> {
     blocking(|| Ok(external::find_tools())).await
 }
 
+/// Conversion par un moteur externe détecté (LibreOffice, pandoc) ; `src` est le fichier sur disque.
+#[tauri::command]
+#[specta::specta]
+pub async fn convert_external(
+    state: State<'_, AppState>,
+    tool: String,
+    src: String,
+    dest: String,
+    target_ext: String,
+) -> Result<()> {
+    let watcher = Arc::clone(&state.watcher);
+    blocking(move || {
+        let dest = Path::new(&dest);
+        watcher.mark_self_write(dest);
+        let res = external_convert::convert(&tool, Path::new(&src), dest, &target_ext);
+        watcher.mark_self_write(dest);
+        res
+    })
+    .await
+}
+
 fn paths_from_args(args: impl Iterator<Item = String>) -> Vec<String> {
     args.filter(|a| !a.is_empty() && !a.starts_with('-'))
+        .collect()
+}
+
+/// Chemins issus des arguments d'une autre instance, rendus absolus par rapport à `cwd`.
+pub fn resolve_paths(args: impl Iterator<Item = String>, cwd: &str) -> Vec<String> {
+    paths_from_args(args)
+        .into_iter()
+        .map(|p| {
+            let path = Path::new(&p);
+            if path.is_absolute() {
+                p
+            } else {
+                Path::new(cwd).join(path).to_string_lossy().into_owned()
+            }
+        })
         .collect()
 }
 
@@ -248,5 +285,13 @@ mod tests {
     fn startup_args_ignore_flags() {
         let args = ["--foo", "a.txt", "-x", "", "/b/c.md"].map(String::from);
         assert_eq!(paths_from_args(args.into_iter()), vec!["a.txt", "/b/c.md"]);
+    }
+
+    #[test]
+    fn resolves_relative_paths_against_cwd() {
+        let args = ["--x", "a.txt", "/b/c.md"].map(String::from);
+        let got = resolve_paths(args.into_iter(), "/home/u");
+        assert_eq!(got[1], "/b/c.md");
+        assert!(got[0].ends_with("a.txt") && got[0].starts_with("/home/u"));
     }
 }

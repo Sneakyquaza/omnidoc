@@ -10,3 +10,9 @@ src-tauri/gen/
 .vite/
 coverage/
 *.tsbuildinfo
+
+# cargo-fuzz
+src-tauri/fuzz/target/
+src-tauri/fuzz/corpus/
+src-tauri/fuzz/artifacts/
+src-tauri/fuzz/coverage/

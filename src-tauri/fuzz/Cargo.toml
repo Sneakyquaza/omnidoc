@@ -1,0 +1,50 @@
+[package]
+name = "omnidoc-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+omnidoc = { path = ".." }
+
+# Crate autonome : exclu du workspace de `src-tauri` (cargo test / clippy ne le voient pas).
+[workspace]
+
+[[bin]]
+name = "probe_detect"
+path = "fuzz_targets/probe_detect.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "rtf"
+path = "fuzz_targets/rtf.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "records_ics"
+path = "fuzz_targets/records_ics.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "csv"
+path = "fuzz_targets/csv.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "markdown_rich"
+path = "fuzz_targets/markdown_rich.rs"
+test = false
+doc = false
+bench = false

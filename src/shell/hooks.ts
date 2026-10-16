@@ -12,8 +12,6 @@ import { autosaveDirtyTabs, openPaths, restoreRecovery } from "./documents";
 import { findByShortcut } from "./shortcuts";
 import { choose, confirm, useDialogs } from "./ui/dialogStore";
 
-export const AUTOSAVE_INTERVAL_MS = 30_000;
-
 /** Applique thème (`data-theme`) et langue. */
 export function useAppearance(): void {
   const theme = useSettings((s) => s.theme);
@@ -31,6 +29,18 @@ export function useAppearance(): void {
     return () => media.removeEventListener("change", apply);
   }, [theme]);
 
+  const uiScale = useSettings((s) => s.uiScale);
+  const editorFontFamily = useSettings((s) => s.editorFontFamily);
+  const editorFontSize = useSettings((s) => s.editorFontSize);
+
+  // Taille de l'interface et police des éditeurs (variables CSS utilisables par les éditeurs).
+  useEffect(() => {
+    const style = document.documentElement.style;
+    style.setProperty("--ui-scale", String(uiScale / 100));
+    style.setProperty("--editor-font-family", editorFontFamily.trim() || "var(--font-mono)");
+    style.setProperty("--editor-font-size", `${editorFontSize}px`);
+  }, [uiScale, editorFontFamily, editorFontSize]);
+
   useEffect(() => {
     const lng = language === "auto" ? detectLanguage() : language;
     document.documentElement.lang = lng;
@@ -44,6 +54,9 @@ export function useGlobalShortcuts(): void {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (useDialogs.getState().queue.length > 0) return;
+      // Les dialogues Paramètres / Exporter gèrent eux-mêmes leur clavier.
+      const ui = useUi.getState();
+      if (ui.settingsOpen || ui.exportTabId !== null) return;
       const cmd = findByShortcut(all, e);
       if (!cmd) return;
       e.preventDefault();
@@ -52,6 +65,16 @@ export function useGlobalShortcuts(): void {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [all]);
+}
+
+/** Autosave de récupération selon l'intervalle des préférences (0 = désactivé). */
+export function useAutosave(): void {
+  const seconds = useSettings((s) => s.autosaveSeconds);
+  useEffect(() => {
+    if (seconds <= 0) return;
+    const timer = setInterval(() => void autosaveDirtyTabs(), seconds * 1000);
+    return () => clearInterval(timer);
+  }, [seconds]);
 }
 
 let started = false;
@@ -88,7 +111,7 @@ export function useStartup(): void {
   }, []);
 }
 
-/** Événements système : fichier modifié, glisser-déposer, autosave, fermeture de la fenêtre. */
+/** Événements système : fichier modifié, glisser-déposer, fichiers d'une autre instance, fermeture de la fenêtre. */
 export function useSystemEvents(): void {
   useEffect(() => {
     const cleanups: Array<() => void> = [];
@@ -135,10 +158,14 @@ export function useSystemEvents(): void {
       }),
     );
 
-    const timer = setInterval(() => void autosaveDirtyTabs(), AUTOSAVE_INTERVAL_MS);
+    keep(
+      listen<{ paths: string[] }>("open-paths", (e) => {
+        void openPaths(e.payload.paths);
+      }),
+    );
+
     return () => {
       disposed = true;
-      clearInterval(timer);
       cleanups.forEach((fn) => fn());
     };
   }, []);

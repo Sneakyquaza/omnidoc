@@ -7,7 +7,7 @@
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-scale, 1));
 }
 
 .flag {

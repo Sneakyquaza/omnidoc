@@ -4,12 +4,20 @@ import { useTabs } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { CommandPalette } from "./CommandPalette";
 import { EditorHost } from "./EditorHost";
+import { ExportDialog } from "./ExportDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import { StatusBar } from "./StatusBar";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
 import { Welcome } from "./Welcome";
 import { ignoreExternalChange, reloadFromDisk } from "./documents";
-import { useAppearance, useGlobalShortcuts, useStartup, useSystemEvents } from "./hooks";
+import {
+  useAppearance,
+  useAutosave,
+  useGlobalShortcuts,
+  useStartup,
+  useSystemEvents,
+} from "./hooks";
 import { SlotTarget, SlotsProvider } from "./slots";
 import { Button } from "./ui/Button";
 import { DialogHost } from "./ui/Dialog";
@@ -19,6 +27,7 @@ import styles from "./Shell.module.css";
 export function Shell() {
   const { t } = useTranslation();
   useAppearance();
+  useAutosave();
   useGlobalShortcuts();
   useStartup();
   useSystemEvents();
@@ -70,6 +79,8 @@ export function Shell() {
         <StatusBar />
         {dragging && <div className={styles.dropOverlay}>{t("welcome.dropHere")}</div>}
         <CommandPalette />
+        <ExportDialog />
+        <SettingsDialog />
         <DialogHost />
         <ToastHost />
       </div>
