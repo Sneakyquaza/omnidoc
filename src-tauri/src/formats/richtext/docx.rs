@@ -716,6 +716,7 @@ impl Reader<'_, '_> {
                         self.run_children(ch, marks, link_default, fields, out);
                     }
                 }
+                "w:sym" => self.lossy.add("symbols"),
                 "w:footnoteReference" | "w:endnoteReference" => self.lossy.add("footnotes"),
                 "w:commentReference" => self.lossy.add("comments"),
                 _ => {}
@@ -1106,6 +1107,23 @@ fn group(items: Vec<Item>) -> Vec<Block> {
     out
 }
 
+/// Vrai si `w:sectPr` s'écarte du A4 portrait à marges 1417 twips écrit par `serialize`.
+fn non_default_page(sect: &Element) -> bool {
+    let differs = |e: Option<&Element>, attr: &str, want: &str| {
+        e.and_then(|e| e.attr(attr)).is_some_and(|v| v != want)
+    };
+    let sz = sect.find("w:pgSz");
+    let mar = sect.find("w:pgMar");
+    differs(sz, "w:w", "11906")
+        || differs(sz, "w:h", "16838")
+        || sz
+            .and_then(|e| e.attr("w:orient"))
+            .is_some_and(|v| v == "landscape")
+        || ["w:top", "w:right", "w:bottom", "w:left"]
+            .iter()
+            .any(|a| differs(mar, a, "1417"))
+}
+
 pub fn parse(bytes: &[u8]) -> Result<RichDoc> {
     let mut archive = open_zip(bytes)?;
     let names: Vec<String> = archive
@@ -1137,7 +1155,20 @@ pub fn parse(bytes: &[u8]) -> Result<RichDoc> {
     let main_dir = main.rsplit_once('/').map_or("", |(d, _)| d).to_string();
 
     let styles = zip_read_xml(&mut archive, &format!("{main_dir}/styles.xml"))?
-        .map(|r| Styles::parse(&r))
+        .map(|r| {
+            // Styles personnalisés : réduits à leur classification (titre, citation, code…).
+            // (les styles `CodeBlock*` sont ceux écrits par OmniDoc.)
+            if r.elems().any(|s| {
+                s.name == "w:style"
+                    && s.attr("w:customStyle").is_some_and(|v| v != "0")
+                    && !s
+                        .attr("w:styleId")
+                        .is_some_and(|i| i.starts_with("CodeBlock"))
+            }) {
+                lossy.add("custom_styles");
+            }
+            Styles::parse(&r)
+        })
         .unwrap_or_default();
     let nums = zip_read_xml(&mut archive, &format!("{main_dir}/numbering.xml"))?
         .map(|r| parse_numbering(&r))
@@ -1176,6 +1207,10 @@ pub fn parse(bytes: &[u8]) -> Result<RichDoc> {
     let body = doc_root
         .find("w:body")
         .ok_or_else(|| AppError::Corrupt("w:body absent".into()))?;
+    // La page est réécrite en A4 avec marges de 2,5 cm : toute autre mise en page est perdue.
+    if body.find("w:sectPr").is_some_and(non_default_page) {
+        lossy.add("page_setup");
+    }
     let mut reader = Reader {
         archive: &mut archive,
         rels: HashMap::new(),
@@ -2093,6 +2128,22 @@ mod tests {
         }
         for k in ["headers_footers", "macros", "fields", "tracked_changes"] {
             assert!(doc.lossy.contains(&k.to_string()), "{k}: {:?}", doc.lossy);
+        }
+    }
+
+    #[test]
+    fn page_setup_styles_and_symbols_are_reported() {
+        let styles = r#"<w:styles xmlns:w="x"><w:style w:type="paragraph" w:customStyle="1" w:styleId="Mien"><w:name w:val="Mien"/></w:style></w:styles>"#;
+        let body = r#"<w:p><w:r><w:rPr><w:rFonts w:ascii="Arial"/></w:rPr><w:t>x</w:t><w:sym w:font="Wingdings" w:char="F04A"/></w:r></w:p>
+<w:sectPr><w:pgSz w:w="15840" w:h="12240" w:orient="landscape"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr>"#;
+        let doc = parse(&word_doc(body, &[("word/styles.xml", styles)])).unwrap();
+        for k in ["page_setup", "custom_styles", "symbols"] {
+            assert!(doc.lossy.contains(&k.to_string()), "{k}: {:?}", doc.lossy);
+        }
+        // Un document écrit par OmniDoc ne déclenche aucun de ces avertissements.
+        let own = parse(&serialize(&doc).unwrap()).unwrap();
+        for k in ["page_setup", "custom_styles", "symbols"] {
+            assert!(!own.lossy.contains(&k.to_string()), "{k}");
         }
     }
 

@@ -745,6 +745,44 @@ fn group(items: Vec<Item>) -> Vec<Block> {
     out
 }
 
+/// Longueur ODF (`21cm`, `210mm`, `8.5in`) en centimètres.
+fn length_cm(v: &str) -> Option<f64> {
+    let v = v.trim();
+    for (unit, k) in [("cm", 1.0), ("mm", 0.1), ("in", 2.54)] {
+        if let Some(n) = v.strip_suffix(unit) {
+            return n.trim().parse::<f64>().ok().map(|x| x * k);
+        }
+    }
+    None
+}
+
+/// Vrai si la mise en page de `styles.xml` n'est pas celle écrite par `serialize`
+/// (A4 portrait, marges de 2 cm) : taille et marges ne sont pas conservées.
+fn non_default_page(styles: &Element) -> bool {
+    let Some(auto) = styles.find("office:automatic-styles") else {
+        return false;
+    };
+    auto.elems()
+        .filter(|l| l.name == "style:page-layout")
+        .filter_map(|l| l.find("style:page-layout-properties"))
+        .any(|p| {
+            [
+                ("fo:page-width", 21.0),
+                ("fo:page-height", 29.7),
+                ("fo:margin-top", 2.0),
+                ("fo:margin-bottom", 2.0),
+                ("fo:margin-left", 2.0),
+                ("fo:margin-right", 2.0),
+            ]
+            .iter()
+            .any(|(a, want)| {
+                p.attr(a)
+                    .and_then(length_cm)
+                    .is_some_and(|got| (got - want).abs() > 0.05)
+            })
+        })
+}
+
 pub fn parse(bytes: &[u8]) -> Result<RichDoc> {
     let mut archive = open_zip(bytes)?;
     let names: Vec<String> = archive
@@ -801,6 +839,9 @@ pub fn parse(bytes: &[u8]) -> Result<RichDoc> {
     };
     if let Some(s) = &styles_root {
         reader.load_styles(s);
+        if non_default_page(s) {
+            reader.lossy.add("page_setup");
+        }
     }
     reader.load_styles(&content);
     let text = content
@@ -1532,5 +1573,22 @@ mod tests {
             flipped[i] ^= 0x5A;
         }
         let _ = parse(&flipped);
+    }
+
+    #[test]
+    fn non_default_page_layout_is_detected() {
+        let styles = |w: &str, m: &str| {
+            let xml = format!(
+                "<office:document-styles xmlns:office=\"o\" xmlns:style=\"s\" xmlns:fo=\"f\"><office:automatic-styles><style:page-layout style:name=\"pm1\"><style:page-layout-properties fo:page-width=\"{w}\" fo:page-height=\"29.7cm\" fo:margin-top=\"{m}\"/></style:page-layout></office:automatic-styles></office:document-styles>"
+            );
+            super::super::xml::parse(xml.as_bytes()).unwrap()
+        };
+        assert!(!non_default_page(&styles("21.001cm", "2cm")));
+        assert!(non_default_page(&styles("21.59cm", "2cm")));
+        assert!(non_default_page(&styles("21cm", "1in")));
+        assert!(!non_default_page(&styles("210mm", "20mm")));
+        // le document écrit par OmniDoc est neutre
+        let doc = parse(&serialize(&to_rich(reference(true))).unwrap()).unwrap();
+        assert!(!doc.lossy.contains(&"page_setup".to_string()));
     }
 }

@@ -259,7 +259,9 @@ export type KeyValue = {
 	value: string,
 };
 
-export type LineEnding = "lf" | "crlf" | "cr";
+export type LineEnding = "lf" | "crlf" | "cr" | 
+/**  Plusieurs conventions dans le fichier d'origine (jamais normalisé en silence). */
+"mixed";
 
 export type MediaDoc = {
 	mime: string,

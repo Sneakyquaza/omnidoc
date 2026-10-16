@@ -276,6 +276,18 @@ fn detect_lossy(zip: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>) -> Vec<String
             add("pivotTables");
         } else if n.starts_with("xl/comments") {
             add("comments");
+        } else if n.starts_with("xl/tables/") && n.ends_with(".xml") {
+            add("tables");
+        }
+    }
+    if let Some(wbxml) = read_entry(zip, "xl/workbook.xml", MAX_XML_ENTRY) {
+        if bytes_contain(&wbxml, b"state=\"hidden\"")
+            || bytes_contain(&wbxml, b"state=\"veryHidden\"")
+        {
+            add("hiddenSheets");
+        }
+        if bytes_contain(&wbxml, b"<definedName ") {
+            add("definedNames");
         }
     }
     for n in names.iter().filter(|n| {
@@ -293,6 +305,9 @@ fn detect_lossy(zip: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>) -> Vec<String
         if bytes_contain(&xml, b"<dataValidation ") {
             add("dataValidations");
         }
+        if bytes_contain(&xml, b"<pane ") {
+            add("frozenPanes");
+        }
     }
     if let Some(styles) = read_entry(zip, "xl/styles.xml", MAX_XML_ENTRY) {
         let count = |tag: &str| -> usize {
@@ -306,6 +321,22 @@ fn detect_lossy(zip: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>) -> Vec<String
         };
         if count("fonts") > 1 || count("fills") > 2 || count("borders") > 1 {
             add("styles");
+        }
+        // Formats numériques (pourcentage, dates personnalisées…) : un `xf` de `cellXfs` dont
+        // `numFmtId` ≠ 0.
+        let text = String::from_utf8_lossy(&styles);
+        if let Some(section) = text
+            .split_once("<cellXfs")
+            .and_then(|(_, rest)| rest.split_once("</cellXfs>"))
+            .map(|(s, _)| s)
+        {
+            if section
+                .split("numFmtId=\"")
+                .skip(1)
+                .any(|r| !r.starts_with("0\""))
+            {
+                add("numberFormats");
+            }
         }
     }
     lossy
@@ -349,7 +380,7 @@ fn read_xls_unguarded(bytes: &[u8]) -> Result<Workbook> {
 pub(crate) fn write_xlsx(wb: &Workbook) -> Result<Vec<u8>> {
     use rust_xlsxwriter::{Format, Formula, Workbook as XWorkbook};
 
-    let ext = |e: rust_xlsxwriter::XlsxError| AppError::External(e.to_string());
+    let ext = |e: rust_xlsxwriter::XlsxError| AppError::Invalid(e.to_string());
     let mut x = XWorkbook::new();
     let names = sanitize_sheet_names(&wb.sheets, 31);
     let mut formats: HashMap<String, Format> = HashMap::new();
@@ -647,6 +678,38 @@ pub(crate) mod tests {
         );
         assert!(back.lossy.iter().any(|l| l == "merges"));
         assert!(back.lossy.iter().any(|l| l == "styles"));
+    }
+
+    #[test]
+    fn number_formats_panes_names_and_hidden_sheets_are_lossy() {
+        let mut x = rust_xlsxwriter::Workbook::new();
+        let ws = x.add_worksheet();
+        ws.write_number_with_format(
+            0,
+            0,
+            0.25,
+            &rust_xlsxwriter::Format::new().set_num_format("0%"),
+        )
+        .unwrap();
+        ws.set_freeze_panes(1, 0).unwrap();
+        x.define_name("Total", "=Sheet1!$A$1").unwrap();
+        x.add_worksheet().set_hidden(true);
+        let back = reopen(&x.save_to_buffer().unwrap());
+        for k in [
+            "numberFormats",
+            "frozenPanes",
+            "definedNames",
+            "hiddenSheets",
+        ] {
+            assert!(back.lossy.iter().any(|l| l == k), "{k} : {:?}", back.lossy);
+        }
+    }
+
+    #[test]
+    fn writer_limit_errors_are_invalid_not_corrupt() {
+        let mut wb = sample();
+        wb.sheets[0].rows[0][0] = c(CellValue::Text("x".repeat(40_000)));
+        assert!(matches!(write_xlsx(&wb), Err(AppError::Invalid(_))));
     }
 
     #[test]

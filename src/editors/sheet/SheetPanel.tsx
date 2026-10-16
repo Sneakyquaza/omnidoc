@@ -21,6 +21,11 @@ const LOSSY_KEYS = new Set([
   "dataValidations",
   "pivotTables",
   "comments",
+  "numberFormats",
+  "hiddenSheets",
+  "definedNames",
+  "frozenPanes",
+  "tables",
 ]);
 
 interface SheetPanelProps {

@@ -87,6 +87,8 @@ pub enum LineEnding {
     Lf,
     Crlf,
     Cr,
+    /// Plusieurs conventions dans le fichier d'origine (jamais normalisé en silence).
+    Mixed,
 }
 
 // --- RichText (JSON ProseMirror/TipTap) ---
