@@ -42,6 +42,13 @@ const journeys: Array<[string, string]> = [
   ["search.journey.ts", "sample.txt"],
   ["prefs.journey.ts", "sample.txt"],
   ["shell.journey.ts", "sample.docx"],
+  ["media.journey.ts", "sample.mp3"],
+  ["media.journey.ts", "video.webm"],
+  ["ebook.journey.ts", "sample.epub"],
+  ["notebook.journey.ts", "sample.ipynb"],
+  ["slides.journey.ts", "sample.pptx"],
+  ["slides.journey.ts", "sample.odp"],
+  ["hex.journey.ts", "sample.bin"],
 ];
 
 /** Formats inscriptibles testés par save.e2e.ts (les autres sont en lecture seule). */
@@ -111,6 +118,7 @@ const capabilities = [
     : [
         ...fs
           .readdirSync(fixtures)
+          .filter((name) => name.startsWith("sample."))
           .sort()
           .map((name) => capability(copyToWork(name, "open"), "open.e2e.ts")),
         // Sans fichier : écran d'accueil.

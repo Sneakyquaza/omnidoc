@@ -109,6 +109,27 @@ fn mp3_bytes() -> Vec<u8> {
     b
 }
 
+/// WebM minimal (en-tête EBML + segment vide) : suffit à ouvrir l'éditeur média en mode vidéo.
+fn webm_bytes() -> Vec<u8> {
+    // En-tête EBML : DocType = "webm".
+    let doctype = [0x42u8, 0x82, 0x84, b'w', b'e', b'b', b'm'];
+    let mut b = vec![0x1A, 0x45, 0xDF, 0xA3, 0x80 | doctype.len() as u8];
+    b.extend(doctype);
+    // Segment vide.
+    b.extend([0x18, 0x53, 0x80, 0x67, 0x80]);
+    b
+}
+
+/// Binaire inconnu de 5000 octets : motif de départ, puis un marqueur texte à l'offset 4128 (0x1020).
+fn bin_bytes() -> Vec<u8> {
+    let mut b = vec![
+        0x5Au8, 0x5A, 0x00, 0x01, 0x02, 0xFE, 0xFF, 0x10, 0x80, 0x7F, 0x00, 0x00,
+    ];
+    b.resize(5000, 0x00);
+    b[4128..4128 + 12].copy_from_slice(b"OMNIDOC-MARK");
+    b
+}
+
 fn epub(path: &Path) {
     zip_of(
         path,
@@ -224,13 +245,7 @@ fn generate_samples() {
         "BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Ada Lovelace\r\nN:Lovelace;Ada;;;\r\nEMAIL:ada@example.org\r\nTEL:+33123456789\r\nEND:VCARD\r\n",
     )
     .unwrap();
-    fs::write(
-        p("sample.bin"),
-        [
-            0x5Au8, 0x5A, 0x00, 0x01, 0x02, 0xFE, 0xFF, 0x10, 0x80, 0x7F, 0x00, 0x00,
-        ],
-    )
-    .unwrap();
+    fs::write(p("sample.bin"), bin_bytes()).unwrap();
 
     // Documents riches et tableurs via les handlers.
     let html = registry
@@ -264,6 +279,8 @@ fn generate_samples() {
     fs::write(p("sample.pdf"), pdf_bytes(3)).unwrap();
     fs::write(p("sample.wav"), wav_bytes()).unwrap();
     fs::write(p("sample.mp3"), mp3_bytes()).unwrap();
+    // Fixture propre aux parcours (le test d'ouverture ne prend que `sample.*`).
+    fs::write(p("video.webm"), webm_bytes()).unwrap();
     let _ = fs::remove_file(p("sample.sqlite"));
     let c = rusqlite::Connection::open(p("sample.sqlite")).unwrap();
     c.execute_batch(

@@ -291,6 +291,7 @@ export default function HexEditor({
             </span>
             <input
               ref={barInputRef}
+              data-testid="hex-bar-input"
               autoFocus
               className={styles.input}
               value={barText}
@@ -313,7 +314,7 @@ export default function HexEditor({
             {bar === "goto" ? t("goto.go") : t("find.next")}
           </Button>
           <Button onClick={closeBar}>{t("bar.close")}</Button>
-          <span role="status" className={styles.message}>
+          <span role="status" className={styles.message} data-testid="hex-bar-message">
             {message}
           </span>
         </form>
