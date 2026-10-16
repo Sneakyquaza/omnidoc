@@ -40,7 +40,7 @@ Un format non supporté en écriture s'ouvre toujours en lecture seule, de faço
 - **Texte riche** (docx, odt, html, md riche) : TipTap, styles de titre, listes, tableaux, liens, images, recherche.
 - **Tableur** : grille virtualisée, feuilles multiples, formules conservées, import/export csv/xlsx/ods.
 - **Image** : rotation, recadrage, redimensionnement, ajustements, annotations, EXIF (lecture, suppression), conversion.
-- **PDF** : backend prêt (fusion, découpe, extraction, rotation, réordonnancement, annotations) ; éditeur à venir.
+- **PDF** : rendu pdf.js (vue continue, miniatures, plan, recherche), annotations (surlignage, note, texte libre, dessin), opérations de pages (fusion, découpe, extraction, rotation, suppression, réordonnancement), export PNG.
 - **Archives** : arbre, extraction, ajout/suppression/renommage, conversion zip ↔ tar.gz.
 - **Audio / vidéo** : lecteur, forme d'onde, tags et pochette, découpe et conversion si `ffmpeg` est présent.
 - **Hexadécimal** : lecture par plages (gros fichiers), recherche.
