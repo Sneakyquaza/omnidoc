@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>OmniDoc</title>
+  <path d="M224 96h408l208 208v624H224z" fill="#2563eb" stroke="#2563eb" stroke-width="64" stroke-linejoin="round"/>
+  <path d="M632 96v208h208z" fill="#a9c2f7" stroke="#a9c2f7" stroke-width="64" stroke-linejoin="round"/>
+  <circle cx="532" cy="624" r="176" fill="none" stroke="#ffffff" stroke-width="88"/>
+</svg>

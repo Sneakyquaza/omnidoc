@@ -2,6 +2,7 @@ pub mod commands;
 pub mod core;
 pub mod error;
 pub mod external;
+pub mod external_convert;
 pub mod formats;
 
 use std::sync::Arc;
@@ -17,6 +18,11 @@ use crate::core::watch::FileWatcher;
 #[derive(Clone, Serialize)]
 struct FileChanged {
     path: String,
+}
+
+#[derive(Clone, Serialize)]
+struct OpenPaths {
+    paths: Vec<String>,
 }
 
 /// Chemin du fichier de bindings TypeScript généré.
@@ -38,6 +44,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
             commands::unwatch_file,
             commands::allow_asset,
             commands::external_tools,
+            commands::convert_external,
             commands::startup_paths,
             formats::text::text_encodings,
             formats::text::text_reopen_with_encoding,
@@ -96,7 +103,20 @@ pub fn run() {
     let raw: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool =
         tauri::generate_handler![commands::read_bytes, commands::read_range];
 
-    let result = tauri::Builder::default()
+    let mut app_builder = tauri::Builder::default();
+    // Doit être le premier plugin : une 2ᵉ instance transmet ses arguments à la première.
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            let paths = commands::resolve_paths(argv.into_iter().skip(1), &cwd);
+            if !paths.is_empty() {
+                let _ = app.emit("open-paths", OpenPaths { paths });
+            }
+            focus_main_window(app);
+        }));
+    }
+
+    let result = app_builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(move |invoke| {
@@ -131,11 +151,37 @@ pub fn run() {
             });
             Ok(())
         })
-        .run(tauri::generate_context!());
+        .build(tauri::generate_context!());
 
-    if let Err(e) = result {
-        eprintln!("erreur au lancement de l'application : {e}");
-        std::process::exit(1);
+    match result {
+        Ok(app) => app.run(|_handle, _event| {
+            // macOS : ouverture de fichiers par le Finder (double-clic, « Ouvrir avec »).
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { urls } = _event {
+                let paths: Vec<String> = urls
+                    .iter()
+                    .filter_map(|u| u.to_file_path().ok())
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .collect();
+                if !paths.is_empty() {
+                    let _ = _handle.emit("open-paths", OpenPaths { paths });
+                    focus_main_window(_handle);
+                }
+            }
+        }),
+        Err(e) => {
+            eprintln!("erreur au lancement de l'application : {e}");
+            std::process::exit(1);
+        }
+    }
+}
+
+/// Remet la fenêtre principale au premier plan.
+fn focus_main_window(app: &tauri::AppHandle) {
+    if let Some(window) = app.webview_windows().into_values().next() {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
     }
 }
 

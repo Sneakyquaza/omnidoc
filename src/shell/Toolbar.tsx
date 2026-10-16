@@ -82,7 +82,7 @@ export function Toolbar() {
         variant="ghost"
         icon="export"
         disabled={!tab}
-        onClick={() => tab && void exportTab(tab.id)}
+        onClick={() => tab && exportTab(tab.id)}
       >
         {t("toolbar.export")}
       </Button>

@@ -7,6 +7,7 @@ import { useTabs } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { closeTabWithConfirm, exportTab, openWithDialog, saveTab, saveTabAs } from "./documents";
 import { useRuntime } from "./runtime";
+import { applyShortcutOverrides } from "./shortcuts";
 
 /** Commande du shell ; `hidden` = raccourci seulement (absente de la palette). */
 export interface ShellCommand extends EditorCommand {
@@ -42,7 +43,7 @@ export function buildGlobalCommands(t: TFunction): ShellCommand[] {
       shortcut: "Mod+Shift+S",
       run: withTab((id) => void saveTabAs(id)),
     },
-    { id: "file.export", title: t("commands.export"), run: withTab((id) => void exportTab(id)) },
+    { id: "file.export", title: t("commands.export"), run: withTab((id) => exportTab(id)) },
     {
       id: "tab.close",
       title: t("commands.closeTab"),
@@ -80,6 +81,12 @@ export function buildGlobalCommands(t: TFunction): ShellCommand[] {
         s.setLanguage(i18nLanguage() === "fr" ? "en" : "fr");
       },
     },
+    {
+      id: "settings.open",
+      title: t("commands.settings"),
+      shortcut: "Mod+,",
+      run: () => useUi.getState().setSettingsOpen(true),
+    },
     { id: "palette.open", title: t("commands.palette"), shortcut: "Mod+Shift+P", run: openPalette },
     {
       id: "palette.open2",
@@ -99,11 +106,15 @@ function i18nLanguage(): string {
 export function useShellCommands(): { all: ShellCommand[]; editor: EditorCommand[] } {
   const { t, i18n } = useTranslation();
   const activeTab = useTabs((s) => s.activeId);
+  const overrides = useSettings((s) => s.shortcuts);
   const editorCommands = useRuntime((s) => (activeTab ? s.commands[activeTab] : undefined));
   return useMemo(() => {
-    const editor = editorCommands ?? [];
-    return { all: [...editor, ...buildGlobalCommands(t)], editor };
+    const editor = applyShortcutOverrides(editorCommands ?? [], overrides);
+    return {
+      all: [...editor, ...applyShortcutOverrides(buildGlobalCommands(t), overrides)],
+      editor,
+    };
     // i18n.language : recalcul des titres au changement de langue
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editorCommands, t, i18n.language]);
+  }, [editorCommands, overrides, t, i18n.language]);
 }

@@ -27,13 +27,270 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "deb",
+      "rpm",
+      "appimage",
+      "nsis",
+      "msi",
+      "dmg",
+      "app"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "publisher": "Sneakyquaza",
+    "category": "Productivity",
+    "shortDescription": "Éditeur de bureau universel",
+    "longDescription": "OmniDoc ouvre et édite tout type de fichier (documents, tableurs, code, images, PDF, archives, audio/vidéo, binaires) avec une interface qui s'adapte au format. Hors ligne, sans télémétrie.",
+    "copyright": "Copyright © 2026 Sneakyquaza",
+    "license": "MIT",
+    "fileAssociations": [
+      {
+        "name": "Word document",
+        "ext": [
+          "docx"
+        ],
+        "description": "Word document",
+        "role": "Editor",
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      },
+      {
+        "name": "OpenDocument text",
+        "ext": [
+          "odt"
+        ],
+        "description": "OpenDocument text",
+        "role": "Editor",
+        "mimeType": "application/vnd.oasis.opendocument.text"
+      },
+      {
+        "name": "Markdown",
+        "ext": [
+          "md",
+          "markdown"
+        ],
+        "description": "Markdown",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      },
+      {
+        "name": "Text file",
+        "ext": [
+          "txt",
+          "log"
+        ],
+        "description": "Text file",
+        "role": "Editor",
+        "mimeType": "text/plain"
+      },
+      {
+        "name": "JSON",
+        "ext": [
+          "json"
+        ],
+        "description": "JSON",
+        "role": "Editor",
+        "mimeType": "application/json"
+      },
+      {
+        "name": "YAML",
+        "ext": [
+          "yaml",
+          "yml"
+        ],
+        "description": "YAML",
+        "role": "Editor",
+        "mimeType": "application/yaml"
+      },
+      {
+        "name": "CSV",
+        "ext": [
+          "csv"
+        ],
+        "description": "CSV",
+        "role": "Editor",
+        "mimeType": "text/csv"
+      },
+      {
+        "name": "Excel workbook",
+        "ext": [
+          "xlsx"
+        ],
+        "description": "Excel workbook",
+        "role": "Editor",
+        "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      },
+      {
+        "name": "OpenDocument spreadsheet",
+        "ext": [
+          "ods"
+        ],
+        "description": "OpenDocument spreadsheet",
+        "role": "Editor",
+        "mimeType": "application/vnd.oasis.opendocument.spreadsheet"
+      },
+      {
+        "name": "PDF document",
+        "ext": [
+          "pdf"
+        ],
+        "description": "PDF document",
+        "role": "Editor",
+        "mimeType": "application/pdf"
+      },
+      {
+        "name": "PNG image",
+        "ext": [
+          "png"
+        ],
+        "description": "PNG image",
+        "role": "Editor",
+        "mimeType": "image/png"
+      },
+      {
+        "name": "JPEG image",
+        "ext": [
+          "jpg",
+          "jpeg"
+        ],
+        "description": "JPEG image",
+        "role": "Editor",
+        "mimeType": "image/jpeg"
+      },
+      {
+        "name": "WebP image",
+        "ext": [
+          "webp"
+        ],
+        "description": "WebP image",
+        "role": "Editor",
+        "mimeType": "image/webp"
+      },
+      {
+        "name": "SVG image",
+        "ext": [
+          "svg"
+        ],
+        "description": "SVG image",
+        "role": "Editor",
+        "mimeType": "image/svg+xml"
+      },
+      {
+        "name": "ZIP archive",
+        "ext": [
+          "zip"
+        ],
+        "description": "ZIP archive",
+        "role": "Editor",
+        "mimeType": "application/zip"
+      },
+      {
+        "name": "Compressed TAR archive",
+        "ext": [
+          "tar.gz",
+          "tgz"
+        ],
+        "description": "Compressed TAR archive",
+        "role": "Editor",
+        "mimeType": "application/gzip"
+      },
+      {
+        "name": "7-Zip archive",
+        "ext": [
+          "7z"
+        ],
+        "description": "7-Zip archive",
+        "role": "Editor",
+        "mimeType": "application/x-7z-compressed"
+      },
+      {
+        "name": "MP3 audio",
+        "ext": [
+          "mp3"
+        ],
+        "description": "MP3 audio",
+        "role": "Viewer",
+        "mimeType": "audio/mpeg"
+      },
+      {
+        "name": "MP4 video",
+        "ext": [
+          "mp4"
+        ],
+        "description": "MP4 video",
+        "role": "Viewer",
+        "mimeType": "video/mp4"
+      },
+      {
+        "name": "SQLite database",
+        "ext": [
+          "sqlite",
+          "sqlite3",
+          "db"
+        ],
+        "description": "SQLite database",
+        "role": "Editor",
+        "mimeType": "application/vnd.sqlite3"
+      },
+      {
+        "name": "EPUB book",
+        "ext": [
+          "epub"
+        ],
+        "description": "EPUB book",
+        "role": "Viewer",
+        "mimeType": "application/epub+zip"
+      },
+      {
+        "name": "Jupyter notebook",
+        "ext": [
+          "ipynb"
+        ],
+        "description": "Jupyter notebook",
+        "role": "Editor",
+        "mimeType": "application/x-ipynb+json"
+      },
+      {
+        "name": "iCalendar",
+        "ext": [
+          "ics"
+        ],
+        "description": "iCalendar",
+        "role": "Editor",
+        "mimeType": "text/calendar"
+      },
+      {
+        "name": "vCard",
+        "ext": [
+          "vcf"
+        ],
+        "description": "vCard",
+        "role": "Editor",
+        "mimeType": "text/vcard"
+      },
+      {
+        "name": "PowerPoint presentation",
+        "ext": [
+          "pptx"
+        ],
+        "description": "PowerPoint presentation",
+        "role": "Editor",
+        "mimeType": "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      },
+      {
+        "name": "OpenDocument presentation",
+        "ext": [
+          "odp"
+        ],
+        "description": "OpenDocument presentation",
+        "role": "Editor",
+        "mimeType": "application/vnd.oasis.opendocument.presentation"
+      }
     ]
   }
 }

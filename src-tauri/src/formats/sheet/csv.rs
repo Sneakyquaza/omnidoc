@@ -256,7 +256,7 @@ fn cell_text(c: &Cell, decimal_comma: bool) -> String {
     }
 }
 
-fn parse(bytes: &[u8], forced: Option<u8>, name: &str) -> Result<Workbook> {
+pub fn parse(bytes: &[u8], forced: Option<u8>, name: &str) -> Result<Workbook> {
     let dec = decode(bytes);
     let delim = forced
         .or_else(|| best_delimiter(&dec.text, CANDIDATES, false).map(|b| b.0))

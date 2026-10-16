@@ -15,7 +15,10 @@ export function Welcome() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>{t("app.title")}</h1>
+      <h1 className={styles.title}>
+        <img src="/icon.svg" alt="" className={styles.logo} />
+        {t("app.title")}
+      </h1>
       <p className={styles.subtitle}>{t("welcome.subtitle")}</p>
 
       <div className={`${styles.drop} ${dragging ? styles.dropActive : ""}`}>
