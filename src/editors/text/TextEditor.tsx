@@ -111,8 +111,9 @@ export default function TextEditor({
     phrases: new Compartment(),
   });
   const tRef = useRef(t);
-  const baseline = useRef(model.text);
-  const dirtyRef = useRef(false);
+  // onglet restauré (dirty) : le texte récupéré n'est pas la version du disque → jamais « propre » par undo
+  const baseline = useRef<string | null>(tab.dirty ? null : model.text);
+  const dirtyRef = useRef(tab.dirty);
   const metaDirty = useRef(false);
   const suppress = useRef(false);
 
@@ -245,6 +246,7 @@ export default function TextEditor({
               doc &&
               !metaDirty.current &&
               dirtyRef.current &&
+              baseline.current !== null &&
               doc.length === baseline.current.length &&
               doc.toString() === baseline.current
             ) {

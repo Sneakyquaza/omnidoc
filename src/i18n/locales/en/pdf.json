@@ -103,6 +103,7 @@
     "confirmMessage": "{{count}} annotation(s) will be written to the PDF. The original is backed up automatically. Bookmarks and forms in the document will be removed.",
     "save": "Save (replace)",
     "saveAs": "Save as…",
+    "nothingToSave": "No pending annotation: nothing to save.",
     "saveButton": "Save annotations"
   },
   "ops": {

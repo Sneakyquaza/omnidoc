@@ -2,8 +2,11 @@ import DOMPurify from "dompurify";
 import MarkdownIt from "markdown-it";
 import type { NotebookCell } from "../../ipc/bindings";
 
+// Instance dédiée : le hook ne doit pas affecter l'instance partagée (MarkdownPreview).
+const purifier = DOMPurify(window);
+
 // Aucune ressource externe : seules les images « data:image/ » sont conservées.
-DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+purifier.addHook("afterSanitizeAttributes", (node) => {
   for (const attr of ["src", "srcset", "poster", "background"]) {
     const value = node.getAttribute?.(attr);
     if (value !== null && value !== undefined && !isSafeImageUri(value)) {
@@ -17,7 +20,7 @@ DOMPurify.addHook("afterSanitizeAttributes", (node) => {
 
 /** Assainit du HTML (sorties de cellule, rendu markdown) avant injection. */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
+  return purifier.sanitize(html, {
     USE_PROFILES: { html: true },
     FORBID_TAGS: ["style", "form", "input", "button", "textarea", "select"],
     FORBID_ATTR: ["style"],

@@ -59,6 +59,7 @@
     "saveTitle": "Enregistrer l'archive convertie",
     "done": "Archive convertie : « {{name}} »"
   },
+  "entry": { "readOnly": "« {{name}} » est ouvert en lecture seule (copie extraite) : les modifications ne seraient pas écrites dans l'archive." },
   "openError": "Impossible d'ouvrir cet élément.",
   "status": {
     "entries_one": "{{count}} élément",

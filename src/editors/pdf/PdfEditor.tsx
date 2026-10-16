@@ -5,6 +5,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { commands } from "../../ipc/bindings";
 import type { PdfAnnotation, PdfDoc } from "../../ipc/bindings";
+import { openPath } from "../../shell/documents";
 import { reportError } from "../../shell/errors";
 import { basename } from "../../shell/paths";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
@@ -380,7 +381,10 @@ export default function PdfEditor({
   /** `true` si rien ne reste à enregistrer (annotations écrites ou aucune en attente). */
   async function saveAnnotations(forceSaveAs = false): Promise<boolean> {
     if (!path) return false;
-    if (pending.length === 0) return !forceSaveAs;
+    if (pending.length === 0) {
+      if (forceSaveAs) pushToast({ kind: "info", text: t("annotate.nothingToSave") });
+      return !forceSaveAs;
+    }
     const choice = forceSaveAs
       ? "saveAs"
       : await choose({
@@ -408,6 +412,8 @@ export default function PdfEditor({
     });
     if (ok && dest !== path) {
       pushToast({ kind: "success", text: t("ops.saved", { name: basename(dest) }) });
+      // les annotations sont écrites dans la destination : on l'ouvre pour les retrouver
+      await openPath(dest);
     }
     return ok;
   }
@@ -458,7 +464,7 @@ export default function PdfEditor({
       {
         id: "pdf.zoomIn",
         title: t("commands.zoomIn"),
-        shortcut: "Mod++",
+        shortcut: "Mod+=",
         run: () => a().zoomBy(1.25),
       },
       {

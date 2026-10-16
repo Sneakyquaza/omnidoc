@@ -6,7 +6,9 @@ export interface ParsedShortcut {
   key: string;
 }
 
-type KeyEventLike = Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey">;
+type KeyEventLike = Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKey" | "shiftKey" | "altKey"> & {
+  code?: string;
+};
 
 const KEY_ALIASES: Record<string, string> = { space: " ", esc: "escape", plus: "+" };
 
@@ -29,9 +31,16 @@ export function parseShortcut(shortcut: string): ParsedShortcut {
   };
 }
 
+/** Avec Alt (Option sur macOS), `e.key` peut être un autre caractère : on compare `e.code`. */
+function keyMatches(p: ParsedShortcut, e: KeyEventLike): boolean {
+  if (e.key.toLowerCase() === p.key) return true;
+  if (!e.altKey || !e.code || !/^[a-z0-9]$/.test(p.key)) return false;
+  return e.code === `Key${p.key.toUpperCase()}` || e.code === `Digit${p.key}`;
+}
+
 export function matchesShortcut(p: ParsedShortcut, e: KeyEventLike): boolean {
   return (
-    e.key.toLowerCase() === p.key &&
+    keyMatches(p, e) &&
     (e.ctrlKey || e.metaKey) === p.mod &&
     e.shiftKey === p.shift &&
     e.altKey === p.alt
