@@ -9,6 +9,7 @@ import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
 import { confirm } from "../../shell/ui/dialogStore";
 import { Menu } from "../../shell/ui/Menu";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import type { MenuItem } from "../../shell/ui/Menu";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
@@ -270,12 +271,25 @@ export default function MediaEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <div className={styles.toolbar} role="toolbar" aria-label={tab.title}>
-          <Button disabled={toolsOff} title={ffmpegHint} onClick={() => void trim()}>
-            {t("trim.apply")}
-          </Button>
-          <Menu label={t("convert.menu")} icon="export" items={convertItems} disabled={toolsOff} />
-        </div>
+        <ToolBar label={tab.title}>
+          <ToolGroup>
+            <Button
+              variant="ghost"
+              icon="trim"
+              disabled={toolsOff}
+              title={ffmpegHint}
+              onClick={() => void trim()}
+            >
+              {t("trim.apply")}
+            </Button>
+            <Menu
+              label={t("convert.menu")}
+              icon="export"
+              items={convertItems}
+              disabled={toolsOff}
+            />
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
 
       <EditorSidePanel title={t("info.title")}>

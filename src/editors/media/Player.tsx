@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "../../ipc/bindings";
 import { readBytes } from "../../ipc/bytes";
-import { Button } from "../../shell/ui/Button";
+import { Button, IconButton } from "../../shell/ui/Button";
+import { Icon } from "../../shell/ui/icons";
 import { formatTime } from "./time";
 import styles from "./MediaEditor.module.css";
 
@@ -162,7 +163,7 @@ export function Player({
       : loop.b === null
         ? t("player.loopB")
         : t("player.loopClear", { a: formatTime(loop.a), b: formatTime(loop.b) });
-  const loopText = loop.a === null ? "A" : loop.b === null ? "B" : "A-B ✕";
+  const loopText = loop.a === null ? "A" : loop.b === null ? "B" : "A-B";
 
   const mediaProps = {
     src: src ?? undefined,
@@ -207,20 +208,20 @@ export function Player({
         </p>
       )}
       <div className={styles.controls}>
-        <IconButtonText
+        <IconButton
           label={playing ? t("player.pause") : t("player.play")}
-          text={playing ? "⏸" : "▶"}
+          icon={playing ? "pause" : "play"}
           onClick={togglePlay}
           pressed={playing}
         />
-        <IconButtonText
+        <IconButton
           label={t("player.back")}
-          text="−5"
+          icon="skipBack"
           onClick={() => seekTo(position - SKIP_MS)}
         />
-        <IconButtonText
+        <IconButton
           label={t("player.forward")}
-          text="+5"
+          icon="skipForward"
           onClick={() => seekTo(position + SKIP_MS)}
         />
         <input
@@ -237,9 +238,9 @@ export function Player({
         <span className={styles.time}>
           {formatTime(position, false)} / {formatTime(durationMs, false)}
         </span>
-        <IconButtonText
+        <IconButton
           label={muted ? t("player.unmute") : t("player.mute")}
-          text={muted || volume === 0 ? "🔇" : "🔊"}
+          icon={muted || volume === 0 ? "volumeOff" : "volume"}
           pressed={muted}
           onClick={() => {
             const next = !muted;
@@ -293,38 +294,13 @@ export function Player({
           aria-label={t("player.loopSelection")}
           onClick={() => selection && onLoopChange({ a: selection.start, b: selection.end })}
         >
-          ⟲
+          <Icon name="loop" />
         </Button>
         {isVideo && (
-          <IconButtonText label={t("player.fullscreen")} text="⛶" onClick={toggleFullscreen} />
+          <IconButton label={t("player.fullscreen")} icon="fullscreen" onClick={toggleFullscreen} />
         )}
       </div>
       <p className={styles.hint}>{t("player.shortcuts")}</p>
     </div>
-  );
-}
-
-/** Bouton compact à glyphe texte (les icônes du shell ne couvrent pas la lecture). */
-function IconButtonText({
-  label,
-  text,
-  onClick,
-  pressed,
-}: {
-  label: string;
-  text: string;
-  onClick(): void;
-  pressed?: boolean;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      aria-label={label}
-      title={label}
-      aria-pressed={pressed}
-      onClick={onClick}
-    >
-      <span aria-hidden="true">{text}</span>
-    </Button>
   );
 }

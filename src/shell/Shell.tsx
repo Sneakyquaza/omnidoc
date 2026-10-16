@@ -31,7 +31,6 @@ export function Shell() {
   useStartup();
   useSystemEvents();
 
-  const hasTabs = useTabs((s) => s.tabs.length > 0);
   const active = useTabs((s) => s.tabs.find((x) => x.id === s.activeId));
   const dragging = useUi((s) => s.dragging);
 
@@ -61,7 +60,7 @@ export function Shell() {
             )}
             <div className={styles.editor}>
               <EditorHost />
-              {!hasTabs && <Welcome />}
+              {!active && <Welcome />}
             </div>
           </main>
           <SidePanelColumn

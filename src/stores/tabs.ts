@@ -29,6 +29,8 @@ interface TabsState {
   openTab(tab: NewTab): string;
   closeTab(id: string): void;
   activateTab(id: string): void;
+  /** Affiche l'écran d'accueil sans fermer les onglets (aucun onglet actif). */
+  showHome(): void;
   moveTab(id: string, toIndex: number): void;
   cycleTab(delta: number): void;
   setDirty(id: string, dirty: boolean): void;
@@ -78,6 +80,7 @@ export const useTabs = create<TabsState>((set, get) => ({
         s.activeId === id ? ((tabs[index] ?? tabs[index - 1])?.id ?? null) : s.activeId;
       return { tabs, activeId };
     }),
+  showHome: () => set({ activeId: null }),
   activateTab: (id) => set((s) => (s.tabs.some((t) => t.id === id) ? { activeId: id } : s)),
   moveTab: (id, toIndex) =>
     set((s) => {

@@ -1,5 +1,6 @@
 {
   "readOnly": "Read-only",
+  "toolbar": { "label": "Records tools" },
   "search": { "placeholder": "Search…", "label": "Search the list" },
   "list": { "empty": "No items.", "select": "Select or add an item." },
   "vcf": { "title": "Contacts", "add": "New contact", "unnamed": "(unnamed)" },

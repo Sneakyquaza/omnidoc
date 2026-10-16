@@ -8,6 +8,7 @@ import { basename } from "../../shell/paths";
 import { reportError } from "../../shell/errors";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
+import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
 import { DataGrid } from "./DataGrid";
@@ -222,9 +223,13 @@ export default function DatabaseEditor({
   return (
     <div className={styles.root}>
       <EditorToolbar>
-        <Button icon="export" onClick={() => void exportCsv()} disabled={!table || !path}>
-          {t("export.csv")}
-        </Button>
+        <ToolBar label={t("toolbar.label")}>
+          <ToolGroup>
+            <Button icon="export" onClick={() => void exportCsv()} disabled={!table || !path}>
+              {t("export.csv")}
+            </Button>
+          </ToolGroup>
+        </ToolBar>
       </EditorToolbar>
       <EditorSidePanel title={t("sidebar.title")} side="left">
         {model.tables.length === 0 ? <p className={styles.empty}>{t("sidebar.empty")}</p> : null}

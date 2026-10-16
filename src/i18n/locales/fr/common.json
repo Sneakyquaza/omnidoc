@@ -76,7 +76,8 @@
   },
   "tabs": {
     "label": "Documents ouverts",
-    "close": "Fermer {{name}}"
+    "close": "Fermer {{name}}",
+    "home": "Accueil : nouveau document et fichiers récents"
   },
   "toolbar": {
     "label": "Barre d'outils",

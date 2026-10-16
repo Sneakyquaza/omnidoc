@@ -5,7 +5,17 @@ import { newDocument, openPath, openWithDialog } from "./documents";
 import { NEW_DOCUMENTS } from "./newDocuments";
 import { basename } from "./paths";
 import { Button, IconButton } from "./ui/Button";
+import { Icon } from "./ui/icons";
+import type { IconName } from "./ui/icons";
 import styles from "./Welcome.module.css";
+
+const NEW_ICONS: Record<string, IconName> = {
+  text: "text",
+  rich: "richText",
+  sheet: "sheet",
+  markdown: "hash",
+  json: "braces",
+};
 
 export function Welcome() {
   const { t } = useTranslation();
@@ -14,28 +24,41 @@ export function Welcome() {
   const dragging = useUi((s) => s.dragging);
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>
-        <img src="/icon.svg" alt="" className={styles.logo} />
-        {t("app.title")}
-      </h1>
-      <p className={styles.subtitle}>{t("welcome.subtitle")}</p>
+    <div className={styles.page} data-testid="welcome">
+      <div className={styles.content}>
+        <header className={styles.header}>
+          <img src="/icon.svg" alt="" className={styles.logo} />
+          <div>
+            <h1 className={styles.title}>{t("app.title")}</h1>
+            <p className={styles.subtitle}>{t("welcome.subtitle")}</p>
+          </div>
+        </header>
 
-      <div className={`${styles.drop} ${dragging ? styles.dropActive : ""}`}>
-        <Button variant="primary" icon="open" onClick={() => void openWithDialog()}>
-          {t("welcome.open")}
-        </Button>
-        <span>{t("welcome.drop")}</span>
-      </div>
+        <div className={`${styles.drop} ${dragging ? styles.dropActive : ""}`}>
+          <span className={styles.dropIcon}>
+            <Icon name="upload" size={22} />
+          </span>
+          <span className={styles.dropText}>{t("welcome.drop")}</span>
+          <Button variant="primary" icon="open" onClick={() => void openWithDialog()}>
+            {t("welcome.open")}
+          </Button>
+        </div>
 
-      <div className={styles.columns}>
         <section aria-labelledby="welcome-new">
           <h2 id="welcome-new">{t("welcome.new")}</h2>
-          <ul className={styles.list}>
+          <ul className={styles.cards}>
             {NEW_DOCUMENTS.map((k) => (
               <li key={k.id}>
-                <button type="button" className={styles.item} onClick={() => newDocument(k.id)}>
-                  {t(k.labelKey)}
+                <button
+                  type="button"
+                  className={styles.card}
+                  data-testid="welcome-new"
+                  onClick={() => newDocument(k.id)}
+                >
+                  <span className={styles.cardIcon}>
+                    <Icon name={NEW_ICONS[k.id] ?? "newFile"} size={20} />
+                  </span>
+                  <span>{t(k.labelKey)}</span>
                 </button>
               </li>
             ))}
@@ -56,7 +79,7 @@ export function Welcome() {
                     title={path}
                     onClick={() => void openPath(path)}
                   >
-                    <span>{basename(path)}</span>
+                    <span className={styles.recentName}>{basename(path)}</span>
                     <span className={styles.path}>{path}</span>
                   </button>
                   <IconButton

@@ -47,3 +47,22 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+/* Listes déroulantes : rendu identique partout (le rendu natif ignore le thème sous WebKitGTK).
+   !important : les composants redéfinissent `background` / `padding` en raccourci. */
+select {
+  appearance: none;
+  padding-right: 26px !important;
+  background-color: var(--color-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23808890' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+select option {
+  background: var(--color-bg);
+  color: var(--color-text);
+}

@@ -1,5 +1,6 @@
 {
   "readOnly": "Lecture seule",
+  "toolbar": { "label": "Outils fiches" },
   "search": { "placeholder": "Rechercher…", "label": "Rechercher dans la liste" },
   "list": { "empty": "Aucun élément.", "select": "Sélectionnez ou ajoutez un élément." },
   "vcf": { "title": "Contacts", "add": "Nouveau contact", "unnamed": "(sans nom)" },

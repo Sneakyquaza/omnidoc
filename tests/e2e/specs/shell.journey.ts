@@ -32,6 +32,14 @@ describe("parcours shell", () => {
     expect(bg).toBe("dark");
   });
 
+  it("le bouton « + » ouvre l'accueil sans fermer les onglets", async () => {
+    await $('[data-testid="tab-home"]').click();
+    await $('[data-testid="welcome"]').waitForExist({ timeout: 5000 });
+    expect(await $$('[data-testid="tab"]').length).toBeGreaterThan(0);
+    await $('[data-testid="tab"]').click();
+    await $('[data-testid="welcome"]').waitForExist({ reverse: true, timeout: 5000 });
+  });
+
   it("aucune erreur", async () => {
     expect(await alertTexts()).toEqual([]);
     expect(await consoleErrors()).toEqual([]);

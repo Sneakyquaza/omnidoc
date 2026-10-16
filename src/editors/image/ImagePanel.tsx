@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { ExifEntry } from "../../ipc/bindings";
 import { EditorSidePanel } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
-import { formatBytes } from "./formats";
+import { formatSize } from "../../shell/format";
 import { opLabelKey } from "./ops";
 import type { OpStack } from "./ops";
 import styles from "./ImagePanel.module.css";
@@ -35,7 +35,7 @@ export function ImagePanel(p: Props) {
         <dt>{t("panel.alpha")}</dt>
         <dd>{p.hasAlpha ? t("panel.yes") : t("panel.no")}</dd>
         <dt>{t("panel.fileSize")}</dt>
-        <dd>{p.fileSize === null ? "…" : formatBytes(p.fileSize)}</dd>
+        <dd>{p.fileSize === null ? "…" : formatSize(p.fileSize)}</dd>
       </dl>
 
       <h3 className={styles.heading}>{t("panel.exif")}</h3>

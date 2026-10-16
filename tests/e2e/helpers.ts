@@ -206,3 +206,17 @@ export async function confirmDialog(): Promise<void> {
 export async function readOnlyFlag(): Promise<boolean> {
   return $('[data-testid="status-readonly"]').isExisting();
 }
+
+/** Capture PNG dans `E2E_SHOTS` (vérification visuelle) ; `E2E_THEME=dark|light` force le thème. */
+export async function screenshot(name: string): Promise<void> {
+  const dir = process.env.E2E_SHOTS;
+  if (!dir) return;
+  const theme = process.env.E2E_THEME;
+  if (theme) {
+    await browser.execute((th) => {
+      document.documentElement.dataset.theme = th;
+    }, theme);
+    await browser.pause(400);
+  }
+  await browser.saveScreenshot(`${dir}/${name}.png`);
+}

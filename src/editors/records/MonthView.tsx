@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { RecordComponent } from "../../ipc/bindings";
 import { Button } from "../../shell/ui/Button";
+import { Icon } from "../../shell/ui/icons";
 import { addDays, dayRange, decodeValue, monthGrid, todayYmd } from "./logic";
 import styles from "./RecordsEditor.module.css";
 
@@ -80,7 +81,7 @@ export function MonthView({
           title={t("month.prev")}
           onClick={() => shift(-1)}
         >
-          ‹
+          <Icon name="chevronLeft" />
         </Button>
         <h3 className={styles.calTitle} aria-live="polite">
           {title}
@@ -91,7 +92,7 @@ export function MonthView({
           title={t("month.next")}
           onClick={() => shift(1)}
         >
-          ›
+          <Icon name="chevronRight" />
         </Button>
         <Button
           onClick={() => {

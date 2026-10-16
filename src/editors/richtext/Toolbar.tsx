@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
+import { Icon } from "../../shell/ui/icons";
 import { Menu } from "../../shell/ui/Menu";
 import type { MenuItem } from "../../shell/ui/Menu";
 import { Popover } from "./Popover";
@@ -210,6 +211,22 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
     { id: "del", label: t("table.deleteTable"), onSelect: () => run().deleteTable().run() },
   ];
 
+  const moreItems: MenuItem[] = [
+    {
+      id: "hr",
+      label: t("toolbar.horizontalRule"),
+      disabled: off,
+      onSelect: () => run().setHorizontalRule().run(),
+    },
+    {
+      id: "clear",
+      label: t("toolbar.clearFormat"),
+      disabled: off,
+      onSelect: () => run().unsetAllMarks().clearNodes().run(),
+    },
+    { id: "print", label: t("toolbar.print"), onSelect: onPrint },
+  ];
+
   function indent(sink: boolean) {
     const type = editor.isActive("taskItem") ? "taskItem" : "listItem";
     if (sink) run().sinkListItem(type).run();
@@ -224,14 +241,14 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off || !s.canUndo}
           onClick={() => run().undo().run()}
         >
-          ↶
+          <Icon name="undo" />
         </Tool>
         <Tool
           label={t("toolbar.redo")}
           disabled={off || !s.canRedo}
           onClick={() => run().redo().run()}
         >
-          ↷
+          <Icon name="redo" />
         </Tool>
       </div>
       <div className={styles.group}>
@@ -281,7 +298,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleBold().run()}
         >
-          <b>B</b>
+          <Icon name="bold" />
         </Tool>
         <Tool
           label={t("toolbar.italic")}
@@ -289,7 +306,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleItalic().run()}
         >
-          <i>I</i>
+          <Icon name="italic" />
         </Tool>
         <Tool
           label={t("toolbar.underline")}
@@ -297,7 +314,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleUnderline().run()}
         >
-          <u>U</u>
+          <Icon name="underline" />
         </Tool>
         <Tool
           label={t("toolbar.strike")}
@@ -305,7 +322,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleStrike().run()}
         >
-          <s>S</s>
+          <Icon name="strike" />
         </Tool>
         <Tool
           label={t("toolbar.code")}
@@ -313,7 +330,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleCode().run()}
         >
-          {"</>"}
+          <Icon name="code" />
         </Tool>
         <Tool
           label={t("toolbar.superscript")}
@@ -321,7 +338,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleSuperscript().run()}
         >
-          x²
+          <Icon name="sup" />
         </Tool>
         <Tool
           label={t("toolbar.subscript")}
@@ -329,11 +346,15 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleSubscript().run()}
         >
-          x₂
+          <Icon name="sub" />
         </Tool>
         <Popover
           label={t("toolbar.textColor")}
-          trigger={<span className={styles.colorA}>A</span>}
+          trigger={
+            <span className={styles.colorA}>
+              <Icon name="textColor" />
+            </span>
+          }
           disabled={off}
         >
           {(close) => (
@@ -354,7 +375,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
         </Popover>
         <Popover
           label={t("toolbar.highlight")}
-          trigger={<span className={styles.hl}>ab</span>}
+          trigger={<Icon name="highlight" />}
           pressed={s.highlight}
           disabled={off}
         >
@@ -382,7 +403,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().unsetTextAlign().run()}
         >
-          ⇤
+          <Icon name="alignLeft" />
         </Tool>
         <Tool
           label={t("toolbar.alignCenter")}
@@ -390,7 +411,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().setTextAlign("center").run()}
         >
-          ≡
+          <Icon name="alignCenter" />
         </Tool>
         <Tool
           label={t("toolbar.alignRight")}
@@ -398,7 +419,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().setTextAlign("right").run()}
         >
-          ⇥
+          <Icon name="alignRight" />
         </Tool>
         <Tool
           label={t("toolbar.alignJustify")}
@@ -406,7 +427,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().setTextAlign("justify").run()}
         >
-          ☰
+          <Icon name="alignJustify" />
         </Tool>
       </div>
       <div className={styles.group}>
@@ -416,7 +437,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleBulletList().run()}
         >
-          •≡
+          <Icon name="bulletList" />
         </Tool>
         <Tool
           label={t("toolbar.orderedList")}
@@ -424,7 +445,7 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleOrderedList().run()}
         >
-          1.
+          <Icon name="orderedList" />
         </Tool>
         <Tool
           label={t("toolbar.taskList")}
@@ -432,17 +453,22 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           disabled={off}
           onClick={() => run().toggleTaskList().run()}
         >
-          ☑
+          <Icon name="taskList" />
         </Tool>
         <Tool label={t("toolbar.indent")} disabled={off} onClick={() => indent(true)}>
-          →
+          <Icon name="indent" />
         </Tool>
         <Tool label={t("toolbar.outdent")} disabled={off} onClick={() => indent(false)}>
-          ←
+          <Icon name="outdent" />
         </Tool>
       </div>
       <div className={styles.group}>
-        <Popover label={t("toolbar.link")} trigger="↗" pressed={s.link} disabled={off}>
+        <Popover
+          label={t("toolbar.link")}
+          trigger={<Icon name="link" />}
+          pressed={s.link}
+          disabled={off}
+        >
           {(close) => (
             <form
               className={styles.form}
@@ -485,9 +511,9 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
           )}
         </Popover>
         <Tool label={t("toolbar.image")} disabled={off} onClick={onPickImage}>
-          ▣
+          <Icon name="image" />
         </Tool>
-        <Popover label={t("toolbar.insertTable")} trigger="▦" disabled={off}>
+        <Popover label={t("toolbar.insertTable")} trigger={<Icon name="table" />} disabled={off}>
           {(close) => (
             <form
               className={styles.form}
@@ -528,41 +554,26 @@ export function Toolbar({ editor, zoom, onZoom, onPickImage, onPrint, onFind }: 
         <Menu
           label={t("table.edit")}
           icon="sheet"
+          iconOnly
           items={tableItems}
           disabled={off || !s.inTable}
         />
-        <Tool
-          label={t("toolbar.horizontalRule")}
-          disabled={off}
-          onClick={() => run().setHorizontalRule().run()}
-        >
-          ―
-        </Tool>
-        <Tool
-          label={t("toolbar.clearFormat")}
-          disabled={off}
-          onClick={() => run().unsetAllMarks().clearNodes().run()}
-        >
-          Tx
-        </Tool>
+        <Menu label={t("toolbar.more")} icon="more" iconOnly items={moreItems} />
       </div>
       <div className={styles.group}>
         <Tool label={t("search.find")} onClick={() => onFind(false)}>
-          ⌕
-        </Tool>
-        <Tool label={t("toolbar.print")} onClick={onPrint}>
-          ⎙
+          <Icon name="search" />
         </Tool>
       </div>
-      <div className={styles.group}>
+      <div className={`${styles.group} ${styles.zoomGroup}`}>
         <Tool label={t("zoom.out")} disabled={zoom <= MIN_ZOOM} onClick={() => onZoom(zoom - 10)}>
-          −
+          <Icon name="minus" />
         </Tool>
         <span className={styles.zoomValue} aria-live="polite">
           {zoom} %
         </span>
         <Tool label={t("zoom.in")} disabled={zoom >= MAX_ZOOM} onClick={() => onZoom(zoom + 10)}>
-          +
+          <Icon name="plus" />
         </Tool>
       </div>
     </div>

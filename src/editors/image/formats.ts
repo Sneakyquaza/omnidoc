@@ -55,17 +55,6 @@ export function toHex(r: number, g: number, b: number): string {
   return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
-export function formatBytes(n: number): string {
-  const units = ["B", "KiB", "MiB", "GiB"];
-  let v = n;
-  let u = 0;
-  while (v >= 1024 && u < units.length - 1) {
-    v /= 1024;
-    u++;
-  }
-  return u === 0 ? `${n} ${units[0]}` : `${v.toFixed(1)} ${units[u]}`;
-}
-
 /** Retire le préfixe `data:…;base64,` d'une data URI. */
 export function stripDataUri(uri: string): string {
   const i = uri.indexOf(",");

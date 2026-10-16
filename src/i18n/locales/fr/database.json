@@ -1,4 +1,5 @@
 {
+  "toolbar": { "label": "Outils de la base" },
   "tabs": { "label": "Vues de la base", "data": "Données", "query": "Requête", "schema": "Schéma" },
   "sidebar": {
     "title": "Tables et vues",

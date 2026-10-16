@@ -7,6 +7,7 @@ import { readRange } from "../../ipc/bytes";
 import { handlerLabel, reopenTabAs } from "../../shell/documents";
 import { useHandlers } from "../../shell/handlers";
 import { EditorSidePanel } from "../../shell/slots";
+import { formatSize } from "../../shell/format";
 import { Button } from "../../shell/ui/Button";
 import type { EditorProps } from "../types";
 import { BLOCK_SIZE, BlockCache } from "./blockCache";
@@ -14,7 +15,6 @@ import {
   asciiChar,
   describeValues,
   formatOffset,
-  formatSize,
   hex,
   parseHexPattern,
   parseOffset,

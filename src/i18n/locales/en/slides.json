@@ -1,4 +1,5 @@
 {
+  "toolbar": { "label": "Presentation tools" },
   "textOnly": "Text-only preview: layout, images and animations are not shown.",
   "stage": "Current slide",
   "empty": "This presentation has no slides.",

@@ -4,6 +4,7 @@ import {
   consoleErrors,
   detectedHandler,
   renderedProblem,
+  screenshot,
   sessionFile,
   waitForEditor,
 } from "../helpers";
@@ -24,7 +25,7 @@ describe("ouverture d'un fichier", () => {
       timeout: 10_000,
       timeoutMsg: `contenu non rendu : ${await renderedProblem(kind)}`,
     });
-    if (process.env.E2E_SHOTS) await browser.saveScreenshot(`${process.env.E2E_SHOTS}/${base}.png`);
+    await screenshot(base);
     expect(await detectedHandler()).toBe(handler);
     expect(
       await browser.execute(() => document.querySelectorAll('[data-testid="tab"]').length),
