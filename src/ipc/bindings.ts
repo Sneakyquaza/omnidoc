@@ -97,6 +97,13 @@ export type Capabilities = {
 	fidelity: Fidelity,
 };
 
+/**
+ *  En JSON, une cellule sans formule ni format est « nue » (`null`, nombre, chaîne, booléen) :
+ *  5 à 10 fois moins d'octets qu'un objet complet sur les gros classeurs (voir docs/PERFORMANCE.md).
+ *  La forme objet `{ v, f, fmt }` reste acceptée et émise dès qu'il y a une formule, un format
+ *  ou une valeur non nue (erreur). Le type TypeScript généré est la forme objet :
+ *  le front normalise les cellules nues (`src/editors/sheet/model.ts`).
+ */
 export type Cell = {
 	v: CellValue,
 	/**  Formule sans le "=" initial, syntaxe Excel anglaise à virgules (`SUM(A1:B2)`). */
