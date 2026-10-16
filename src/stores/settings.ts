@@ -26,6 +26,12 @@ interface Persisted {
   editorFontSize: number;
   /** Surcharges de raccourcis par id de commande (chaîne vide = raccourci retiré). */
   shortcuts: Record<string, string>;
+  /** Vérification automatique des mises à jour : `null` = jamais demandé. */
+  autoCheckUpdates: boolean | null;
+  /** Version de mise à jour ignorée (ne concerne que la vérification automatique). */
+  ignoredUpdateVersion: string | null;
+  /** Dernière version dont les nouveautés ont été présentées (`null` = premier lancement). */
+  lastSeenVersion: string | null;
 }
 
 interface SettingsState extends Persisted {
@@ -41,6 +47,9 @@ interface SettingsState extends Persisted {
   setShortcut(id: string, shortcut: string): void;
   resetShortcut(id: string): void;
   resetShortcuts(): void;
+  setAutoCheckUpdates(value: boolean): void;
+  setIgnoredUpdateVersion(version: string | null): void;
+  setLastSeenVersion(version: string): void;
 }
 
 const KEY = "omnidoc.settings";
@@ -55,6 +64,9 @@ const DEFAULTS: Persisted = {
   editorFontFamily: "",
   editorFontSize: 13,
   shortcuts: {},
+  autoCheckUpdates: null,
+  ignoredUpdateVersion: null,
+  lastSeenVersion: null,
 };
 
 function clamp(value: unknown, min: number, max: number, fallback: number): number {
@@ -96,6 +108,11 @@ function load(): Persisted {
       DEFAULTS.editorFontSize,
     ),
     shortcuts: loadShortcuts(raw.shortcuts),
+    autoCheckUpdates:
+      typeof raw.autoCheckUpdates === "boolean" ? raw.autoCheckUpdates : DEFAULTS.autoCheckUpdates,
+    ignoredUpdateVersion:
+      typeof raw.ignoredUpdateVersion === "string" ? raw.ignoredUpdateVersion : null,
+    lastSeenVersion: typeof raw.lastSeenVersion === "string" ? raw.lastSeenVersion : null,
   };
 }
 
@@ -120,6 +137,9 @@ export const useSettings = create<SettingsState>((set) => ({
       return { shortcuts: rest };
     }),
   resetShortcuts: () => set({ shortcuts: {} }),
+  setAutoCheckUpdates: (autoCheckUpdates) => set({ autoCheckUpdates }),
+  setIgnoredUpdateVersion: (ignoredUpdateVersion) => set({ ignoredUpdateVersion }),
+  setLastSeenVersion: (lastSeenVersion) => set({ lastSeenVersion }),
 }));
 
 useSettings.subscribe((s) =>
@@ -133,5 +153,8 @@ useSettings.subscribe((s) =>
     editorFontFamily: s.editorFontFamily,
     editorFontSize: s.editorFontSize,
     shortcuts: s.shortcuts,
+    autoCheckUpdates: s.autoCheckUpdates,
+    ignoredUpdateVersion: s.ignoredUpdateVersion,
+    lastSeenVersion: s.lastSeenVersion,
   } satisfies Persisted),
 );

@@ -70,6 +70,16 @@ pnpm tauri build               # paquets : deb, rpm, AppImage, nsis, msi, dmg, a
 pnpm tauri build --debug --no-bundle   # compilation de contrôle
 ```
 
+`pnpm tauri build` produit aussi les artefacts de mise à jour (`bundle.createUpdaterArtifacts`) et exige donc la clé de
+signature (`TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). Sans clé, désactiver l'option :
+`pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":false}}'`. Le build `--no-bundle` (`pnpm e2e:build`)
+n'est pas concerné.
+
+`pnpm tauri build` produit aussi les artefacts de mise à jour (`bundle.createUpdaterArtifacts`) et exige donc la clé de
+signature (`TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). Sans clé, désactiver l'option :
+`pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":false}}'`. Le build `--no-bundle` (`pnpm e2e:build`)
+n'est pas concerné.
+
 Les publications sont des releases brouillon créées par `.github/workflows/release.yml` sur un tag `v*`.
 
 ## Architecture

@@ -1,0 +1,54 @@
+{
+  "consent": {
+    "label": "Mises à jour",
+    "message": "Vérifier automatiquement les mises à jour au démarrage ? (contacte github.com)",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "dialog": {
+    "title": "Mise à jour disponible",
+    "versions": "Version {{current}} → {{next}}",
+    "date": "Publiée le {{date}}",
+    "notes": "Notes de version",
+    "noNotes": "Aucune note de version fournie.",
+    "install": "Installer et redémarrer",
+    "retry": "Réessayer",
+    "later": "Plus tard",
+    "ignore": "Ignorer cette version",
+    "openDownloadPage": "Ouvrir la page de téléchargement"
+  },
+  "progress": {
+    "label": "Progression du téléchargement",
+    "downloading": "Téléchargement… {{percent}} %",
+    "downloadingUnknown": "Téléchargement…",
+    "installing": "Installation…"
+  },
+  "error": {
+    "install": "L'installation a échoué : {{message}}"
+  },
+  "dirty": {
+    "title": "Modifications non enregistrées",
+    "message_one": "{{count}} onglet contient des modifications non enregistrées. L'application va redémarrer après l'installation.",
+    "message_other": "{{count}} onglets contiennent des modifications non enregistrées. L'application va redémarrer après l'installation.",
+    "continue": "Installer quand même"
+  },
+  "notes": {
+    "whatsNew": "Nouveautés de la version {{version}}",
+    "changelog": "Notes de version",
+    "close": "Fermer"
+  },
+  "check": {
+    "checking": "Recherche de mises à jour…",
+    "upToDate": "OmniDoc est à jour.",
+    "error": "Impossible de vérifier les mises à jour.",
+    "available": "Version {{version}} disponible."
+  },
+  "settings": {
+    "title": "Mises à jour",
+    "current": "Version actuelle : {{version}}",
+    "auto": "Vérifier automatiquement au démarrage (contacte github.com)",
+    "checkNow": "Rechercher maintenant",
+    "checking": "Recherche…",
+    "releaseNotes": "Notes de version"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "consent": {
+    "label": "Updates",
+    "message": "Automatically check for updates at startup? (contacts github.com)",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "dialog": {
+    "title": "Update available",
+    "versions": "Version {{current}} → {{next}}",
+    "date": "Released on {{date}}",
+    "notes": "Release notes",
+    "noNotes": "No release notes provided.",
+    "install": "Install and restart",
+    "retry": "Retry",
+    "later": "Later",
+    "ignore": "Skip this version",
+    "openDownloadPage": "Open the download page"
+  },
+  "progress": {
+    "label": "Download progress",
+    "downloading": "Downloading… {{percent}}%",
+    "downloadingUnknown": "Downloading…",
+    "installing": "Installing…"
+  },
+  "error": {
+    "install": "Installation failed: {{message}}"
+  },
+  "dirty": {
+    "title": "Unsaved changes",
+    "message_one": "{{count}} tab has unsaved changes. The application will restart after the installation.",
+    "message_other": "{{count}} tabs have unsaved changes. The application will restart after the installation.",
+    "continue": "Install anyway"
+  },
+  "notes": {
+    "whatsNew": "What's new in version {{version}}",
+    "changelog": "Release notes",
+    "close": "Close"
+  },
+  "check": {
+    "checking": "Checking for updates…",
+    "upToDate": "OmniDoc is up to date.",
+    "error": "Could not check for updates.",
+    "available": "Version {{version}} is available."
+  },
+  "settings": {
+    "title": "Updates",
+    "current": "Current version: {{version}}",
+    "auto": "Check automatically at startup (contacts github.com)",
+    "checkNow": "Check now",
+    "checking": "Checking…",
+    "releaseNotes": "Release notes"
+  }
+}

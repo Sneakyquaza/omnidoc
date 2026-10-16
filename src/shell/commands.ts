@@ -8,6 +8,7 @@ import { useUi } from "../stores/ui";
 import { closeTabWithConfirm, exportTab, openWithDialog, saveTab, saveTabAs } from "./documents";
 import { useRuntime } from "./runtime";
 import { applyShortcutOverrides } from "./shortcuts";
+import { checkWithToast, showFullChangelog } from "./updates/store";
 
 /** Commande du shell ; `hidden` = raccourci seulement (absente de la palette). */
 export interface ShellCommand extends EditorCommand {
@@ -87,6 +88,12 @@ export function buildGlobalCommands(t: TFunction): ShellCommand[] {
       shortcut: "Mod+,",
       run: () => useUi.getState().setSettingsOpen(true),
     },
+    {
+      id: "app.checkUpdates",
+      title: t("commands.checkUpdates"),
+      run: () => void checkWithToast(),
+    },
+    { id: "app.releaseNotes", title: t("commands.releaseNotes"), run: showFullChangelog },
     { id: "palette.open", title: t("commands.palette"), shortcut: "Mod+Shift+P", run: openPalette },
     {
       id: "palette.open2",
