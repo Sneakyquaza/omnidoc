@@ -391,3 +391,125 @@ fn garbage_and_truncation_never_panic() {
         }
     }
 }
+
+#[test]
+fn add_dir_replaces_old_children() {
+    for (name, format) in [("t.zip", "zip"), ("t.tar", "tar"), ("t.tgz", "tar.gz")] {
+        let dir = tempfile::tempdir().unwrap();
+        let p = created(dir.path(), name, format);
+        let new_sub = dir.path().join("other/sub");
+        std::fs::create_dir_all(&new_sub).unwrap();
+        std::fs::write(new_sub.join("new.txt"), "n").unwrap();
+        add(&p, &[new_sub.to_string_lossy().into_owned()], "").unwrap();
+        let doc = open(&p);
+        assert!(names(&doc).contains(&"sub/new.txt"), "{format}");
+        assert!(!names(&doc).contains(&"sub/b.txt"), "{format}");
+        assert!(!names(&doc).contains(&"sub/deep/c.bin"), "{format}");
+    }
+}
+
+#[test]
+fn zip_rewrite_keeps_rejected_entries() {
+    let dir = tempfile::tempdir().unwrap();
+    let p = dir.path().join("evil.zip");
+    zip_with_names(
+        &p,
+        &[
+            ("../evil.txt", b"x"),
+            ("dir\\win.txt", b"y"),
+            ("ok.txt", b"fine"),
+        ],
+    );
+    let extra = dir.path().join("x.txt");
+    std::fs::write(&extra, "xx").unwrap();
+    add(&p, &[extra.to_string_lossy().into_owned()], "").unwrap();
+    remove(&p, &["ok.txt".to_string()]).unwrap();
+    let mut ar = ::zip::ZipArchive::new(std::fs::File::open(&p).unwrap()).unwrap();
+    let raw: Vec<String> = (0..ar.len())
+        .map(|i| ar.by_index_raw(i).unwrap().name().unwrap().to_string())
+        .collect();
+    assert!(raw.contains(&"../evil.txt".to_string()), "{raw:?}");
+    assert!(raw.contains(&"dir\\win.txt".to_string()), "{raw:?}");
+    assert!(raw.contains(&"x.txt".to_string()));
+    assert!(!raw.contains(&"ok.txt".to_string()));
+}
+
+#[test]
+fn tar_rewrite_keeps_fifo_and_rejected_entries() {
+    let dir = tempfile::tempdir().unwrap();
+    let p = dir.path().join("sp.tar");
+    let mut out = Vec::new();
+    for (name, kind) in [
+        (&b"pipe"[..], ::tar::EntryType::Fifo),
+        (&b"../evil.txt"[..], ::tar::EntryType::Regular),
+        (&b"keep.txt"[..], ::tar::EntryType::Regular),
+    ] {
+        let mut h = ::tar::Header::new_gnu();
+        h.set_mode(0o644);
+        h.set_size(0);
+        h.set_entry_type(kind);
+        h.as_old_mut().name[..name.len()].copy_from_slice(name);
+        h.set_cksum();
+        out.extend_from_slice(h.as_bytes());
+    }
+    out.extend_from_slice(&[0u8; 1024]);
+    std::fs::write(&p, out).unwrap();
+    let extra = dir.path().join("x.txt");
+    std::fs::write(&extra, "xx").unwrap();
+    add(&p, &[extra.to_string_lossy().into_owned()], "").unwrap();
+    remove(&p, &["keep.txt".to_string()]).unwrap();
+    let mut ar = ::tar::Archive::new(std::fs::File::open(&p).unwrap());
+    let got: Vec<(String, ::tar::EntryType)> = ar
+        .entries()
+        .unwrap()
+        .map(|e| {
+            let e = e.unwrap();
+            (
+                e.path().unwrap().to_string_lossy().into_owned(),
+                e.header().entry_type(),
+            )
+        })
+        .collect();
+    assert!(
+        got.contains(&("pipe".into(), ::tar::EntryType::Fifo)),
+        "{got:?}"
+    );
+    assert!(got.iter().any(|(n, _)| n == "../evil.txt"), "{got:?}");
+    assert!(got.iter().any(|(n, _)| n == "x.txt"));
+    assert!(!got.iter().any(|(n, _)| n == "keep.txt"));
+}
+
+#[test]
+fn multi_member_gz_is_fully_read() {
+    let dir = tempfile::tempdir().unwrap();
+    let p = dir.path().join("multi.txt.gz");
+    let mut f = std::fs::File::create(&p).unwrap();
+    for part in [&b"first-"[..], b"second"] {
+        let mut gz = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+        gz.write_all(part).unwrap();
+        f.write_all(&gz.finish().unwrap()).unwrap();
+    }
+    drop(f);
+    let out = dir.path().join("out");
+    extract(&p, None, &out).unwrap();
+    assert_eq!(
+        std::fs::read(out.join("multi.txt")).unwrap(),
+        b"first-second"
+    );
+}
+
+#[test]
+fn cleanup_removes_old_entry_copies() {
+    let root = tempfile::tempdir().unwrap();
+    let d = root.path().join("some-uuid");
+    std::fs::create_dir_all(&d).unwrap();
+    let f = d.join("f.txt");
+    std::fs::write(&f, "x").unwrap();
+    let mut perms = std::fs::metadata(&f).unwrap().permissions();
+    perms.set_readonly(true);
+    std::fs::set_permissions(&f, perms).unwrap();
+    cleanup_entries_in(root.path(), std::time::Duration::from_secs(3600));
+    assert!(d.exists());
+    cleanup_entries_in(root.path(), std::time::Duration::ZERO);
+    assert!(!d.exists());
+}

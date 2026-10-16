@@ -218,8 +218,13 @@ pub async fn unwatch_file(state: State<'_, AppState>, path: String) -> Result<()
 #[tauri::command]
 #[specta::specta]
 pub async fn allow_asset(app: AppHandle, path: String) -> Result<()> {
+    // Uniquement un fichier régulier existant (chemin canonique) : jamais un dossier.
+    let real = std::fs::canonicalize(&path).map_err(|_| AppError::NotFound)?;
+    if !std::fs::metadata(&real)?.is_file() {
+        return Err(AppError::NotFound);
+    }
     app.asset_protocol_scope()
-        .allow_file(&path)
+        .allow_file(&real)
         .map_err(|e| AppError::External(e.to_string()))
 }
 

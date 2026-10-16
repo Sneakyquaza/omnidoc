@@ -84,14 +84,18 @@ pub fn visit(path: &Path, want_data: bool, f: &mut Visitor) -> Result<()> {
     let res = reader.for_each_entries(|e, data| {
         let step = (|| -> Result<bool> {
             budget.entry()?;
-            let Some(item) = item_of(e) else {
-                return Ok(true);
-            };
             // Pas de taille compressée fiable par entrée (blocs solides) : limite globale.
             let max = max_for_compressed(size)
                 .saturating_sub(used)
                 .min(budget.remaining_bytes());
             let mut limited = LimitedReader::new(data, max);
+            let Some(item) = item_of(e) else {
+                // Entrée ignorée : lue quand même (bornée) pour que la limite globale s'applique.
+                io::copy(&mut limited, &mut io::sink()).map_err(super::safety::io_to_app)?;
+                used += limited.bytes_read();
+                budget.add_bytes(limited.bytes_read())?;
+                return Ok(true);
+            };
             let flow = f(&item, &mut limited)?;
             used += limited.bytes_read();
             budget.add_bytes(limited.bytes_read())?;

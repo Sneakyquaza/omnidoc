@@ -242,8 +242,64 @@ fn keep_pages(doc: &mut Document, ids: &[ObjectId]) -> Result<()> {
     ] {
         catalog.remove(key);
     }
+    strip_dangling_links(doc, ids);
     prune(doc);
     Ok(())
+}
+
+/// Neutralise les annotations des pages gardées qui pointent vers une page retirée
+/// (`/Dest`, action `GoTo`, `/P`) : sinon `prune` les suivrait et garderait le contenu supprimé.
+fn strip_dangling_links(doc: &mut Document, ids: &[ObjectId]) {
+    let keep: HashSet<ObjectId> = ids.iter().copied().collect();
+    let mut annots: Vec<ObjectId> = Vec::new();
+    for id in ids {
+        let Ok(page) = doc.get_dictionary(*id) else {
+            continue;
+        };
+        let Ok(list) = page.get(b"Annots") else {
+            continue;
+        };
+        let list = match list {
+            Object::Reference(r) => doc.get_object(*r).ok(),
+            o => Some(o),
+        };
+        if let Some(Object::Array(a)) = list {
+            annots.extend(a.iter().filter_map(|o| o.as_reference().ok()));
+        }
+    }
+    for id in &annots {
+        let Ok(d) = doc.get_dictionary(*id) else {
+            continue;
+        };
+        let action_goto = match d.get(b"A") {
+            Ok(Object::Reference(r)) => doc
+                .get_dictionary(*r)
+                .ok()
+                .and_then(|a| a.get(b"S").ok())
+                .and_then(|s| s.as_name().ok())
+                .is_some_and(|n| n != b"URI"),
+            Ok(Object::Dictionary(a)) => a
+                .get(b"S")
+                .ok()
+                .and_then(|s| s.as_name().ok())
+                .is_some_and(|n| n != b"URI"),
+            _ => false,
+        };
+        let bad_p = d
+            .get(b"P")
+            .ok()
+            .and_then(|p| p.as_reference().ok())
+            .is_some_and(|p| !keep.contains(&p));
+        if let Ok(d) = doc.get_dictionary_mut(*id) {
+            d.remove(b"Dest");
+            if action_goto {
+                d.remove(b"A");
+            }
+            if bad_p {
+                d.remove(b"P");
+            }
+        }
+    }
 }
 
 // --- Opérations ---
@@ -865,6 +921,35 @@ mod tests {
         );
         assert!(reorder(&p, &[1, 2], &out).is_err());
         assert!(extract(&p, &[1, 1], &out).is_err());
+    }
+
+    #[test]
+    fn removed_pages_not_kept_through_links() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut doc = Document::load_mem(&make_pdf(3, "Secret", None)).unwrap();
+        let pages: Vec<ObjectId> = doc.get_pages().values().copied().collect();
+        let link = doc.add_object(dictionary! {
+            "Type" => "Annot", "Subtype" => "Link",
+            "Rect" => vec![0.into(), 0.into(), 10.into(), 10.into()],
+            "A" => dictionary! { "S" => "GoTo", "D" => vec![Object::Reference(pages[1]), "Fit".into()] },
+            "P" => pages[0],
+        });
+        let link2 = doc.add_object(dictionary! {
+            "Type" => "Annot", "Subtype" => "Link",
+            "Rect" => vec![0.into(), 0.into(), 10.into(), 10.into()],
+            "Dest" => vec![Object::Reference(pages[1]), "Fit".into()],
+        });
+        doc.get_dictionary_mut(pages[0]).unwrap().set(
+            "Annots",
+            vec![Object::Reference(link), Object::Reference(link2)],
+        );
+        let src = dir.path().join("l.pdf");
+        doc.save(&src).unwrap();
+        let out = dir.path().join("o.pdf");
+        delete_pages(&src, &[2], &out).unwrap();
+        let bytes = std::fs::read(&out).unwrap();
+        assert!(!contains(&bytes, b"Secret 2"));
+        assert_eq!(texts(&out), ["Secret 1", "Secret 3"]);
     }
 
     #[test]

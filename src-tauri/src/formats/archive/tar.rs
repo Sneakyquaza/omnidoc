@@ -1,16 +1,17 @@
 //! Tar, tar.gz et gz simple (une seule entrée).
 
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
-use flate2::read::GzDecoder;
+use flate2::read::MultiGzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use tar::{Builder, EntryType, Header};
 
 use super::safety::{io_to_app, max_for_compressed, normalize_entry_path, Budget, LimitedReader};
-use super::{Flow, Item, Kind, Sink, StreamMeta, Visitor};
+use super::{Action, Flow, Item, Kind, Sink, StreamMeta, Visitor};
 use crate::error::{AppError, Result};
 
 /// Vrai si le début décompressé d'un flux gzip ressemble à une archive tar (`ustar`).
@@ -19,21 +20,25 @@ pub fn gz_contains_tar(head: &[u8]) -> bool {
         return false;
     }
     let mut buf = Vec::new();
-    let _ = GzDecoder::new(head).take(512).read_to_end(&mut buf);
+    let _ = MultiGzDecoder::new(head).take(512).read_to_end(&mut buf);
     buf.get(257..262) == Some(b"ustar")
+}
+
+fn open_reader(file: File, size: u64, gz: bool) -> Box<dyn Read> {
+    if gz {
+        Box::new(LimitedReader::new(
+            MultiGzDecoder::new(BufReader::new(file)),
+            max_for_compressed(size),
+        ))
+    } else {
+        Box::new(BufReader::new(file))
+    }
 }
 
 pub fn visit(path: &Path, gz: bool, _want_data: bool, f: &mut Visitor) -> Result<()> {
     let file = File::open(path)?;
     let size = file.metadata()?.len();
-    let reader: Box<dyn Read> = if gz {
-        Box::new(LimitedReader::new(
-            GzDecoder::new(BufReader::new(file)),
-            max_for_compressed(size),
-        ))
-    } else {
-        Box::new(BufReader::new(file))
-    };
+    let reader = open_reader(file, size, gz);
     let mut archive = tar::Archive::new(reader);
     let mut budget = Budget::default();
     for entry in archive.entries().map_err(io_to_app)? {
@@ -113,7 +118,7 @@ pub fn visit_gz(path: &Path, want_data: bool, f: &mut Visitor) -> Result<()> {
     };
     if want_data {
         let mut reader = LimitedReader::new(
-            GzDecoder::new(BufReader::new(file)),
+            MultiGzDecoder::new(BufReader::new(file)),
             max_for_compressed(size),
         );
         f(&item, &mut reader)?;
@@ -166,6 +171,69 @@ impl<'a> TarSink<'a> {
         match self.builder.into_inner()? {
             Out::Plain(mut w) => w.flush()?,
             Out::Gz(g) => g.finish()?.flush()?,
+        }
+        Ok(())
+    }
+
+    /// Recopie tar -> tar en conservant tous les types d'entrées (FIFO, périphériques…) et
+    /// les chemins rejetés (recopiés tels quels, jamais extraits).
+    pub fn raw_rewrite(
+        &mut self,
+        old: &Path,
+        gz: bool,
+        decide: &mut dyn FnMut(&str) -> Action,
+        skip: &HashSet<&str>,
+    ) -> Result<()> {
+        let file = File::open(old)?;
+        let size = file.metadata()?.len();
+        let mut archive = tar::Archive::new(open_reader(file, size, gz));
+        let mut budget = Budget::default();
+        for entry in archive.entries().map_err(io_to_app)? {
+            let mut entry = entry.map_err(io_to_app)?;
+            budget.entry()?;
+            let raw = entry
+                .path()
+                .map_err(io_to_app)?
+                .to_string_lossy()
+                .into_owned();
+            let mut h = entry.header().clone();
+            let name = match normalize_entry_path(&raw) {
+                None => {
+                    // Chemin rejeté : en-tête recopié tel quel (set_path refuserait `..`).
+                    self.builder.append(&h, &mut entry).map_err(io_to_app)?;
+                    continue;
+                }
+                Some(norm) => {
+                    if super::skipped(skip, &norm) {
+                        continue;
+                    }
+                    match decide(&norm) {
+                        Action::Drop => continue,
+                        Action::Keep => norm,
+                        Action::Rename(to) => to,
+                    }
+                }
+            };
+            let kind = h.entry_type();
+            if kind.is_dir() {
+                let name = format!("{}/", name.trim_end_matches('/'));
+                self.builder
+                    .append_data(&mut h, name, io::empty())
+                    .map_err(io_to_app)?;
+            } else if kind.is_symlink() || kind.is_hard_link() {
+                let target = entry
+                    .link_name()
+                    .map_err(io_to_app)?
+                    .map(|l| l.into_owned())
+                    .unwrap_or_default();
+                self.builder
+                    .append_link(&mut h, name, target)
+                    .map_err(io_to_app)?;
+            } else {
+                self.builder
+                    .append_data(&mut h, name, &mut entry)
+                    .map_err(io_to_app)?;
+            }
         }
         Ok(())
     }

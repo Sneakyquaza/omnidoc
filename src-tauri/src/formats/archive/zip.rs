@@ -131,10 +131,12 @@ impl<'a> ZipSink<'a> {
         for i in 0..ar.len() {
             budget.entry()?;
             let file = ar.by_index_raw(i).map_err(zip_err)?;
+            // Chemin rejeté (`..`, `\`…) : recopié tel quel, jamais extrait, pour ne rien perdre.
             let Some(norm) = normalize_entry_path(&file.name().unwrap_or_default()) else {
+                self.zw.raw_copy_file(file).map_err(zip_err)?;
                 continue;
             };
-            if skip.contains(norm.as_str()) {
+            if super::skipped(skip, &norm) {
                 continue;
             }
             match decide(&norm) {
