@@ -286,7 +286,7 @@ impl FormatHandler for MediaHandler {
 async fn blocking<T: Send + 'static>(f: impl FnOnce() -> Result<T> + Send + 'static) -> Result<T> {
     tauri::async_runtime::spawn_blocking(f)
         .await
-        .map_err(|e| AppError::External(e.to_string()))?
+        .map_err(|_| AppError::Internal)?
 }
 
 fn cover_data_uri(path: &Path) -> Result<Option<String>> {

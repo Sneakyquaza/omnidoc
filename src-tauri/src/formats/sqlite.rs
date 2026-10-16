@@ -349,7 +349,7 @@ impl FormatHandler for SqliteHandler {
 async fn blocking<T: Send + 'static>(f: impl FnOnce() -> Result<T> + Send + 'static) -> Result<T> {
     tauri::async_runtime::spawn_blocking(f)
         .await
-        .map_err(|e| AppError::External(e.to_string()))?
+        .map_err(|_| AppError::Internal)?
 }
 
 fn rows_impl(path: &str, table: &str, offset: u32, limit: u32) -> Result<DbResult> {
