@@ -112,7 +112,9 @@ export default function SheetEditor({
   const [editing, setEditingState] = useState<Editing | null>(null);
   const [csv, setCsv] = useState<CsvOptions | null>(model.csv);
   const [filters, setFilters] = useState<Record<number, FilterState>>({});
-  const [header, setHeader] = useState(model.csv?.header ?? false);
+  const [localHeader, setLocalHeader] = useState(false);
+  // source unique : pour un CSV, l'option du panneau (csv.header) fait foi
+  const header = csv ? csv.header : localHeader;
   const [menu, setMenu] = useState<{ x: number; y: number; kind: MenuKind } | null>(null);
   const [filterPop, setFilterPop] = useState<{ col: number; rect: DOMRect } | null>(null);
 
@@ -324,14 +326,16 @@ export default function SheetEditor({
     });
   }
 
-  function commitEdit(move: "down" | "up" | "right" | "left" | "none") {
+  function commitEdit(move: "down" | "up" | "right" | "left" | "none" | "keep") {
     const ed = editingRef.current;
     if (!ed) return;
-    setEditing(null);
+    // « keep » : applique la valeur en cours sans quitter l'édition (sérialisation/autosave)
+    if (move !== "keep") setEditing(null);
     const prev = cellAt(ed.r, ed.c);
     if (ed.text !== cellInputText(prev, locale)) {
       apply([{ sheet: active, row: ed.r, col: ed.c, cell: parseCellInput(ed.text, locale, prev) }]);
     }
+    if (move === "keep") return;
     moveAfterEdit(move);
     gridApi.current?.focus();
   }
@@ -737,6 +741,7 @@ export default function SheetEditor({
       redo: () => undoRedo("redo"),
       fillDown,
       exportCsv: () => void exportCsv(),
+      commitKeep: () => commitEdit("keep"),
       sortAsc: () => sortSelection(true),
       sortDesc: () => sortSelection(false),
       filter: toggleFilter,
@@ -758,10 +763,9 @@ export default function SheetEditor({
 
   useEffect(() => {
     registerSerializer(() => {
-      if (editingRef.current) commitEdit("none");
+      if (editingRef.current) actions.current.commitKeep?.();
       return buildWorkbook(engine.sheets, csvRef.current, model.lossy);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registerSerializer, engine, model.lossy]);
 
   useEffect(() => {
@@ -869,7 +873,12 @@ export default function SheetEditor({
           onFormat={applyFormat}
           onDecimals={changeDecimalsOfSelection}
           onSort={sortSelection}
-          onToggleHeader={() => setHeader((h) => !h)}
+          onToggleHeader={() => {
+            if (csv) {
+              setCsv({ ...csv, header: !csv.header });
+              setDirty(true);
+            } else setLocalHeader((h) => !h);
+          }}
           onToggleFilter={toggleFilter}
         />
       </EditorToolbar>

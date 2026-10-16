@@ -59,6 +59,7 @@
     "saveTitle": "Save the converted archive",
     "done": "Archive converted: \"{{name}}\""
   },
+  "entry": { "readOnly": "\"{{name}}\" is opened read-only (extracted copy): changes would not be written back to the archive." },
   "openError": "Unable to open this item.",
   "status": {
     "entries_one": "{{count}} item",

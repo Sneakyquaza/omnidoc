@@ -42,6 +42,8 @@ export interface EditorProps<M> {
   /** Sous-modèle initial ; ne change pas pendant la vie de l'éditeur (rechargement = remontage). */
   model: M;
   readOnly: boolean;
+  /** `false` quand l'onglet est en arrière-plan (l'éditeur reste monté) ; absent = actif. */
+  active?: boolean;
   setDirty(dirty: boolean): void;
   /** Appelé par le shell à la sauvegarde / autosave / export. */
   registerSerializer(fn: () => M | Promise<M>): void;

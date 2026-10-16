@@ -8,6 +8,7 @@ import type { ArchiveDoc, ArchiveEntry } from "../../ipc/bindings";
 import { openPath } from "../../shell/documents";
 import { reportError } from "../../shell/errors";
 import { basename } from "../../shell/paths";
+import { useTabs } from "../../stores/tabs";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
 import { choose, confirm } from "../../shell/ui/dialogStore";
@@ -267,6 +268,12 @@ export default function ArchiveEditor({
     try {
       const tmp = await commands.archiveReadEntry(path, node.path);
       await openPath(tmp);
+      // copie temporaire : ses modifications n'atteindraient jamais l'archive → lecture seule
+      const opened = useTabs.getState().tabs.find((tb) => tb.path === tmp);
+      if (opened) {
+        useTabs.getState().patchTab(opened.id, { readOnly: true });
+        pushToast({ kind: "info", text: t("entry.readOnly", { name: basename(node.path) }) });
+      }
     } catch (e) {
       reportError(e);
     }

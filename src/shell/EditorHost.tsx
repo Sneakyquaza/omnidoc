@@ -47,7 +47,7 @@ class BoundaryBase extends Component<
 }
 const Boundary = withTranslation()(BoundaryBase);
 
-function TabEditor({ tab }: { tab: TabEntry }) {
+function TabEditor({ tab, active }: { tab: TabEntry; active: boolean }) {
   const view = editors[tab.modelKind];
   const id = tab.id;
   const api = useMemo(
@@ -72,6 +72,7 @@ function TabEditor({ tab }: { tab: TabEntry }) {
         tab,
         model: tab.model,
         readOnly: tab.readOnly,
+        active,
         ...api,
       })}
     </div>
@@ -94,7 +95,11 @@ export function EditorHost() {
           >
             <Boundary key={tab.reloadCount}>
               <Suspense fallback={<div className={styles.loading} />}>
-                <TabEditor key={`${tab.id}-${tab.reloadCount}`} tab={tab} />
+                <TabEditor
+                  key={`${tab.id}-${tab.reloadCount}`}
+                  tab={tab}
+                  active={tab.id === activeId}
+                />
               </Suspense>
             </Boundary>
           </div>

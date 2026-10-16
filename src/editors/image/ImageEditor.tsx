@@ -283,7 +283,9 @@ export default function ImageEditor({
 
   async function saveInPlace(): Promise<boolean> {
     const format = saveFormatOf(model.format);
-    if (!canSaveInPlace || path === null || format === null) return !dirty;
+    if (!dirty) return true;
+    // Écriture en place impossible (SVG annoté, format non réencodable, sans chemin) → « Enregistrer sous »
+    if (!canSaveInPlace || path === null || format === null) return readOnly ? false : saveAs();
     if (!reencodeConfirmed.current) {
       const ok = await confirm({
         title: t("save.reencodeTitle"),

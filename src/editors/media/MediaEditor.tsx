@@ -30,6 +30,7 @@ export default function MediaEditor({
   tab,
   model,
   readOnly,
+  active = true,
   setDirty,
   registerSerializer,
   registerCommands,
@@ -58,6 +59,16 @@ export default function MediaEditor({
   useEffect(() => {
     registerSerializer(() => ({ ...model, tags: joinTags(model.tags, fields, extra) }));
   }, [registerSerializer, model, fields, extra]);
+
+  // Onglet en arrière-plan : le média ne doit pas continuer à jouer
+  useEffect(() => {
+    if (!active) mediaRef.current?.pause();
+  }, [active]);
+
+  // Sauvegarde réussie : la prochaine modification doit de nouveau marquer l'onglet modifié
+  useEffect(() => {
+    if (!tab.dirty) dirty.current = false;
+  }, [tab.dirty]);
 
   function markDirty() {
     if (dirty.current) return;

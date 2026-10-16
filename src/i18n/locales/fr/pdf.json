@@ -103,6 +103,7 @@
     "confirmMessage": "{{count}} annotation(s) seront écrites dans le PDF. L'original est sauvegardé automatiquement. Les signets et formulaires du document seront retirés.",
     "save": "Enregistrer (remplacer)",
     "saveAs": "Enregistrer sous…",
+    "nothingToSave": "Aucune annotation en attente : rien à enregistrer.",
     "saveButton": "Enregistrer les annotations"
   },
   "ops": {
