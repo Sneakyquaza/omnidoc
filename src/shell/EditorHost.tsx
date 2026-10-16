@@ -53,7 +53,8 @@ function TabEditor({ tab, active }: { tab: TabEntry; active: boolean }) {
   const api = useMemo(
     () => ({
       setDirty: (dirty: boolean) => useTabs.getState().setDirty(id, dirty),
-      registerSerializer: (fn: () => unknown) => registerSerializer(id, fn),
+      registerSerializer: (fn: (opts?: { forSave?: boolean }) => unknown) =>
+        registerSerializer(id, fn),
       registerCommands: (cmds: Parameters<EditorProps<unknown>["registerCommands"]>[0]) =>
         useRuntime.getState().setCommands(id, cmds),
       registerSaveHandler: (h: Parameters<EditorProps<unknown>["registerSaveHandler"]>[0]) =>

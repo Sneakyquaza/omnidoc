@@ -105,8 +105,10 @@ pub fn run() {
 
     let mut app_builder = tauri::Builder::default();
     // Doit être le premier plugin : une 2ᵉ instance transmet ses arguments à la première.
+    // Sauf en E2E (`OMNIDOC_E2E`, défini par tests/e2e/wdio.conf.ts) : plusieurs instances parallèles
+    // ne doivent pas se rediriger leurs fichiers.
     #[cfg(desktop)]
-    {
+    if std::env::var_os("OMNIDOC_E2E").is_none() {
         app_builder = app_builder.plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             let paths = commands::resolve_paths(argv.into_iter().skip(1), &cwd);
             if !paths.is_empty() {

@@ -18,7 +18,7 @@ import { reportError } from "./errors";
 import { getHandlers } from "./handlers";
 import { NEW_DOCUMENTS } from "./newDocuments";
 import { basename, extOf } from "./paths";
-import { clearTabRuntime, getSaveHandler, getSerializer } from "./runtime";
+import { SaveCancelled, clearTabRuntime, getSaveHandler, getSerializer } from "./runtime";
 import { choose, confirm } from "./ui/dialogStore";
 import { pushToast } from "./ui/toastStore";
 
@@ -215,10 +215,10 @@ export function ignoreExternalChange(tabId: string): void {
 }
 
 /** Modèle courant : sérialiseur de l'éditeur, sinon modèle d'ouverture. */
-export async function currentModel(tab: TabEntry): Promise<DocumentModel> {
+export async function currentModel(tab: TabEntry, forSave = false): Promise<DocumentModel> {
   const serialize = getSerializer(tab.id);
   if (!serialize) return tab.model;
-  const m = (await serialize()) as object;
+  const m = (await serialize({ forSave })) as object;
   return { ...m, kind: tab.modelKind } as DocumentModel;
 }
 
@@ -275,7 +275,7 @@ export async function saveTabAs(tabId: string): Promise<boolean> {
       if (!ok) return false;
     }
     const rev = tabRevision(tabId);
-    const model = await currentModel(tab);
+    const model = await currentModel(tab, true);
     await commands.saveDocument(dest, handler.id, model);
     if (tab.path && tab.path !== dest) silently(commands.unwatchFile(tab.path));
     silently(commands.watchFile(dest));
@@ -303,6 +303,7 @@ export async function saveTabAs(tabId: string): Promise<boolean> {
     pushToast({ kind: "success", text: t("save.saved", { name: basename(dest) }) });
     return true;
   } catch (e) {
+    if (e instanceof SaveCancelled) return false;
     reportError(e);
     return false;
   }
@@ -351,7 +352,7 @@ export async function saveTab(tabId: string): Promise<boolean> {
   }
   try {
     const rev = tabRevision(tabId);
-    const model = await currentModel(tab);
+    const model = await currentModel(tab, true);
     await commands.saveDocument(tab.path, tab.handlerId, model);
     // Modifié pendant l'écriture : l'onglet reste « modifié ».
     if (tabRevision(tabId) === rev) {
@@ -361,6 +362,7 @@ export async function saveTab(tabId: string): Promise<boolean> {
     pushToast({ kind: "success", text: t("save.saved", { name: tab.title }) });
     return true;
   } catch (e) {
+    if (e instanceof SaveCancelled) return false;
     reportError(e);
     return false;
   }

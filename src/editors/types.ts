@@ -46,7 +46,7 @@ export interface EditorProps<M> {
   active?: boolean;
   setDirty(dirty: boolean): void;
   /** Appelé par le shell à la sauvegarde / autosave / export. */
-  registerSerializer(fn: () => M | Promise<M>): void;
+  registerSerializer(fn: (opts?: { forSave?: boolean }) => M | Promise<M>): void;
   /** Palette + raccourcis, actifs seulement quand l'onglet est actif. */
   registerCommands(cmds: EditorCommand[]): void;
   setStatus(items: StatusItem[]): void;

@@ -34,7 +34,12 @@
     "tabs": "Tabulations",
     "spaces": "{{count}} espaces"
   },
+  "mixedEol": {
+    "title": "Fins de ligne mixtes",
+    "message": "Ce fichier mélange plusieurs fins de ligne. Lesquelles utiliser ?"
+  },
   "lineEndings": {
+    "mixed": "Mixte",
     "lf": "LF (Unix)",
     "crlf": "CRLF (Windows)",
     "cr": "CR (Mac classique)",
