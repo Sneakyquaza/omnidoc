@@ -98,7 +98,10 @@ export default function RichTextEditor({
       ed.setEditable(false);
       pushToast({ kind: "error", text: t("contentError") });
     },
-    onUpdate: () => setDirty(true),
+    // setEditable() émet aussi « update » sans changer le document : ne pas marquer modifié
+    onUpdate: ({ transaction }) => {
+      if (transaction.docChanged) setDirty(true);
+    },
     editorProps: {
       attributes: { "aria-label": t("document"), role: "textbox", "aria-multiline": "true" },
       handlePaste: (_view, event) => {

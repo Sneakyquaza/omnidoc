@@ -61,7 +61,9 @@ pub fn write_atomic(path: &Path, bytes: &[u8], backup_dir: Option<&Path>) -> Res
     if let Ok(meta) = std::fs::metadata(path) {
         tmp.as_file().set_permissions(meta.permissions())?;
     }
+    crate::core::watch::note_app_write(path);
     tmp.persist(path).map_err(|e| AppError::Io(e.error))?;
+    crate::core::watch::note_app_write(path);
     Ok(())
 }
 
@@ -84,7 +86,9 @@ fn replace_with_in(path: &Path, temp_path: &Path, backup_dir: Option<&Path>) -> 
     if let Ok(meta) = std::fs::metadata(path) {
         std::fs::set_permissions(temp_path, meta.permissions())?;
     }
+    crate::core::watch::note_app_write(path);
     std::fs::rename(temp_path, path)?;
+    crate::core::watch::note_app_write(path);
     Ok(())
 }
 

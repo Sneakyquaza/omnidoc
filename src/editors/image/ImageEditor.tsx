@@ -65,7 +65,6 @@ function adjustFilter(p: AdjustParams): string {
 export default function ImageEditor({
   tab,
   model,
-  readOnly,
   setDirty,
   registerSerializer,
   registerCommands,
@@ -73,6 +72,9 @@ export default function ImageEditor({
 }: EditorProps<ImageDoc>) {
   const { t } = useTranslation("image");
   const path = tab.path;
+  // Le handler « image » n'écrit pas via save_document (write: false → tab.readOnly toujours vrai) :
+  // l'édition et l'enregistrement passent par les commandes image_* de cet éditeur.
+  const readOnly = false;
   const isSvg = model.format === "svg";
 
   const [source, setSource] = useState<HTMLCanvasElement | null>(null);
@@ -399,11 +401,11 @@ export default function ImageEditor({
     registerCommands([
       { id: "image.undo", title: t("commands.undo"), shortcut: "Mod+Z", run: run("undo") },
       { id: "image.redo", title: t("commands.redo"), shortcut: "Mod+Shift+Z", run: run("redo") },
-      { id: "image.save", title: t("commands.save"), shortcut: "Mod+Alt+S", run: run("save") },
+      { id: "image.save", title: t("commands.save"), shortcut: "Mod+S", run: run("save") },
       {
         id: "image.saveAs",
         title: t("commands.saveAs"),
-        shortcut: "Mod+Alt+Shift+S",
+        shortcut: "Mod+Shift+S",
         run: run("saveAs"),
       },
       { id: "image.strip", title: t("commands.strip"), run: run("stripMetadata") },
