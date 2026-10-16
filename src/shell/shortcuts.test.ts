@@ -44,6 +44,16 @@ describe("raccourcis", () => {
     );
   });
 
+  it("Alt + lettre : repli sur e.code (caractère composé)", () => {
+    const p = parseShortcut("Mod+Alt+C");
+    const e = { ...ev("ç", { ctrlKey: true, altKey: true }), code: "KeyC" };
+    expect(matchesShortcut(p, e)).toBe(true);
+    expect(matchesShortcut(p, { ...e, code: "KeyV" })).toBe(false);
+    // Sans Alt, e.code n'est pas consulté.
+    const noAlt = { ...ev("ç", { ctrlKey: true }), code: "KeyC" };
+    expect(matchesShortcut(parseShortcut("Mod+C"), noAlt)).toBe(false);
+  });
+
   it("trouve une commande par raccourci", () => {
     const items = [{ id: "a", shortcut: "Mod+O" }, { id: "b" }, { id: "c", shortcut: "Mod+K" }];
     expect(findByShortcut(items, ev("k", { ctrlKey: true }))?.id).toBe("c");

@@ -38,16 +38,18 @@ import { commands } from "../../ipc/bindings";
 import type { LineEnding, TextDoc } from "../../ipc/bindings";
 import i18n from "../../i18n";
 import { reportError } from "../../shell/errors";
+import { SaveCancelled } from "../../shell/runtime";
 import { EditorSidePanel, EditorToolbar } from "../../shell/slots";
 import { Button } from "../../shell/ui/Button";
 import { ToolBar, ToolGroup } from "../../shell/ui/ToolBar";
 import { Menu } from "../../shell/ui/Menu";
 import type { MenuItem } from "../../shell/ui/Menu";
-import { confirm } from "../../shell/ui/dialogStore";
+import { choose, confirm } from "../../shell/ui/dialogStore";
 import { pushToast } from "../../shell/ui/toastStore";
 import type { EditorProps } from "../types";
 import { isDarkTheme, themeExtension } from "./cmTheme";
 import { detectIndent } from "./indent";
+import { dominantLineEnding, needsLineEndingChoice } from "./lineEnding";
 import { LANGUAGES, loadLanguage } from "./languages";
 import { MarkdownPreview } from "./MarkdownPreview";
 import { InfoPanel, OutlinePanel, TreePanel } from "./Panels";
@@ -62,7 +64,7 @@ const LARGE_TEXT = 20 * 1024 * 1024;
 /** Au-delà, pas de validation ni de complétion de mots. */
 const HEAVY_TEXT = 2 * 1024 * 1024;
 
-const LINE_ENDINGS: LineEnding[] = ["lf", "crlf", "cr"];
+const LINE_ENDINGS: Exclude<LineEnding, "mixed">[] = ["lf", "crlf", "cr"];
 const INDENT_CHOICES: ("tab" | number)[] = ["tab", 2, 4, 8];
 
 function wordSource(ctx: CompletionContext): CompletionResult | null {
@@ -281,13 +283,33 @@ export default function TextEditor({
       attributeFilter: ["data-theme"],
     });
 
-    registerSerializer(() => {
+    registerSerializer(async (opts) => {
       const m = metaRef.current;
+      const text = view.state.doc.toString();
+      let lineEnding = m.lineEnding;
+      if (opts?.forSave && needsLineEndingChoice(lineEnding, text, baseline.current)) {
+        const best = dominantLineEnding(text);
+        const choice = await choose({
+          title: tRef.current("mixedEol.title"),
+          message: tRef.current("mixedEol.message"),
+          actions: [
+            { id: "cancel", label: i18n.t("common.cancel"), variant: "secondary" },
+            ...LINE_ENDINGS.map((id) => ({
+              id,
+              label: tRef.current(`lineEndings.${id}`),
+              variant: id === best ? ("primary" as const) : ("secondary" as const),
+            })),
+          ],
+        });
+        if (choice === null || choice === "cancel") throw new SaveCancelled();
+        lineEnding = choice as LineEnding;
+        updateMeta({ lineEnding }, true);
+      }
       return {
-        text: view.state.doc.toString(),
+        text,
         encoding: m.encoding,
         bom: m.bom,
-        lineEnding: m.lineEnding,
+        lineEnding,
         language: m.language,
       };
     });
@@ -492,7 +514,11 @@ export default function TextEditor({
         text: meta.bom ? `${meta.encoding} (BOM)` : meta.encoding,
         title: t("toolbar.encoding"),
       },
-      { id: "text-eol", text: meta.lineEnding.toUpperCase(), title: t("toolbar.lineEnding") },
+      {
+        id: "text-eol",
+        text: meta.lineEnding === "mixed" ? t("lineEndings.mixed") : meta.lineEnding.toUpperCase(),
+        title: t("toolbar.lineEnding"),
+      },
       {
         id: "text-indent",
         text: indent === "tab" ? t("status.tabs") : t("status.spaces", { count: indent }),

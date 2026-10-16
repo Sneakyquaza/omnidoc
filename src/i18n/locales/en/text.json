@@ -34,7 +34,12 @@
     "tabs": "Tabs",
     "spaces": "{{count}} spaces"
   },
+  "mixedEol": {
+    "title": "Mixed line endings",
+    "message": "This file mixes several line endings. Which ones should be used?"
+  },
   "lineEndings": {
+    "mixed": "Mixed",
     "lf": "LF (Unix)",
     "crlf": "CRLF (Windows)",
     "cr": "CR (classic Mac)",

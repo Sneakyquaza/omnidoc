@@ -24,7 +24,15 @@ export const useRuntime = create<RuntimeState>((set) => ({
     ),
 }));
 
-type Serializer = () => unknown;
+/** `forSave` : enregistrement interactif (l'éditeur peut poser une question, ou lever `SaveCancelled`). */
+export interface SerializeOptions {
+  forSave?: boolean;
+}
+
+type Serializer = (opts?: SerializeOptions) => unknown;
+
+/** Levée par un sérialiseur quand l'utilisateur annule l'enregistrement. */
+export class SaveCancelled extends Error {}
 
 const serializers = new Map<string, Serializer>();
 

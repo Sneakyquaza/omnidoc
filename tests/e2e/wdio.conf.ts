@@ -22,6 +22,9 @@ const application =
 // Les workers rechargent ce fichier : le dossier est créé une fois (lanceur) puis partagé par l'env.
 const work = process.env.OMNIDOC_E2E_WORK ?? fs.mkdtempSync(path.join(os.tmpdir(), "omnidoc-e2e-"));
 process.env.OMNIDOC_E2E_WORK = work;
+// tauri-driver (spawné plus bas) hérite de cet env, et l'application de celui du driver : sans
+// single-instance, des instances E2E parallèles ne se transmettent pas leurs fichiers.
+process.env.OMNIDOC_E2E = "1";
 process.env.XDG_DATA_HOME = path.join(work, "xdg-data");
 process.env.XDG_CONFIG_HOME = path.join(work, "xdg-config");
 process.env.XDG_CACHE_HOME = path.join(work, "xdg-cache");
