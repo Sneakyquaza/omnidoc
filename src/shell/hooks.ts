@@ -8,9 +8,15 @@ import { useSettings } from "../stores/settings";
 import { useTabs } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { useShellCommands } from "./commands";
-import { autosaveDirtyTabs, openPaths, restoreRecovery } from "./documents";
+import {
+  autosaveDirtyTabs,
+  discardRecovery,
+  openPaths,
+  restoreRecovery,
+  saveTab,
+} from "./documents";
 import { findByShortcut, isNativeEditShortcut, isTextEntry } from "./shortcuts";
-import { choose, confirm, useDialogs } from "./ui/dialogStore";
+import { choose, useDialogs } from "./ui/dialogStore";
 
 /** Applique thème (`data-theme`) et langue. */
 export function useAppearance(): void {
@@ -53,10 +59,10 @@ export function useGlobalShortcuts(): void {
   const { all, editor } = useShellCommands();
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (useDialogs.getState().queue.length > 0) return;
+      if (e.defaultPrevented || useDialogs.getState().queue.length > 0) return;
       // Les dialogues Paramètres / Exporter gèrent eux-mêmes leur clavier.
       const ui = useUi.getState();
-      if (ui.settingsOpen || ui.exportTabId !== null) return;
+      if (ui.settingsOpen || ui.paletteOpen || ui.exportTabId !== null) return;
       const cmd = findByShortcut(all, e);
       if (!cmd) return;
       // Dans un champ de saisie, l'undo/copier-coller natif prime sur les commandes d'éditeur.
@@ -90,24 +96,26 @@ export function useStartup(): void {
     started = true;
     void (async () => {
       try {
-        await openPaths(await commands.startupPaths());
+        // Récupération d'abord : les fichiers passés en argument retrouvent alors les onglets restaurés.
         const entries = await commands.recoveryList();
-        if (entries.length === 0) return;
-        const choice = await choose({
-          title: i18n.t("recovery.title"),
-          message: i18n.t("recovery.message", { count: entries.length }),
-          actions: [
-            { id: "ignore", label: i18n.t("recovery.ignore"), variant: "secondary" },
-            { id: "restore", label: i18n.t("recovery.restore"), variant: "primary" },
-          ],
-        });
-        if (choice === "restore") {
-          await restoreRecovery(entries);
-        } else {
-          await Promise.all(
-            entries.map((e) => commands.recoveryDiscard(e.docId).catch(() => undefined)),
-          );
+        if (entries.length > 0) {
+          const choice = await choose({
+            title: i18n.t("recovery.title"),
+            message: i18n.t("recovery.message", { count: entries.length }),
+            actions: [
+              { id: "ignore", label: i18n.t("recovery.ignore"), variant: "secondary" },
+              { id: "restore", label: i18n.t("recovery.restore"), variant: "primary" },
+            ],
+          });
+          if (choice === "restore") {
+            await restoreRecovery(entries);
+          } else {
+            await Promise.all(
+              entries.map((e) => commands.recoveryDiscard(e.docId).catch(() => undefined)),
+            );
+          }
         }
+        await openPaths(await commands.startupPaths());
       } catch {
         // hors Tauri (tests, navigateur) : pas de démarrage
       }
@@ -147,18 +155,24 @@ export function useSystemEvents(): void {
         const dirty = useTabs.getState().tabs.filter((t) => t.dirty);
         if (dirty.length === 0) return;
         event.preventDefault();
-        const ok = await confirm({
+        const choice = await choose({
           title: i18n.t("quit.title"),
           message: i18n.t("quit.message", { count: dirty.length }),
-          confirmLabel: i18n.t("quit.confirm"),
-          danger: true,
+          actions: [
+            { id: "cancel", label: i18n.t("common.cancel"), variant: "secondary" },
+            { id: "discard", label: i18n.t("quit.confirm"), variant: "danger" },
+            { id: "saveAll", label: i18n.t("quit.saveAll"), variant: "primary" },
+          ],
         });
-        if (ok) {
-          await Promise.all(
-            dirty.map((t) => commands.recoveryDiscard(t.docId).catch(() => undefined)),
-          );
-          await getCurrentWindow().destroy();
+        if (choice !== "discard" && choice !== "saveAll") return;
+        if (choice === "saveAll") {
+          for (const t of dirty) {
+            useTabs.getState().activateTab(t.id);
+            if (!(await saveTab(t.id))) return;
+          }
         }
+        dirty.forEach((t) => discardRecovery(t.docId));
+        await getCurrentWindow().destroy();
       }),
     );
 

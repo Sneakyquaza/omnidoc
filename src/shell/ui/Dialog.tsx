@@ -14,7 +14,11 @@ export function DialogHost() {
     if (!request) return;
     const previous = document.activeElement as HTMLElement | null;
     const buttons = ref.current?.querySelectorAll<HTMLElement>("button");
-    (buttons?.[buttons.length - 1] ?? ref.current)?.focus();
+    // Dialogue destructif : focus initial sur Annuler, jamais sur le bouton dangereux.
+    const lastIsDanger = request.actions[request.actions.length - 1]?.variant === "danger";
+    const cancelAt = request.actions.findIndex((a) => a.id === "cancel");
+    const index = lastIsDanger ? Math.max(cancelAt, 0) : (buttons?.length ?? 1) - 1;
+    (buttons?.[index] ?? ref.current)?.focus();
     return () => previous?.focus?.();
   }, [request]);
 

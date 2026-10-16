@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useRecent } from "../stores/recent";
 import { useUi } from "../stores/ui";
-import { newDocument, openPath, openWithDialog } from "./documents";
+import { newDocument, openRecent, openWithDialog } from "./documents";
 import { NEW_DOCUMENTS } from "./newDocuments";
 import { basename } from "./paths";
 import { Button, IconButton } from "./ui/Button";
@@ -77,7 +77,7 @@ export function Welcome() {
                     type="button"
                     className={styles.item}
                     title={path}
-                    onClick={() => void openPath(path)}
+                    onClick={() => void openRecent(path)}
                   >
                     <span className={styles.recentName}>{basename(path)}</span>
                     <span className={styles.path}>{path}</span>
