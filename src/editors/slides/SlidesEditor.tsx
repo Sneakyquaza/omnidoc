@@ -129,7 +129,7 @@ export default function SlidesEditor({
         {isSafeThumbnail(model.thumbnail) ? (
           <img className={styles.fileThumb} src={model.thumbnail} alt={t("thumbs.fileThumbnail")} />
         ) : null}
-        <ul className={styles.thumbs}>
+        <ul className={styles.thumbs} data-testid="slides-thumbs">
           {model.slides.map((s, i) => (
             <li key={i}>
               <button
@@ -151,7 +151,13 @@ export default function SlidesEditor({
       <div className={styles.banner} role="note">
         {t("textOnly")}
       </div>
-      <div className={styles.stage} onKeyDown={onKey} tabIndex={0} aria-label={t("stage")}>
+      <div
+        className={styles.stage}
+        data-testid="slides-stage"
+        onKeyDown={onKey}
+        tabIndex={0}
+        aria-label={t("stage")}
+      >
         {current ? (
           <>
             <SlideCard slide={current} large />

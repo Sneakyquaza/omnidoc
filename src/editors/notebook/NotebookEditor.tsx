@@ -173,6 +173,7 @@ export default function NotebookEditor({
       <div
         className={styles.scroller}
         ref={scrollerRef}
+        data-testid="notebook-document"
         onClick={onClick}
         tabIndex={0}
         role="document"

@@ -350,7 +350,7 @@ export default function EbookEditor({
       </EditorToolbar>
       <EditorSidePanel title={t("toc.title")} side="left">
         {count === 0 ? <p className={styles.muted}>{t("toc.empty")}</p> : null}
-        <ol className={styles.toc}>
+        <ol className={styles.toc} data-testid="ebook-toc">
           {model.chapters.map((c, i) => (
             <li key={i}>
               <button

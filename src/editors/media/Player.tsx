@@ -166,6 +166,7 @@ export function Player({
   const loopText = loop.a === null ? "A" : loop.b === null ? "B" : "A-B";
 
   const mediaProps = {
+    "data-testid": "media-element",
     src: src ?? undefined,
     preload: "metadata" as const,
     onPlay: () => setPlaying(true),
@@ -213,6 +214,7 @@ export function Player({
           icon={playing ? "pause" : "play"}
           onClick={togglePlay}
           pressed={playing}
+          data-testid="media-play"
         />
         <IconButton
           label={t("player.back")}
