@@ -51,13 +51,33 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Notes de la release = section de la version courante du CHANGELOG.
+      - name: Notes de version
+        id: notes
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          NOTES=$(awk -v v="$VERSION" '
+            /^## \[/ { if (found) exit; if (index($0, "## [" v "]") == 1) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then NOTES="Voir CHANGELOG.md / See CHANGELOG.md"; fi
+          {
+            echo "body<<NOTES_EOF"
+            echo "$NOTES"
+            echo "NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__
           releaseName: "OmniDoc v__VERSION__"
-          releaseBody: "Voir les notes de version ci-dessous. / See the notes below."
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: true
+          includeUpdaterJson: true
           prerelease: false
           args: ${{ matrix.args }}

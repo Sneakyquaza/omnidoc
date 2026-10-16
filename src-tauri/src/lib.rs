@@ -116,6 +116,13 @@ pub fn run() {
         }));
     }
 
+    #[cfg(desktop)]
+    {
+        app_builder = app_builder
+            .plugin(tauri_plugin_updater::Builder::new().build())
+            .plugin(tauri_plugin_process::init());
+    }
+
     let result = app_builder
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())

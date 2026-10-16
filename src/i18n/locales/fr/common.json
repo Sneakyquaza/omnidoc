@@ -181,6 +181,8 @@
     "cycleTheme": "Changer de thème",
     "toggleLanguage": "Changer de langue (FR/EN)",
     "palette": "Palette de commandes",
-    "settings": "Ouvrir les paramètres"
+    "settings": "Ouvrir les paramètres",
+    "checkUpdates": "Rechercher des mises à jour",
+    "releaseNotes": "Notes de version"
   }
 }

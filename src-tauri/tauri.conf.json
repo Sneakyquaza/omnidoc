@@ -27,6 +27,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": [
       "deb",
       "rpm",
@@ -299,6 +300,13 @@
       "rpm": {
         "desktopTemplate": "omnidoc.desktop"
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNFQzhFQkExNDdCRTkwNkIKUldScmtMNUhvZXZJUGlJYjVrc2xGa3VJS1gzNTJCVWduUW9GOVBHRllXZDh1QlBLb3ZsSVdvZncK",
+      "endpoints": ["https://github.com/Sneakyquaza/omnidoc/releases/latest/download/latest.json"],
+      "windows": { "installMode": "passive" }
     }
   }
 }

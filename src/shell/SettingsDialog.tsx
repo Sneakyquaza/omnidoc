@@ -17,6 +17,7 @@ import { useUi } from "../stores/ui";
 import { useShellCommands } from "./commands";
 import { eventToShortcut, findShortcutConflicts, formatShortcut } from "./shortcuts";
 import { Button } from "./ui/Button";
+import { checkManually, showFullChangelog } from "./updates/store";
 import styles from "./SettingsDialog.module.css";
 
 export const REPOSITORY_URL = "https://github.com/Sneakyquaza/omnidoc";
@@ -80,6 +81,7 @@ function SettingsBody() {
           <EditingSection />
           <ShortcutsSection />
           <FilesSection />
+          <UpdatesSection />
           <AboutSection />
         </div>
         <div className={styles.actions}>
@@ -304,6 +306,60 @@ function FilesSection() {
           {t("files.clearRecent")}
         </Button>
       </div>
+    </section>
+  );
+}
+
+function UpdatesSection() {
+  const { t } = useTranslation("updates");
+  const auto = useSettings((s) => s.autoCheckUpdates);
+  const setAuto = useSettings((s) => s.setAutoCheckUpdates);
+  const [version, setVersion] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const ids = { auto: useId(), title: useId() };
+  useEffect(() => {
+    getVersion()
+      .then(setVersion)
+      .catch(() => undefined);
+  }, []);
+
+  async function checkNow() {
+    setChecking(true);
+    setMessage(null);
+    const result = await checkManually();
+    setChecking(false);
+    if (result.status === "upToDate") setMessage({ text: t("check.upToDate"), error: false });
+    else if (result.status === "error")
+      setMessage({ text: `${t("check.error")} ${result.message}`, error: true });
+    else
+      setMessage({ text: t("check.available", { version: result.update.version }), error: false });
+  }
+
+  return (
+    <section aria-labelledby={ids.title} className={styles.section}>
+      <h3 id={ids.title}>{t("settings.title")}</h3>
+      {version && <p>{t("settings.current", { version })}</p>}
+      <div className={styles.row}>
+        <label htmlFor={ids.auto}>{t("settings.auto")}</label>
+        <input
+          id={ids.auto}
+          type="checkbox"
+          checked={auto === true}
+          onChange={(e) => setAuto(e.target.checked)}
+        />
+      </div>
+      <div className={styles.row}>
+        <Button disabled={checking} onClick={() => void checkNow()}>
+          {checking ? t("settings.checking") : t("settings.checkNow")}
+        </Button>
+        <Button onClick={showFullChangelog}>{t("settings.releaseNotes")}</Button>
+      </div>
+      {message && (
+        <p role="status" className={styles.hint}>
+          {message.text}
+        </p>
+      )}
     </section>
   );
 }

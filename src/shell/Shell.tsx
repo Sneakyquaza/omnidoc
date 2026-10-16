@@ -18,6 +18,7 @@ import {
   useSystemEvents,
 } from "./hooks";
 import { SidePanelColumn, SlotTarget, SlotsProvider } from "./slots";
+import { ConsentBanner, UpdateDialogs } from "./updates/UpdateDialogs";
 import { Button } from "./ui/Button";
 import { DialogHost } from "./ui/Dialog";
 import { ToastHost } from "./ui/Toast";
@@ -47,6 +48,7 @@ export function Shell() {
             label={t("shell.sidePanel")}
           />
           <main className={styles.main}>
+            <ConsentBanner />
             {active?.externalChange && (
               <div className={styles.banner} role="alert">
                 <span>{t("banner.externalChange")}</span>
@@ -74,6 +76,7 @@ export function Shell() {
         <CommandPalette />
         <ExportDialog />
         <SettingsDialog />
+        <UpdateDialogs />
         <DialogHost />
         <ToastHost />
       </div>

@@ -181,6 +181,8 @@
     "cycleTheme": "Switch theme",
     "toggleLanguage": "Switch language (FR/EN)",
     "palette": "Command palette",
-    "settings": "Open settings"
+    "settings": "Open settings",
+    "checkUpdates": "Check for updates",
+    "releaseNotes": "Release notes"
   }
 }
