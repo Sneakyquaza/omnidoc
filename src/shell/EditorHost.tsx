@@ -63,12 +63,16 @@ function TabEditor({ tab }: { tab: TabEntry }) {
   );
   if (!view) return <NoEditor tab={tab} />;
   // createElement : le composant vient d'un cache de module, pas d'une création au rendu
-  return createElement(editorComponent(view), {
-    tab,
-    model: tab.model,
-    readOnly: tab.readOnly,
-    ...api,
-  });
+  return (
+    <div style={{ display: "contents" }} data-testid={`editor-${tab.modelKind}`}>
+      {createElement(editorComponent(view), {
+        tab,
+        model: tab.model,
+        readOnly: tab.readOnly,
+        ...api,
+      })}
+    </div>
+  );
 }
 
 /** Tous les éditeurs restent montés ; seul celui de l'onglet actif est visible. */

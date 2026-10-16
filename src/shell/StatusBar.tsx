@@ -14,7 +14,11 @@ export function StatusBar() {
   return (
     <footer className={styles.bar}>
       {detected && (
-        <span title={detected.mime ?? undefined}>
+        <span
+          title={detected.mime ?? undefined}
+          data-testid="status-detected"
+          data-handler={detected.handlerId}
+        >
           {t(detected.labelKey, { defaultValue: detected.handlerId })}
         </span>
       )}

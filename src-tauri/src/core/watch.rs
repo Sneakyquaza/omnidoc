@@ -13,6 +13,26 @@ use crate::error::{AppError, Result};
 /// Fenêtre pendant laquelle les événements suivant une écriture de l'app sont ignorés.
 pub const SELF_WRITE_WINDOW: Duration = Duration::from_secs(2);
 
+/// Écritures faites par l'application hors `save_document` (commandes `image_save`, `pdf_*`,
+/// `archive_*`…) : enregistrées par `core::atomic` pour que le watcher les ignore aussi.
+static APP_WRITES: Mutex<Option<HashMap<PathBuf, Instant>>> = Mutex::new(None);
+
+/// À appeler lors d'une écriture de l'application sur `path` (sans accès au `FileWatcher`).
+pub fn note_app_write(path: &Path) {
+    lock(&APP_WRITES)
+        .get_or_insert_with(HashMap::new)
+        .insert(normalize(path), Instant::now());
+}
+
+fn is_recent_app_write(path: &Path, now: Instant) -> bool {
+    let mut guard = lock(&APP_WRITES);
+    let Some(map) = guard.as_mut() else {
+        return false;
+    };
+    map.retain(|_, t| now.saturating_duration_since(*t) <= SELF_WRITE_WINDOW);
+    map.contains_key(path)
+}
+
 #[derive(Default)]
 struct Shared {
     files: HashSet<PathBuf>,
@@ -28,7 +48,7 @@ impl Shared {
         }
         self.self_writes
             .retain(|_, t| now.saturating_duration_since(*t) <= SELF_WRITE_WINDOW);
-        if self.self_writes.contains_key(&path) {
+        if self.self_writes.contains_key(&path) || is_recent_app_write(&path, now) {
             return None;
         }
         Some(path)
@@ -149,6 +169,19 @@ mod tests {
         // fenêtre expirée
         assert!(s.filter(&f, now + Duration::from_secs(3)).is_some());
         assert!(s.self_writes.is_empty());
+    }
+
+    #[test]
+    fn filter_ignores_app_writes_from_atomic() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("b.txt");
+        let mut s = Shared::default();
+        s.files.insert(normalize(&f));
+        crate::core::atomic::write_atomic(&f, b"x", None).unwrap();
+        assert!(s.filter(&f, Instant::now()).is_none());
+        assert!(s
+            .filter(&f, Instant::now() + SELF_WRITE_WINDOW * 2)
+            .is_some());
     }
 
     #[test]

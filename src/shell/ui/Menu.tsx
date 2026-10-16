@@ -63,6 +63,7 @@ export function Menu({ label, icon, items, disabled }: MenuProps) {
         ref={triggerRef}
         type="button"
         className={styles.trigger}
+        data-testid={`menu-${icon}`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? id : undefined}
@@ -101,6 +102,7 @@ export function Menu({ label, icon, items, disabled }: MenuProps) {
                 key={item.id}
                 type="button"
                 role="menuitem"
+                data-testid={`menuitem-${item.id}`}
                 className={styles.item}
                 disabled={item.disabled}
                 onClick={() => {

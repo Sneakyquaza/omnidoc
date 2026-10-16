@@ -16,3 +16,4 @@ src-tauri/fuzz/target/
 src-tauri/fuzz/corpus/
 src-tauri/fuzz/artifacts/
 src-tauri/fuzz/coverage/
+tests/e2e/fixtures/
