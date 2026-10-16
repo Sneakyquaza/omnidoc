@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useSettings } from "../stores/settings";
@@ -6,9 +6,14 @@ import styles from "./slots.module.css";
 
 type Slot = "toolbar" | "left" | "right";
 
+type Side = "left" | "right";
+
 interface SlotsValue {
   elements: Record<Slot, HTMLElement | null>;
   setElement(slot: Slot, el: HTMLElement | null): void;
+  /** Nombre de panneaux latéraux affichés par côté (`:has()` n'est pas fiable sous WebKitGTK). */
+  panels: Record<Side, number>;
+  adjustPanels(side: Side, delta: number): void;
 }
 
 const SlotsContext = createContext<SlotsValue | null>(null);
@@ -42,7 +47,16 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       setElements((prev) => (prev[slot] === el ? prev : { ...prev, [slot]: el })),
     [],
   );
-  const value = useMemo<SlotsValue>(() => ({ elements, setElement }), [elements, setElement]);
+  const [panels, setPanels] = useState<Record<Side, number>>({ left: 0, right: 0 });
+  const adjustPanels = useCallback(
+    (side: Side, delta: number) =>
+      setPanels((prev) => ({ ...prev, [side]: Math.max(0, prev[side] + delta) })),
+    [],
+  );
+  const value = useMemo<SlotsValue>(
+    () => ({ elements, setElement, panels, adjustPanels }),
+    [elements, setElement, panels, adjustPanels],
+  );
   return <SlotsContext.Provider value={value}>{children}</SlotsContext.Provider>;
 }
 
@@ -88,12 +102,37 @@ export function EditorSidePanel({
 }) {
   const target = usePortalTarget(side);
   const open = useSettings((s) => s.sidePanelOpen);
-  if (!target || !open) return null;
+  const adjustPanels = useContext(SlotsContext)?.adjustPanels;
+  const shown = target !== null && open;
+  useEffect(() => {
+    if (!shown || !adjustPanels) return;
+    adjustPanels(side, 1);
+    return () => adjustPanels(side, -1);
+  }, [shown, side, adjustPanels]);
+  if (!shown) return null;
   return createPortal(
     <section aria-label={title}>
       <h2 className={styles.panelTitle}>{title}</h2>
       {children}
     </section>,
     target,
+  );
+}
+
+/** Colonne latérale du shell, masquée quand aucun éditeur n'y envoie de panneau. */
+export function SidePanelColumn({
+  side,
+  className,
+  label,
+}: {
+  side: Side;
+  className?: string;
+  label: string;
+}) {
+  const count = useContext(SlotsContext)?.panels[side] ?? 0;
+  return (
+    <aside className={className} hidden={count === 0} aria-label={label}>
+      <SlotTarget slot={side} />
+    </aside>
   );
 }

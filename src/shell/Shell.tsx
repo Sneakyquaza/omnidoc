@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { useSettings } from "../stores/settings";
 import { useTabs } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { CommandPalette } from "./CommandPalette";
@@ -18,7 +17,7 @@ import {
   useStartup,
   useSystemEvents,
 } from "./hooks";
-import { SlotTarget, SlotsProvider } from "./slots";
+import { SidePanelColumn, SlotTarget, SlotsProvider } from "./slots";
 import { Button } from "./ui/Button";
 import { DialogHost } from "./ui/Dialog";
 import { ToastHost } from "./ui/Toast";
@@ -34,7 +33,6 @@ export function Shell() {
 
   const hasTabs = useTabs((s) => s.tabs.length > 0);
   const active = useTabs((s) => s.tabs.find((x) => x.id === s.activeId));
-  const sidePanelOpen = useSettings((s) => s.sidePanelOpen);
   const dragging = useUi((s) => s.dragging);
 
   return (
@@ -44,13 +42,11 @@ export function Shell() {
         <Toolbar />
         <SlotTarget slot="toolbar" className={styles.contextBar} />
         <div className={styles.body}>
-          <aside
+          <SidePanelColumn
+            side="left"
             className={styles.sidePanel}
-            hidden={!sidePanelOpen}
-            aria-label={t("shell.sidePanel")}
-          >
-            <SlotTarget slot="left" />
-          </aside>
+            label={t("shell.sidePanel")}
+          />
           <main className={styles.main}>
             {active?.externalChange && (
               <div className={styles.banner} role="alert">
@@ -68,13 +64,11 @@ export function Shell() {
               {!hasTabs && <Welcome />}
             </div>
           </main>
-          <aside
+          <SidePanelColumn
+            side="right"
             className={styles.sidePanel}
-            hidden={!sidePanelOpen}
-            aria-label={t("shell.sidePanel")}
-          >
-            <SlotTarget slot="right" />
-          </aside>
+            label={t("shell.sidePanel")}
+          />
         </div>
         <StatusBar />
         {dragging && <div className={styles.dropOverlay}>{t("welcome.dropHere")}</div>}
