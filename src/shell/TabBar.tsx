@@ -61,6 +61,7 @@ export function TabBar() {
             <button
               type="button"
               role="tab"
+              data-testid="tab"
               data-tab={tab.id}
               aria-selected={active}
               tabIndex={active ? 0 : -1}
@@ -72,7 +73,12 @@ export function TabBar() {
               <Icon name={tab.modelKind} />
               <span className={styles.title}>{tab.title}</span>
               {tab.dirty && (
-                <span className={styles.dirty} role="img" aria-label={t("status.unsaved")}>
+                <span
+                  className={styles.dirty}
+                  data-testid="tab-dirty"
+                  role="img"
+                  aria-label={t("status.unsaved")}
+                >
                   •
                 </span>
               )}

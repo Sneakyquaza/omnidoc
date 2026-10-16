@@ -10,3 +10,4 @@ src-tauri/gen/
 .vite/
 coverage/
 *.tsbuildinfo
+tests/e2e/fixtures/
