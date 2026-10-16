@@ -291,6 +291,14 @@
         "role": "Editor",
         "mimeType": "application/vnd.oasis.opendocument.presentation"
       }
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "omnidoc.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "omnidoc.desktop"
+      }
+    }
   }
 }
