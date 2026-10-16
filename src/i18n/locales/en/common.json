@@ -53,6 +53,10 @@
     "external": "External tool error",
     "cancelled": "Operation cancelled",
     "notFound": "Not found",
+    "encoding": "Characters not representable in the chosen encoding",
+    "invalid": "Invalid or out-of-range value",
+    "mixedLineEnding": "Mixed line endings: choose LF, CRLF or CR before saving",
+    "internal": "Internal error",
     "unknown": "Unexpected error"
   },
   "welcome": {

@@ -110,6 +110,69 @@ fn parse_sheet_prefix(ch: &[char], i: usize) -> Option<(String, usize)> {
     (ch.get(j) == Some(&'!')).then_some((name, j + 1))
 }
 
+/// Borne d'une plage de colonnes (lettres) ou de lignes (chiffres), `$` optionnel.
+fn parse_axis(ch: &[char], i: usize, digits: bool) -> Option<usize> {
+    let mut j = i;
+    if ch.get(j) == Some(&'$') {
+        j += 1;
+    }
+    let start = j;
+    while ch.get(j).is_some_and(|c| {
+        if digits {
+            c.is_ascii_digit()
+        } else {
+            c.is_ascii_alphabetic()
+        }
+    }) {
+        j += 1;
+    }
+    (j > start).then_some(j)
+}
+
+/// Plage entière de colonnes (`A:A`, `$B:$C`) ou de lignes (`1:1`) → (début, fin, index après).
+fn parse_axis_range(ch: &[char], i: usize) -> Option<(String, String, usize)> {
+    for digits in [false, true] {
+        let Some(e1) = parse_axis(ch, i, digits) else {
+            continue;
+        };
+        if ch.get(e1) != Some(&':') {
+            continue;
+        }
+        let Some(e2) = parse_axis(ch, e1 + 1, digits) else {
+            continue;
+        };
+        if ch
+            .get(e2)
+            .is_some_and(|c| c.is_alphanumeric() || matches!(c, '_' | '(' | '.' | '!'))
+        {
+            continue;
+        }
+        return Some((
+            ch[i..e1].iter().collect(),
+            ch[e1 + 1..e2].iter().collect(),
+            e2,
+        ));
+    }
+    None
+}
+
+fn push_axis_ref(out: &mut String, sheet: Option<&str>, first: &str, second: &str) {
+    out.push('[');
+    if let Some(s) = sheet {
+        out.push('$');
+        out.push_str(&if needs_quote(s) {
+            quote_name(s)
+        } else {
+            s.to_string()
+        });
+    }
+    out.push('.');
+    out.push_str(first);
+    out.push_str(":.");
+    out.push_str(second);
+    out.push(']');
+}
+
 fn copy_string_literal(ch: &[char], i: &mut usize, out: &mut String) {
     out.push('"');
     *i += 1;
@@ -138,6 +201,14 @@ pub(crate) fn excel_to_ods(f: &str) -> String {
         } else if c == ',' {
             out.push(';');
             i += 1;
+        } else if let Some((a, b, next)) = c
+            .is_ascii_digit()
+            .then(|| parse_axis_range(&ch, i))
+            .flatten()
+        {
+            // Plage de lignes `1:1`.
+            push_axis_ref(&mut out, None, &a, &b);
+            i = next;
         } else if c.is_ascii_digit() {
             while ch.get(i).is_some_and(|c| c.is_ascii_digit() || *c == '.') {
                 out.push(ch[i]);
@@ -186,6 +257,10 @@ pub(crate) fn excel_to_ods(f: &str) -> String {
                     out.push_str(&s2);
                 }
                 out.push(']');
+                i = next;
+            } else if let Some((a, b, next)) = parse_axis_range(&ch, start) {
+                // Plage de colonnes `A:A` ou de lignes `1:1`.
+                push_axis_ref(&mut out, sheet.as_deref(), &a, &b);
                 i = next;
             } else if sheet.is_some() {
                 out.extend(&ch[i..start]);
@@ -713,6 +788,10 @@ mod tests {
             ),
             ("LOG10(A1)*2E5+TRUE", "of:=LOG10([.A1])*2E5+TRUE"),
             ("$A$1&\"x\"", "of:=[.$A$1]&\"x\""),
+            ("SUM(A:A)", "of:=SUM([.A:.A])"),
+            ("SUM(1:1)+2", "of:=SUM([.1:.1])+2"),
+            ("SUM(Sheet2!$B:$C)", "of:=SUM([$Sheet2.$B:.$C])"),
+            ("COUNT('My Sheet'!2:3)", "of:=COUNT([$'My Sheet'.2:.3])"),
         ];
         for (excel, ods) in cases {
             assert_eq!(excel_to_ods(excel), ods, "{excel}");

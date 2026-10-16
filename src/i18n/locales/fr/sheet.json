@@ -90,7 +90,12 @@
       "conditionalFormatting": "Mises en forme conditionnelles",
       "dataValidations": "Validations de données",
       "pivotTables": "Tableaux croisés dynamiques",
-      "comments": "Commentaires"
+      "comments": "Commentaires",
+      "numberFormats": "Formats numériques (pourcentage, dates…)",
+      "hiddenSheets": "Feuilles masquées",
+      "definedNames": "Noms définis",
+      "frozenPanes": "Volets figés",
+      "tables": "Tableaux Excel"
     }
   },
   "status": {

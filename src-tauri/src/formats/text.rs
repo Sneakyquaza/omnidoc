@@ -372,12 +372,12 @@ fn detect_line_ending(text: &str) -> LineEnding {
             _ => {}
         }
     }
-    if lf >= crlf && lf >= cr {
-        LineEnding::Lf
-    } else if crlf >= cr {
-        LineEnding::Crlf
-    } else {
-        LineEnding::Cr
+    match (lf > 0, crlf > 0, cr > 0) {
+        (false, true, false) => LineEnding::Crlf,
+        (false, false, true) => LineEnding::Cr,
+        (_, false, false) => LineEnding::Lf,
+        // Plusieurs conventions dans le même fichier : on ne normalise jamais en silence.
+        _ => LineEnding::Mixed,
     }
 }
 
@@ -462,9 +462,18 @@ fn supported_encoding(label: &str) -> Result<&'static Encoding> {
         .ok_or(AppError::Unsupported)
 }
 
-fn encode_text(doc: &TextDoc) -> Result<Vec<u8>> {
+/// `original` : texte brut (fins de ligne d'origine) du fichier actuel, utilisé pour les fins de
+/// ligne mixtes.
+fn encode_text(doc: &TextDoc, original: Option<&str>) -> Result<Vec<u8>> {
     let enc = supported_encoding(&doc.encoding)?;
     let text = match doc.line_ending {
+        // Mixte : octets d'origine si le texte n'a pas changé, sinon l'utilisateur doit choisir.
+        LineEnding::Mixed => match original {
+            Some(raw) if normalize_newlines(raw) == normalize_newlines(&doc.text) => {
+                raw.to_string()
+            }
+            _ => return Err(AppError::MixedLineEnding),
+        },
         LineEnding::Lf => normalize_newlines(&doc.text),
         LineEnding::Crlf => normalize_newlines(&doc.text).replace('\n', "\r\n"),
         LineEnding::Cr => normalize_newlines(&doc.text).replace('\n', "\r"),
@@ -488,10 +497,7 @@ fn encode_text(doc: &TextDoc) -> Result<Vec<u8>> {
         let detail = first_unmappable(&text, enc)
             .map(|c| format!(" (par ex. « {c} », U+{:04X})", c as u32))
             .unwrap_or_default();
-        return Err(AppError::Corrupt(format!(
-            "caractères non représentables en {}{detail}",
-            enc.name()
-        )));
+        return Err(AppError::Encoding(format!("{}{detail}", enc.name())));
     }
     out.extend_from_slice(&bytes);
     Ok(out)
@@ -501,7 +507,16 @@ fn save_text(doc: &DocumentModel, path: &Path) -> Result<()> {
     let DocumentModel::Text(t) = doc else {
         return Err(AppError::Unsupported);
     };
-    atomic::write(path, &encode_text(t)?)
+    let original = if t.line_ending == LineEnding::Mixed {
+        let enc = supported_encoding(&t.encoding)?;
+        std::fs::read(path)
+            .ok()
+            .and_then(|b| decode(&b, Some(enc)).ok())
+            .map(|(raw, _, _)| raw)
+    } else {
+        None
+    };
+    atomic::write(path, &encode_text(t, original.as_deref())?)
 }
 
 // --- Commandes ---
@@ -532,7 +547,7 @@ pub async fn text_reopen_with_encoding(path: String, encoding: String) -> Result
         open_text(p, language, Some(enc))
     })
     .await
-    .map_err(|e| AppError::External(e.to_string()))?
+    .map_err(|_| AppError::Internal)?
 }
 
 #[cfg(test)]
@@ -614,6 +629,39 @@ mod tests {
     }
 
     #[test]
+    fn mixed_line_endings_are_preserved_or_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("m.txt");
+        let raw = b"a\r\nb\nc\rd\n";
+        std::fs::write(&f, raw).unwrap();
+        let d = as_text(TextHandler.open(&f).unwrap());
+        assert_eq!(d.line_ending, LineEnding::Mixed);
+        assert_eq!(d.text, "a\nb\nc\nd\n");
+        // inchangé : octets d'origine
+        TextHandler
+            .save(&DocumentModel::Text(d.clone()), &f)
+            .unwrap();
+        assert_eq!(std::fs::read(&f).unwrap(), raw);
+        // modifié : refus explicite, fichier intact
+        let mut e = d.clone();
+        e.text.push_str("e\n");
+        assert!(matches!(
+            TextHandler.save(&DocumentModel::Text(e.clone()), &f),
+            Err(AppError::MixedLineEnding)
+        ));
+        assert_eq!(std::fs::read(&f).unwrap(), raw);
+        // l'utilisateur choisit une convention : écriture
+        e.line_ending = LineEnding::Lf;
+        TextHandler.save(&DocumentModel::Text(e), &f).unwrap();
+        assert_eq!(std::fs::read(&f).unwrap(), b"a\nb\nc\nd\ne\n");
+        // un \r isolé parmi des \n n'est pas converti en silence
+        assert_eq!(
+            roundtrip_bytes("a.txt", b"a\rb\n").line_ending,
+            LineEnding::Mixed
+        );
+    }
+
+    #[test]
     fn bom_variants_roundtrip() {
         let mut b = vec![0xEF, 0xBB, 0xBF];
         b.extend_from_slice("é\n".as_bytes());
@@ -653,8 +701,8 @@ mod tests {
         let f = dir.path().join("a.txt");
         let m = model("日本", "windows-1252", false, LineEnding::Lf);
         match TextHandler.save(&m, &f) {
-            Err(AppError::Corrupt(msg)) => assert!(msg.contains("windows-1252")),
-            other => panic!("attendu Corrupt, obtenu {other:?}"),
+            Err(AppError::Encoding(msg)) => assert!(msg.contains("windows-1252")),
+            other => panic!("attendu Encoding, obtenu {other:?}"),
         }
         assert!(!f.exists());
         let m = model("日本\n", "Shift_JIS", false, LineEnding::Crlf);

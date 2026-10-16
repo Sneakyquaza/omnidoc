@@ -46,33 +46,30 @@ struct Decoded {
     bom: bool,
 }
 
+fn decode_strict(enc: &'static Encoding, bytes: &[u8]) -> Option<String> {
+    enc.decode_without_bom_handling_and_without_replacement(bytes)
+        .map(|c| c.into_owned())
+}
+
+/// Décodage sans perte : jamais de U+FFFD. Octets invalides → repli windows-1252 (réversible).
 fn decode(bytes: &[u8]) -> Decoded {
-    if let Some(rest) = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]) {
-        return Decoded {
-            text: String::from_utf8_lossy(rest).into_owned(),
-            encoding: "utf-8".into(),
-            bom: true,
-        };
-    }
-    if let Some(rest) = bytes.strip_prefix(&[0xFF, 0xFE]) {
-        return Decoded {
-            text: encoding_rs::UTF_16LE
-                .decode_without_bom_handling(rest)
-                .0
-                .into_owned(),
-            encoding: "utf-16le".into(),
-            bom: true,
-        };
-    }
-    if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
-        return Decoded {
-            text: encoding_rs::UTF_16BE
-                .decode_without_bom_handling(rest)
-                .0
-                .into_owned(),
-            encoding: "utf-16be".into(),
-            bom: true,
-        };
+    let bomed: [(&[u8], &'static Encoding, &str); 3] = [
+        (&[0xEF, 0xBB, 0xBF], encoding_rs::UTF_8, "utf-8"),
+        (&[0xFF, 0xFE], encoding_rs::UTF_16LE, "utf-16le"),
+        (&[0xFE, 0xFF], encoding_rs::UTF_16BE, "utf-16be"),
+    ];
+    for (mark, enc, name) in bomed {
+        if let Some(rest) = bytes.strip_prefix(mark) {
+            if let Some(text) = decode_strict(enc, rest) {
+                return Decoded {
+                    text,
+                    encoding: name.into(),
+                    bom: true,
+                };
+            }
+            // BOM + octets invalides : on retombe sur le repli sans perte ci-dessous.
+            break;
+        }
     }
     if let Ok(s) = std::str::from_utf8(bytes) {
         return Decoded {
@@ -83,10 +80,18 @@ fn decode(bytes: &[u8]) -> Decoded {
     }
     let mut det = EncodingDetector::new(Iso2022JpDetection::Deny);
     det.feed(bytes, true);
-    let enc = det.guess(None, Utf8Detection::Deny);
+    let guess = det.guess(None, Utf8Detection::Deny);
+    if let Some(text) = decode_strict(guess, bytes) {
+        return Decoded {
+            text,
+            encoding: guess.name().to_lowercase(),
+            bom: false,
+        };
+    }
+    let fallback = encoding_rs::WINDOWS_1252;
     Decoded {
-        text: enc.decode_without_bom_handling(bytes).0.into_owned(),
-        encoding: enc.name().to_lowercase(),
+        text: fallback.decode_without_bom_handling(bytes).0.into_owned(),
+        encoding: fallback.name().to_lowercase(),
         bom: false,
     }
 }
@@ -126,9 +131,7 @@ fn encode(text: &str, encoding: &str, bom: bool) -> Result<Vec<u8>> {
             let enc = Encoding::for_label(other.as_bytes()).ok_or(AppError::Unsupported)?;
             let (bytes, _, had_errors) = enc.encode(text);
             if had_errors {
-                return Err(AppError::Corrupt(format!(
-                    "caractères non représentables en {other}"
-                )));
+                return Err(AppError::Encoding(other.to_string()));
             }
             Ok(bytes.into_owned())
         }
@@ -269,8 +272,33 @@ pub fn parse(bytes: &[u8], forced: Option<u8>, name: &str) -> Result<Workbook> {
         .from_reader(dec.text.as_bytes());
     let mut rows: Vec<Vec<Cell>> = Vec::new();
     let mut total = 0usize;
-    for rec in rdr.records() {
-        let rec = rec.map_err(|e| AppError::Corrupt(e.to_string()))?;
+    let mut rec = csv::StringRecord::new();
+    loop {
+        let line_before = rdr.position().line();
+        if !rdr
+            .read_record(&mut rec)
+            .map_err(|e| AppError::Corrupt(e.to_string()))?
+        {
+            break;
+        }
+        // Le lecteur saute les lignes vides : on les rétablit (lignes intermédiaires conservées).
+        // `position()` après lecture = ligne suivant l'enregistrement ; on retire ses propres lignes.
+        let inner: u64 = rec
+            .iter()
+            .map(|f| f.bytes().filter(|&b| b == b'\n').count() as u64)
+            .sum();
+        let start = rdr
+            .position()
+            .line()
+            .saturating_sub(1)
+            .saturating_sub(inner);
+        for _ in line_before..start {
+            total = total.saturating_add(1);
+            if total > MAX_CELLS {
+                return Err(AppError::Limit("MAX_CELLS".into()));
+            }
+            rows.push(Vec::new());
+        }
         total = total.saturating_add(rec.len());
         if total > MAX_CELLS {
             return Err(AppError::Limit("MAX_CELLS".into()));
@@ -279,9 +307,10 @@ pub fn parse(bytes: &[u8], forced: Option<u8>, name: &str) -> Result<Workbook> {
     }
     let header = match rows.as_slice() {
         [first, second, ..] => {
-            first
-                .iter()
-                .all(|c| matches!(&c.v, CellValue::Text(t) if !t.is_empty()))
+            !first.is_empty()
+                && first
+                    .iter()
+                    .all(|c| matches!(&c.v, CellValue::Text(t) if !t.is_empty()))
                 && second
                     .iter()
                     .any(|c| matches!(c.v, CellValue::Number(_) | CellValue::Bool(_)))
@@ -340,14 +369,24 @@ pub(crate) fn serialize(sheet: &Sheet, o: &CsvOptions) -> Result<Vec<u8>> {
     } else {
         csv::Terminator::Any(b'\n')
     };
-    let mut w = csv::WriterBuilder::new()
+    let mut builder = csv::WriterBuilder::new();
+    builder
         .delimiter(delim)
         .quote(quote)
         .flexible(true)
-        .terminator(terminator)
-        .from_writer(Vec::new());
+        .terminator(terminator);
+    let mut w = builder.from_writer(Vec::new());
     let decimal_comma = delim == b';';
     for row in &sheet.rows {
+        if row.is_empty() {
+            // Ligne vide : le `csv::Writer` écrirait `""`, on garde une vraie ligne vide.
+            let mut buf = w
+                .into_inner()
+                .map_err(|e| AppError::Corrupt(e.to_string()))?;
+            buf.extend_from_slice(if o.crlf { b"\r\n" } else { b"\n" });
+            w = builder.from_writer(buf);
+            continue;
+        }
         w.write_record(row.iter().map(|c| cell_text(c, decimal_comma)))
             .map_err(|e| AppError::Corrupt(e.to_string()))?;
     }
@@ -377,7 +416,7 @@ pub async fn sheet_export_csv(
         atomic::write(Path::new(&dest), &serialize(sheet, &opts)?)
     })
     .await
-    .map_err(|e| AppError::External(e.to_string()))?
+    .map_err(|_| AppError::Internal)?
 }
 
 impl FormatHandler for CsvHandler {
@@ -543,6 +582,25 @@ mod tests {
         assert!(wb.csv.as_ref().unwrap().bom);
         assert_eq!(cell(&wb, 1, 0), CellValue::Text("zoé".into()));
         assert_eq!(roundtrip_bytes(&h, "b.csv", src), src);
+    }
+
+    #[test]
+    fn invalid_bytes_after_bom_are_lossless() {
+        let mut src = vec![0xEF, 0xBB, 0xBF];
+        src.extend_from_slice(b"nom;v\ncaf\xE9;1\n");
+        let h = CsvHandler::csv();
+        let (_d, wb) = open_bytes(&h, "i.csv", &src);
+        assert!(!wb.csv.as_ref().unwrap().bom);
+        assert_eq!(roundtrip_bytes(&h, "i.csv", &src), src);
+    }
+
+    #[test]
+    fn blank_lines_are_kept() {
+        let src = b"a,b\n1,2\n\n\n3,4\n";
+        let h = CsvHandler::csv();
+        let (_d, wb) = open_bytes(&h, "e.csv", src);
+        assert_eq!(wb.sheets[0].rows.len(), 5);
+        assert_eq!(roundtrip_bytes(&h, "e.csv", src), src);
     }
 
     #[test]

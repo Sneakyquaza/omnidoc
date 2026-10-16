@@ -37,7 +37,8 @@
   "lineEndings": {
     "lf": "LF (Unix)",
     "crlf": "CRLF (Windows)",
-    "cr": "CR (classic Mac)"
+    "cr": "CR (classic Mac)",
+    "mixed": "Mixed"
   },
   "encoding": {
     "reopenTitle": "Reopen with another encoding",

@@ -157,6 +157,9 @@ export const LOSSY_KEYS = [
   "lists",
   "images_limit",
   "cells_limit",
+  "page_setup",
+  "custom_styles",
+  "symbols",
   "depth",
 ];
 

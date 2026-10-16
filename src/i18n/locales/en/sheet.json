@@ -90,7 +90,12 @@
       "conditionalFormatting": "Conditional formatting",
       "dataValidations": "Data validations",
       "pivotTables": "Pivot tables",
-      "comments": "Comments"
+      "comments": "Comments",
+      "numberFormats": "Number formats (percentages, dates…)",
+      "hiddenSheets": "Hidden sheets",
+      "definedNames": "Defined names",
+      "frozenPanes": "Frozen panes",
+      "tables": "Excel tables"
     }
   },
   "status": {

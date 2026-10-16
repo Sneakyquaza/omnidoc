@@ -53,6 +53,10 @@
     "external": "Erreur d'outil externe",
     "cancelled": "Opération annulée",
     "notFound": "Introuvable",
+    "encoding": "Caractères non représentables dans l'encodage choisi",
+    "invalid": "Valeur invalide ou hors limites",
+    "mixedLineEnding": "Fins de ligne mixtes : choisissez LF, CRLF ou CR avant d'enregistrer",
+    "internal": "Erreur interne",
     "unknown": "Erreur inattendue"
   },
   "welcome": {

@@ -114,8 +114,20 @@ pub fn parse(bytes: &[u8], kind: RecordsKind) -> Result<RecordsDoc> {
     let mut roots: Vec<RecordComponent> = Vec::new();
     let mut stack: Vec<RecordComponent> = Vec::new();
     let mut count = 0usize;
-    for line in unfold(text) {
-        let prop = parse_prop(&line)?;
+    let mut lines = unfold(text).into_iter();
+    while let Some(line) = lines.next() {
+        let mut prop = parse_prop(&line)?;
+        // vCard 2.1 QUOTED-PRINTABLE : `=` en fin de ligne = coupure souple, la ligne suivante
+        // est une continuation (conservée telle quelle, séparée par CRLF).
+        while is_quoted_printable(&prop) && prop.value.ends_with('=') {
+            match lines.next() {
+                Some(next) => {
+                    prop.value.push_str("\r\n");
+                    prop.value.push_str(&next);
+                }
+                None => break,
+            }
+        }
         if prop.name.eq_ignore_ascii_case("BEGIN") {
             if stack.len() >= MAX_RECORD_DEPTH {
                 return Err(AppError::Limit(format!(
@@ -190,6 +202,17 @@ fn push_folded(out: &mut Vec<u8>, line: &str) {
     out.extend_from_slice(b"\r\n");
 }
 
+fn is_quoted_printable(p: &RecordProp) -> bool {
+    p.params.iter().any(|(k, v)| {
+        k.eq_ignore_ascii_case("QUOTED-PRINTABLE") || v.eq_ignore_ascii_case("QUOTED-PRINTABLE")
+    })
+}
+
+/// Remplace tout saut de ligne réel par l'échappement littéral `\n` (RFC 5545/6350).
+fn escape_newlines(s: &str) -> String {
+    s.replace("\r\n", "\\n").replace(['\n', '\r'], "\\n")
+}
+
 fn write_component(out: &mut Vec<u8>, c: &RecordComponent) {
     push_folded(out, &format!("BEGIN:{}", c.name));
     for p in &c.props {
@@ -199,11 +222,21 @@ fn write_component(out: &mut Vec<u8>, c: &RecordComponent) {
             line.push_str(k);
             if !v.is_empty() {
                 line.push('=');
-                line.push_str(v);
+                line.push_str(&escape_newlines(v));
             }
         }
         line.push(':');
-        line.push_str(&p.value);
+        if is_quoted_printable(p) {
+            // Lignes physiques d'une valeur QUOTED-PRINTABLE multiligne.
+            let mut segs = p.value.split("\r\n");
+            line.push_str(segs.next().unwrap_or_default());
+            push_folded(out, &line);
+            for seg in segs {
+                push_folded(out, seg);
+            }
+            continue;
+        }
+        line.push_str(&escape_newlines(&p.value));
         push_folded(out, &line);
     }
     for child in &c.children {
@@ -395,6 +428,32 @@ BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT15M\r\nEND:VALARM\r\nEND:VEVENT\r\n
             serialize(&parse(v21.as_bytes(), RecordsKind::Vcf).unwrap()),
             v21.as_bytes()
         );
+    }
+
+    #[test]
+    fn newlines_in_values_are_escaped_and_roundtrip() {
+        let mut d = parse(ICS.as_bytes(), RecordsKind::Ics).unwrap();
+        let ev = &mut d.components[0];
+        ev.props.push(RecordProp {
+            name: "DESCRIPTION".into(),
+            params: vec![],
+            value: "a\nb\r\nc\rd".into(),
+        });
+        let bytes = serialize(&d);
+        let back = parse(&bytes, RecordsKind::Ics).unwrap();
+        let v = &back.components[0].props.last().unwrap().value;
+        assert_eq!(v, "a\\nb\\nc\\nd");
+        assert_eq!(serialize(&back), bytes);
+    }
+
+    #[test]
+    fn quoted_printable_soft_breaks_roundtrip() {
+        let vcf = "BEGIN:VCARD\r\nVERSION:2.1\r\nNOTE;ENCODING=QUOTED-PRINTABLE:ligne un=0A=\r\nligne deux\r\nFN:Jean\r\nEND:VCARD\r\n";
+        let d = parse(vcf.as_bytes(), RecordsKind::Vcf).unwrap();
+        let props = &d.components[0].props;
+        assert_eq!(props.len(), 3);
+        assert_eq!(props[2].name, "FN");
+        assert_eq!(serialize(&d), vcf.as_bytes());
     }
 
     #[test]

@@ -22,6 +22,14 @@ pub enum AppError {
     Cancelled,
     #[error("introuvable")]
     NotFound,
+    #[error("caractères non représentables : {0}")]
+    Encoding(String),
+    #[error("valeur invalide : {0}")]
+    Invalid(String),
+    #[error("fins de ligne mixtes")]
+    MixedLineEnding,
+    #[error("erreur interne")]
+    Internal,
 }
 
 pub type Result<T> = std::result::Result<T, AppError>;
@@ -39,6 +47,10 @@ impl AppError {
             AppError::External(_) => "external",
             AppError::Cancelled => "cancelled",
             AppError::NotFound => "notFound",
+            AppError::Encoding(_) => "encoding",
+            AppError::Invalid(_) => "invalid",
+            AppError::MixedLineEnding => "mixedLineEnding",
+            AppError::Internal => "internal",
         }
     }
 }

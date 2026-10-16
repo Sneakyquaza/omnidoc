@@ -13,15 +13,69 @@ use crate::error::{AppError, Result};
 /// Fenêtre pendant laquelle les événements suivant une écriture de l'app sont ignorés.
 pub const SELF_WRITE_WINDOW: Duration = Duration::from_secs(2);
 
+/// Empreinte légère d'un fichier (taille + date de modification) ; `None` si absent.
+type Fingerprint = Option<(u64, std::time::SystemTime)>;
+
+fn fingerprint(path: &Path) -> Fingerprint {
+    let meta = std::fs::metadata(path).ok()?;
+    Some((meta.len(), meta.modified().ok()?))
+}
+
+/// Écritures de l'application sur un chemin : horodatage, nombre de notifications (avant/après
+/// l'écriture) et empreintes observées. Un événement n'est ignoré que dans la fenêtre ET si
+/// l'état actuel du fichier est celui écrit par l'application (sinon c'est une vraie modification
+/// externe survenue pendant la fenêtre).
+#[derive(Default)]
+struct Mark {
+    at: Option<Instant>,
+    count: u32,
+    fps: Vec<Fingerprint>,
+}
+
+impl Mark {
+    fn record(&mut self, path: &Path, now: Instant) {
+        self.at = Some(now);
+        self.count += 1;
+        let fp = fingerprint(path);
+        if !self.fps.contains(&fp) {
+            self.fps.push(fp);
+        }
+    }
+
+    fn expired(&self, now: Instant) -> bool {
+        self.at
+            .is_none_or(|t| now.saturating_duration_since(t) > SELF_WRITE_WINDOW)
+    }
+
+    /// Vrai si l'événement sur `path` provient de l'application.
+    fn covers(&self, path: &Path) -> bool {
+        // Écriture en cours (notification « avant » sans « après ») : on ignore.
+        self.count % 2 == 1 || self.fps.contains(&fingerprint(path))
+    }
+}
+
+type Marks = HashMap<PathBuf, Mark>;
+
+fn note(map: &mut Marks, path: &Path, now: Instant) {
+    let key = normalize(path);
+    let mark = map.entry(key).or_default();
+    if mark.expired(now) {
+        *mark = Mark::default();
+    }
+    mark.record(path, now);
+}
+
 /// Écritures faites par l'application hors `save_document` (commandes `image_save`, `pdf_*`,
 /// `archive_*`…) : enregistrées par `core::atomic` pour que le watcher les ignore aussi.
-static APP_WRITES: Mutex<Option<HashMap<PathBuf, Instant>>> = Mutex::new(None);
+static APP_WRITES: Mutex<Option<Marks>> = Mutex::new(None);
 
 /// À appeler lors d'une écriture de l'application sur `path` (sans accès au `FileWatcher`).
 pub fn note_app_write(path: &Path) {
-    lock(&APP_WRITES)
-        .get_or_insert_with(HashMap::new)
-        .insert(normalize(path), Instant::now());
+    note(
+        lock(&APP_WRITES).get_or_insert_with(HashMap::new),
+        path,
+        Instant::now(),
+    );
 }
 
 fn is_recent_app_write(path: &Path, now: Instant) -> bool {
@@ -29,14 +83,14 @@ fn is_recent_app_write(path: &Path, now: Instant) -> bool {
     let Some(map) = guard.as_mut() else {
         return false;
     };
-    map.retain(|_, t| now.saturating_duration_since(*t) <= SELF_WRITE_WINDOW);
-    map.contains_key(path)
+    map.retain(|_, m| !m.expired(now));
+    map.get(path).is_some_and(|m| m.covers(path))
 }
 
 #[derive(Default)]
 struct Shared {
     files: HashSet<PathBuf>,
-    self_writes: HashMap<PathBuf, Instant>,
+    self_writes: Marks,
 }
 
 impl Shared {
@@ -46,9 +100,10 @@ impl Shared {
         if !self.files.contains(&path) {
             return None;
         }
-        self.self_writes
-            .retain(|_, t| now.saturating_duration_since(*t) <= SELF_WRITE_WINDOW);
-        if self.self_writes.contains_key(&path) || is_recent_app_write(&path, now) {
+        self.self_writes.retain(|_, m| !m.expired(now));
+        if self.self_writes.get(&path).is_some_and(|m| m.covers(&path))
+            || is_recent_app_write(&path, now)
+        {
             return None;
         }
         Some(path)
@@ -144,9 +199,7 @@ impl FileWatcher {
 
     /// À appeler lors d'une écriture de l'application sur `path`.
     pub fn mark_self_write(&self, path: &Path) {
-        lock(&self.shared)
-            .self_writes
-            .insert(normalize(path), Instant::now());
+        note(&mut lock(&self.shared).self_writes, path, Instant::now());
     }
 }
 
@@ -164,11 +217,28 @@ mod tests {
         assert!(s.filter(&f, now).is_none()); // non surveillé
         s.files.insert(normalize(&f));
         assert!(s.filter(&f, now).is_some());
-        s.self_writes.insert(normalize(&f), now);
+        note(&mut s.self_writes, &f, now);
+        note(&mut s.self_writes, &f, now);
         assert!(s.filter(&f, now + Duration::from_millis(500)).is_none());
         // fenêtre expirée
         assert!(s.filter(&f, now + Duration::from_secs(3)).is_some());
         assert!(s.self_writes.is_empty());
+    }
+
+    #[test]
+    fn external_change_inside_window_is_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("c.txt");
+        let mut s = Shared::default();
+        s.files.insert(normalize(&f));
+        std::fs::write(&f, "app").unwrap();
+        let now = Instant::now();
+        note(&mut s.self_writes, &f, now);
+        note(&mut s.self_writes, &f, now);
+        assert!(s.filter(&f, now).is_none());
+        // modification externe (taille différente) dans la fenêtre
+        std::fs::write(&f, "externe plus long").unwrap();
+        assert!(s.filter(&f, now).is_some());
     }
 
     #[test]
