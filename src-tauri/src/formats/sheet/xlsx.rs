@@ -57,6 +57,12 @@ fn corrupt<E: std::fmt::Display>(e: E) -> AppError {
     AppError::Corrupt(e.to_string())
 }
 
+/// Exécute `f` sans jamais laisser une panique de calamine (données non fiables) remonter.
+fn guard<T>(f: impl FnOnce() -> Result<T>) -> Result<T> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(f))
+        .unwrap_or_else(|_| Err(AppError::Corrupt("classeur illisible".into())))
+}
+
 /// Valeur calamine → (valeur, fmt).
 fn convert(d: &Data) -> (CellValue, Option<String>) {
     match d {
@@ -306,6 +312,10 @@ fn detect_lossy(zip: &mut zip::ZipArchive<std::io::Cursor<&[u8]>>) -> Vec<String
 }
 
 fn read_xlsx(bytes: &[u8]) -> Result<Workbook> {
+    guard(|| read_xlsx_unguarded(bytes))
+}
+
+fn read_xlsx_unguarded(bytes: &[u8]) -> Result<Workbook> {
     let mut zip = guarded_zip(bytes)?;
     let widths = read_col_widths(&mut zip);
     let lossy = detect_lossy(&mut zip);
@@ -322,6 +332,10 @@ fn read_xlsx(bytes: &[u8]) -> Result<Workbook> {
 }
 
 fn read_xls(bytes: &[u8]) -> Result<Workbook> {
+    guard(|| read_xls_unguarded(bytes))
+}
+
+fn read_xls_unguarded(bytes: &[u8]) -> Result<Workbook> {
     let mut wb: Xls<_> = open_workbook_from_rs(std::io::Cursor::new(bytes)).map_err(corrupt)?;
     let sheets = read_sheets(&mut wb, strip_equals)?;
     Ok(Workbook {
@@ -696,5 +710,42 @@ pub(crate) mod tests {
             flipped[i] ^= 0xFF;
         }
         let _ = read_xlsx(&flipped);
+    }
+
+    #[test]
+    fn dimension_with_huge_column_does_not_panic() {
+        // Régression fuzz : `<dimension ref="A1:ZZZZZZZZZZ1">` faisait déborder calamine (u32).
+        use std::io::Write;
+        let parts: [(&str, &str); 5] = [
+            (
+                "[Content_Types].xml",
+                r#"<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>"#,
+            ),
+            (
+                "_rels/.rels",
+                r#"<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>"#,
+            ),
+            (
+                "xl/workbook.xml",
+                r#"<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="s" sheetId="1" r:id="rId1"/></sheets></workbook>"#,
+            ),
+            (
+                "xl/_rels/workbook.xml.rels",
+                r#"<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>"#,
+            ),
+            (
+                "xl/worksheets/sheet1.xml",
+                r#"<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:ZZZZZZZZZZ1"/><sheetData><row r="1"><c r="ZZZZZZZZZZ1"><v>1</v></c></row></sheetData></worksheet>"#,
+            ),
+        ];
+        let mut buf = std::io::Cursor::new(Vec::new());
+        let mut zw = zip::ZipWriter::new(&mut buf);
+        for (name, body) in parts {
+            zw.start_file(name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            zw.write_all(body.as_bytes()).unwrap();
+        }
+        zw.finish().unwrap();
+        let _ = read_xlsx(&buf.into_inner());
     }
 }

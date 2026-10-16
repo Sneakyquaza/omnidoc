@@ -7,9 +7,10 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use base64::Engine;
-use lofty::config::WriteOptions;
-use lofty::file::{AudioFile, TaggedFile, TaggedFileExt};
+use lofty::config::{ParseOptions, WriteOptions};
+use lofty::file::{AudioFile, FileType, TaggedFile, TaggedFileExt};
 use lofty::picture::{Picture, PictureType};
+use lofty::probe::Probe;
 use lofty::tag::{ItemKey, ItemValue, Tag, TagItem};
 use tauri::State;
 
@@ -110,9 +111,22 @@ fn resolve_key(tag: &Tag, name: &str) -> Option<ItemKey> {
         .or_else(|| ItemKey::from_key(tag.tag_type(), name))
 }
 
+/// Équivalent de `lofty::read_from_path`, sans lecture des propriétés pour l'AAC (ADTS) : lofty 0.25
+/// boucle indéfiniment dans `aac::read::find_next_frame` sur certains flux corrompus (trouvé au fuzzing).
+fn read_tagged(path: &Path) -> std::result::Result<TaggedFile, String> {
+    let mut probe = Probe::open(path).map_err(|e| e.to_string())?;
+    if probe.file_type().is_none() {
+        probe = probe.guess_file_type().map_err(|e| e.to_string())?;
+    }
+    if probe.file_type() == Some(FileType::Aac) {
+        probe = probe.options(ParseOptions::new().read_properties(false));
+    }
+    probe.read().map_err(|e| e.to_string())
+}
+
 fn probe_file(path: &Path) -> Result<Option<TaggedFile>> {
     // Format inconnu de lofty (webm, mkv, avi…) ou illisible : ouverture sans métadonnées.
-    Ok(lofty::read_from_path(path).ok())
+    Ok(read_tagged(path).ok())
 }
 
 fn writable(file: &TaggedFile) -> bool {
@@ -139,7 +153,7 @@ fn edit_tags(path: &Path, f: impl FnOnce(&mut Tag) -> Result<()>) -> Result<()> 
         .suffix(&suffix)
         .tempfile_in(parent)?;
     std::fs::copy(path, tmp.path())?;
-    let mut file = lofty::read_from_path(tmp.path()).map_err(lofty_err)?;
+    let mut file = read_tagged(tmp.path()).map_err(lofty_err)?;
     if !writable(&file) {
         return Err(AppError::ReadOnly);
     }

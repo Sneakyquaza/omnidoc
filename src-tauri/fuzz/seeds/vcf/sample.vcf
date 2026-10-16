@@ -1,0 +1,7 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Ada Lovelace
+N:Lovelace;Ada;;;
+EMAIL:ada@example.org
+TEL:+33123456789
+END:VCARD
