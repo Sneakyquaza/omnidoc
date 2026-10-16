@@ -3,14 +3,29 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE*'
+      - '.github/ISSUE_TEMPLATE/**'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE*'
+      - '.github/ISSUE_TEMPLATE/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-latest, macos-latest]
+        os: ${{ fromJSON(github.event_name == 'push' && '["ubuntu-22.04"]' || '["ubuntu-22.04","windows-latest","macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +55,12 @@ jobs:
           workspaces: src-tauri
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Noms de fichiers en conflit de casse
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          dups=$(git ls-files | sort -f | uniq -di)
+          if [ -n "$dups" ]; then echo "Conflit de casse : $dups"; exit 1; fi
 
       - name: Vérifications complètes (Linux)
         if: matrix.os == 'ubuntu-22.04'
@@ -76,9 +97,16 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/tauri-driver
+          key: tauri-driver-${{ runner.os }}-v2
+
       - run: pnpm install --frozen-lockfile
 
-      - run: cargo install tauri-driver --locked
+      - name: tauri-driver
+        run: |
+          if ! command -v tauri-driver >/dev/null; then cargo install tauri-driver --locked; fi
 
       - name: Fixtures
         run: pnpm e2e:fixtures
