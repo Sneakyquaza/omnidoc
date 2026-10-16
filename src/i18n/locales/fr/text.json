@@ -52,6 +52,7 @@
   "tree": {
     "label": "Arbre des données",
     "invalid": "Arbre indisponible : la syntaxe est invalide.",
+    "tooLarge": "Arbre indisponible : le fichier est trop volumineux.",
     "expand": "Déplier",
     "collapse": "Replier"
   },

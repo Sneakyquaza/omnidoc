@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
@@ -8,11 +8,14 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../..");
 const fixtures = path.join(here, "fixtures");
-const application = path.join(
-  root,
-  "src-tauri/target/debug",
-  process.platform === "win32" ? "omnidoc.exe" : "omnidoc",
-);
+// OMNIDOC_E2E_APP : binaire à tester (ex. build release pour les mesures de performance).
+const application =
+  process.env.OMNIDOC_E2E_APP ??
+  path.join(
+    root,
+    "src-tauri/target/debug",
+    process.platform === "win32" ? "omnidoc.exe" : "omnidoc",
+  );
 
 // Dossier de travail : copies des fixtures (les parcours modifient les fichiers)
 // + profil isolé (données d'appli, préférences, récupération).
@@ -76,18 +79,45 @@ function capability(file: string, spec: string) {
   };
 }
 
+// E2E_DRIVER_PORT : port de tauri-driver (le driver natif utilise le suivant) ; évite les conflits
+// entre plusieurs exécutions simultanées.
+const port = Number(process.env.E2E_DRIVER_PORT ?? 4444);
+
 // E2E_ONLY=regex : ne garde que les sessions dont le fichier correspond (débogage).
 const only = process.env.E2E_ONLY ? new RegExp(process.env.E2E_ONLY) : null;
 
+// E2E_PERF=1 : uniquement les mesures de performance (gros fichiers générés, non commités).
+const perfDir = path.join(here, "fixtures-perf");
+if (process.env.E2E_PERF) {
+  const gen = spawnSync("python3", ["-I", path.join(here, "perf", "generate.py"), perfDir], {
+    stdio: "inherit",
+  });
+  if (gen.status !== 0) throw new Error("génération des fixtures de performance échouée");
+}
+const perfCapabilities = process.env.E2E_PERF
+  ? [
+      capability("", "perf.e2e.ts"), // démarrage à vide
+      ...fs
+        .readdirSync(perfDir)
+        .sort()
+        .map((name) => capability(path.join(perfDir, name), "perf.e2e.ts")),
+    ]
+  : [];
+
 const capabilities = [
-  ...fs
-    .readdirSync(fixtures)
-    .sort()
-    .map((name) => capability(copyToWork(name, "open"), "open.e2e.ts")),
-  ...writable.map((ext) => capability(copyToWork(`sample.${ext}`, "save"), "save.e2e.ts")),
-  ...journeys.map(([spec, name]) =>
-    capability(copyToWork(name, spec.split(".")[0] ?? "journey"), spec),
-  ),
+  ...perfCapabilities,
+  ...(process.env.E2E_PERF
+    ? []
+    : [
+        ...fs
+          .readdirSync(fixtures)
+          .sort()
+          .map((name) => capability(copyToWork(name, "open"), "open.e2e.ts")),
+        ...writable.map((ext) => capability(copyToWork(`sample.${ext}`, "save"), "save.e2e.ts")),
+        ...journeys.map(([spec, name]) =>
+          capability(copyToWork(name, spec.split(".")[0] ?? "journey"), spec),
+        ),
+      ]),
 ].filter((c) => !only || only.test(c["tauri:options"].args[0] ?? ""));
 
 let driver: ChildProcess | undefined;
@@ -114,7 +144,7 @@ function waitForPort(port: number, timeoutMs: number): Promise<void> {
 export const config: WebdriverIO.Config = {
   runner: "local",
   hostname: "127.0.0.1",
-  port: 4444,
+  port,
   path: "/",
   specs: [path.join(here, "specs", "*.ts")],
   maxInstances: 1,
@@ -132,8 +162,10 @@ export const config: WebdriverIO.Config = {
     const bin = fs.existsSync(path.join(os.homedir(), ".cargo/bin/tauri-driver"))
       ? path.join(os.homedir(), ".cargo/bin/tauri-driver")
       : "tauri-driver";
-    driver = spawn(bin, [], { stdio: ["ignore", "inherit", "inherit"] });
-    await waitForPort(4444, 15_000);
+    driver = spawn(bin, ["--port", String(port), "--native-port", String(port + 1)], {
+      stdio: ["ignore", "inherit", "inherit"],
+    });
+    await waitForPort(port, 15_000);
   },
   onComplete: () => {
     driver?.kill();

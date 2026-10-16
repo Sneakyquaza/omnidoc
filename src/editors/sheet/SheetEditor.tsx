@@ -30,6 +30,7 @@ import {
   buildWorkbook,
   cellToScalar,
   cloneSheets,
+  decodeSheets,
   isEmptyCell,
   usedExtent,
 } from "./model";
@@ -98,7 +99,7 @@ export default function SheetEditor({
 
   const [engine] = useState(() => {
     const e = new Engine({ locale });
-    const sheets = cloneSheets(model.sheets);
+    const sheets = decodeSheets(model.sheets);
     if (sheets.length === 0) sheets.push({ name: t("sheetBase"), rows: [], colWidths: null });
     e.load(sheets, true);
     return e;

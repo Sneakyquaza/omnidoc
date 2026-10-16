@@ -59,6 +59,11 @@ export interface EngineOptions {
 }
 
 const VOLATILE = new Set(["RAND", "NOW", "TODAY"]);
+/**
+ * À l'ouverture, au-delà de ce nombre de formules dotées d'une valeur en cache, le graphe de
+ * dépendances et le recalcul sont différés jusqu'à la première modification (gros classeurs).
+ */
+const LAZY_FORMULAS = 20_000;
 
 function walk(node: Node, visit: (n: Node) => void): void {
   visit(node);
@@ -94,6 +99,8 @@ export class Engine {
   private maxCols = new Map<number, number>();
   private ctx: EvalContext;
   private current = 0;
+  /** Vrai tant que formules et dépendances d'un gros classeur ne sont pas enregistrées. */
+  private lazy = false;
 
   constructor(opts: EngineOptions) {
     this.locale = opts.locale;
@@ -132,18 +139,49 @@ export class Engine {
     sheets.forEach((s, i) => {
       if (!this.sheetIndex.has(s.name.toLowerCase())) this.sheetIndex.set(s.name.toLowerCase(), i);
     });
-    sheets.forEach((sheet, s) => {
+    this.lazy = false;
+    if (initial) {
+      let count = 0;
+      let cached = true;
+      for (const sheet of sheets) {
+        for (const row of sheet.rows) {
+          for (const cell of row) {
+            if (!cell.f) continue;
+            count++;
+            if (cell.v.type === "empty") cached = false;
+          }
+        }
+      }
+      if (count > LAZY_FORMULAS && cached) {
+        this.lazy = true;
+        return;
+      }
+    }
+    this.registerAll();
+    this.recalc([], true, initial);
+  }
+
+  private registerAll(): void {
+    this.sheets.forEach((sheet, s) => {
       sheet.rows.forEach((row, r) => {
         row.forEach((cell, c) => {
           if (cell.f) this.register(cellKey(s, r, c), s, cell.f);
         });
       });
     });
-    this.recalc([], true, initial);
+  }
+
+  /** Enregistre les formules d'un gros classeur ouvert en différé (première modification). */
+  private ensureLoaded(): void {
+    if (!this.lazy) return;
+    this.lazy = false;
+    this.registerAll();
+    this.recalc([], true, true);
   }
 
   /** Applique des modifications de cellules puis recalcule ce qui en dépend. */
   setCells(changes: CellChange[]): void {
+    this.ensureLoaded();
     const seeds: number[] = [];
     for (const ch of changes) {
       const sheet = this.sheets[ch.sheet];
@@ -172,6 +210,7 @@ export class Engine {
   }
 
   recalcAll(): void {
+    this.ensureLoaded();
     this.recalc([], true, false);
   }
 

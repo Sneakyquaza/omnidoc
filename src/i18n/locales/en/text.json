@@ -52,6 +52,7 @@
   "tree": {
     "label": "Data tree",
     "invalid": "Tree unavailable: invalid syntax.",
+    "tooLarge": "Tree unavailable: the file is too large.",
     "expand": "Expand",
     "collapse": "Collapse"
   },

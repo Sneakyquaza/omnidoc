@@ -407,4 +407,21 @@ describe("recalcul incrémental", () => {
     e.recalcAll();
     expect(e.getCell(0, 0, 0)?.v).toEqual({ type: "error", value: "#NAME?" });
   });
+
+  it("diffère le graphe d'un gros classeur jusqu'à la première modification", () => {
+    const e = new Engine({ locale: "en" });
+    const rows: Cell[][] = [];
+    for (let r = 1; r <= 25_000; r++) {
+      rows.push([
+        { v: { type: "number", value: r }, f: null, fmt: null },
+        // valeur en cache volontairement fausse : non recalculée à l'ouverture
+        { v: { type: "number", value: -1 }, f: `A${r}*2`, fmt: null },
+      ]);
+    }
+    e.load([{ name: "S", rows, colWidths: null }], true);
+    expect(e.getCell(0, 9, 1)?.v).toEqual({ type: "number", value: -1 });
+    e.setCells([{ sheet: 0, row: 9, col: 0, cell: cellOf(100) }]);
+    expect(e.getCell(0, 9, 1)?.v).toEqual({ type: "number", value: 200 });
+    expect(e.getCell(0, 19, 1)?.v).toEqual({ type: "number", value: 40 });
+  });
 });

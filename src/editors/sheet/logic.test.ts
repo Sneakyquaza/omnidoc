@@ -6,7 +6,7 @@ import { cellName, colToName, nameToCol, parseRangeText } from "./formula/ref";
 import { visibleRows, uniqueValues } from "./filter";
 import { History } from "./history";
 import { cellInputText, parseCellInput } from "./input";
-import { buildWorkbook, EMPTY_CELL, usedExtent } from "./model";
+import { buildWorkbook, decodeSheets, EMPTY_CELL, usedExtent } from "./model";
 import { ctrlArrow } from "./nav";
 import { changeDecimals, dateToSerial, formatCell, formatNumber, isDateFormat } from "./numfmt";
 import { sortChanges } from "./sort";
@@ -348,6 +348,25 @@ describe("structure", () => {
 });
 
 describe("sérialisation", () => {
+  it("décode les cellules nues reçues du backend", () => {
+    const wire = [
+      null,
+      1.5,
+      "a",
+      true,
+      { v: { type: "error", value: "#N/A" }, f: null, fmt: null },
+    ];
+    const sheets = decodeSheets([
+      { name: "S", rows: [wire] as unknown as Cell[][], colWidths: null },
+    ]);
+    const row = sheets[0]?.rows[0] ?? [];
+    expect(row[0]).toBe(EMPTY_CELL);
+    expect(row[1]).toEqual({ v: { type: "number", value: 1.5 }, f: null, fmt: null });
+    expect(row[2]?.v).toEqual({ type: "text", value: "a" });
+    expect(row[3]?.v).toEqual({ type: "bool", value: true });
+    expect(row[4]?.v).toEqual({ type: "error", value: "#N/A" });
+  });
+
   it("retire les lignes et cellules vides de fin, mappe #CYCLE!", () => {
     const rows: Cell[][] = [
       [num(1), EMPTY_CELL, EMPTY_CELL],

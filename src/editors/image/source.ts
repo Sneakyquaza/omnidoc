@@ -5,7 +5,12 @@ import { mimeOf } from "./formats";
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve(img);
+    // `decode()` décode hors du fil principal : `drawImage` ne fige plus l'interface sur les grandes images
+    img.onload = () =>
+      img.decode().then(
+        () => resolve(img),
+        () => resolve(img),
+      );
     img.onerror = () => reject(new Error("decode"));
     img.src = url;
   });

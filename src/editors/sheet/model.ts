@@ -55,6 +55,31 @@ export function usedExtent(rows: Cell[][]): { rows: number; cols: number } {
   return { rows: nRows, cols: nCols };
 }
 
+/** Cellule telle que reçue du backend : nue (sans formule ni format) ou objet complet. */
+type WireCell = null | number | string | boolean | Cell;
+
+function decodeCell(w: WireCell): Cell {
+  switch (typeof w) {
+    case "number":
+      return { v: { type: "number", value: w }, f: null, fmt: null };
+    case "string":
+      return { v: { type: "text", value: w }, f: null, fmt: null };
+    case "boolean":
+      return { v: { type: "bool", value: w }, f: null, fmt: null };
+    default:
+      return w === null ? EMPTY_CELL : { ...w, f: w.f ?? null, fmt: w.fmt ?? null };
+  }
+}
+
+/** Feuilles du modèle reçu du backend (cellules nues, voir `Cell` côté Rust) → cellules objets. */
+export function decodeSheets(sheets: Sheet[]): Sheet[] {
+  return sheets.map((s) => ({
+    ...s,
+    rows: (s.rows as unknown as WireCell[][]).map((r) => r.map(decodeCell)),
+    colWidths: s.colWidths ? s.colWidths.slice() : null,
+  }));
+}
+
 /** Copie profonde légère (les cellules sont immuables). */
 export function cloneSheets(sheets: Sheet[]): Sheet[] {
   return sheets.map((s) => ({

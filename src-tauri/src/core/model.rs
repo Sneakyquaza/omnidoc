@@ -130,14 +130,106 @@ pub struct Sheet {
     pub col_widths: Option<Vec<f64>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
+/// En JSON, une cellule sans formule ni format est « nue » (`null`, nombre, chaîne, booléen) :
+/// 5 à 10 fois moins d'octets qu'un objet complet sur les gros classeurs (voir docs/PERFORMANCE.md).
+/// La forme objet `{ v, f, fmt }` reste acceptée et émise dès qu'il y a une formule, un format
+/// ou une valeur non nue (erreur). Le type TypeScript généré est la forme objet :
+/// le front normalise les cellules nues (`src/editors/sheet/model.ts`).
+#[derive(Debug, Clone, Type)]
 pub struct Cell {
     pub v: CellValue,
     /// Formule sans le "=" initial, syntaxe Excel anglaise à virgules (`SUM(A1:B2)`).
     pub f: Option<String>,
     /// Code de format de nombre Excel (ex. "0.00%") si connu.
     pub fmt: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct CellFull {
+    v: CellValue,
+    #[serde(default)]
+    f: Option<String>,
+    #[serde(default)]
+    fmt: Option<String>,
+}
+
+impl Serialize for Cell {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        if self.f.is_none() && self.fmt.is_none() {
+            match &self.v {
+                CellValue::Empty => return serializer.serialize_unit(),
+                CellValue::Number(n) if n.is_finite() => {
+                    return if n.fract() == 0.0 && n.abs() < 1e15 {
+                        serializer.serialize_i64(*n as i64)
+                    } else {
+                        serializer.serialize_f64(*n)
+                    };
+                }
+                CellValue::Text(s) => return serializer.serialize_str(s),
+                CellValue::Bool(b) => return serializer.serialize_bool(*b),
+                _ => {}
+            }
+        }
+        CellFull {
+            v: self.v.clone(),
+            f: self.f.clone(),
+            fmt: self.fmt.clone(),
+        }
+        .serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Cell {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{value::MapAccessDeserializer, Error, MapAccess, Visitor};
+        struct V;
+        fn bare(v: CellValue) -> Cell {
+            Cell {
+                v,
+                f: None,
+                fmt: None,
+            }
+        }
+        impl<'de> Visitor<'de> for V {
+            type Value = Cell;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("une cellule (null, nombre, chaîne, booléen ou objet)")
+            }
+            fn visit_unit<E: Error>(self) -> Result<Cell, E> {
+                Ok(bare(CellValue::Empty))
+            }
+            fn visit_none<E: Error>(self) -> Result<Cell, E> {
+                Ok(bare(CellValue::Empty))
+            }
+            fn visit_bool<E: Error>(self, b: bool) -> Result<Cell, E> {
+                Ok(bare(CellValue::Bool(b)))
+            }
+            fn visit_i64<E: Error>(self, n: i64) -> Result<Cell, E> {
+                Ok(bare(CellValue::Number(n as f64)))
+            }
+            fn visit_u64<E: Error>(self, n: u64) -> Result<Cell, E> {
+                Ok(bare(CellValue::Number(n as f64)))
+            }
+            fn visit_f64<E: Error>(self, n: f64) -> Result<Cell, E> {
+                Ok(bare(CellValue::Number(n)))
+            }
+            fn visit_str<E: Error>(self, s: &str) -> Result<Cell, E> {
+                Ok(bare(CellValue::Text(s.to_string())))
+            }
+            fn visit_string<E: Error>(self, s: String) -> Result<Cell, E> {
+                Ok(bare(CellValue::Text(s)))
+            }
+            fn visit_map<A: MapAccess<'de>>(self, map: A) -> Result<Cell, A::Error> {
+                let full = CellFull::deserialize(MapAccessDeserializer::new(map))?;
+                Ok(Cell {
+                    v: full.v,
+                    f: full.f,
+                    fmt: full.fmt,
+                })
+            }
+        }
+        deserializer.deserialize_any(V)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
@@ -403,6 +495,46 @@ mod tests {
             lossy: vec![],
         });
         assert_eq!(serde_json::to_value(&m).unwrap()["kind"], "richText");
+    }
+
+    #[test]
+    fn cell_is_bare_without_formula_or_format() {
+        let json = |c: Cell| serde_json::to_string(&c).unwrap();
+        let bare = |v| Cell {
+            v,
+            f: None,
+            fmt: None,
+        };
+        assert_eq!(json(bare(CellValue::Empty)), "null");
+        assert_eq!(json(bare(CellValue::Number(12.0))), "12");
+        assert_eq!(json(bare(CellValue::Number(1.5))), "1.5");
+        assert_eq!(json(bare(CellValue::Text("a\"b".into()))), r#""a\"b""#);
+        assert_eq!(json(bare(CellValue::Bool(true))), "true");
+        for c in [
+            bare(CellValue::Error("#N/A".into())),
+            Cell {
+                v: CellValue::Number(2.0),
+                f: Some("A1+1".into()),
+                fmt: Some("0.0".into()),
+            },
+        ] {
+            let text = json(c.clone());
+            assert!(text.starts_with('{'), "{text}");
+            let back: Cell = serde_json::from_str(&text).unwrap();
+            assert_eq!(back.f, c.f);
+            assert_eq!(back.fmt, c.fmt);
+        }
+        // forme objet historique (anciens fichiers de récupération)
+        let old: Cell =
+            serde_json::from_str(r#"{"v":{"type":"text","value":"x"},"f":null,"fmt":null}"#)
+                .unwrap();
+        assert_eq!(old.v, CellValue::Text("x".into()));
+        let n: Cell = serde_json::from_str("42").unwrap();
+        assert_eq!(n.v, CellValue::Number(42.0));
+        assert_eq!(
+            serde_json::from_str::<Cell>("null").unwrap().v,
+            CellValue::Empty
+        );
     }
 
     #[test]

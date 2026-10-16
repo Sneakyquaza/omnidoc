@@ -623,7 +623,11 @@ export default function TextEditor({
       </EditorToolbar>
       <EditorSidePanel title={t("panel.title")}>
         {TREE_LANGUAGES.includes(meta.language) ? (
-          <TreePanel language={meta.language} source={source} />
+          model.text.length > HEAVY_TEXT ? (
+            <p className={styles.panelNote}>{t("tree.tooLarge")}</p>
+          ) : (
+            <TreePanel language={meta.language} source={source} />
+          )
         ) : isMarkdown ? (
           <OutlinePanel source={source} />
         ) : (

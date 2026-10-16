@@ -23,6 +23,35 @@ if (import.meta.env.DEV || import.meta.env.VITE_E2E) {
   };
 }
 
+// Mesures de performance lues par tests/e2e/specs/perf.e2e.ts (build E2E uniquement).
+if (import.meta.env.DEV || import.meta.env.VITE_E2E) {
+  const perf = {
+    timeOrigin: performance.timeOrigin,
+    shellMs: -1,
+    editorMs: -1,
+    maxFrameMs: 0,
+    longFrames: [] as number[],
+  };
+  (window as unknown as { __omnidocPerf: typeof perf }).__omnidocPerf = perf;
+  let last = performance.now();
+  const tick = (now: number) => {
+    const gap = now - last;
+    last = now;
+    if (gap > perf.maxFrameMs) perf.maxFrameMs = gap;
+    if (gap > 200) perf.longFrames.push(Math.round(gap));
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  const observer = new MutationObserver(() => {
+    const now = performance.now();
+    if (perf.shellMs < 0 && document.getElementById("root")?.firstElementChild) perf.shellMs = now;
+    if (perf.editorMs < 0 && document.querySelector('[data-testid^="editor-"]'))
+      perf.editorMs = now;
+    if (perf.shellMs >= 0 && perf.editorMs >= 0) observer.disconnect();
+  });
+  observer.observe(document, { childList: true, subtree: true });
+}
+
 const root = document.getElementById("root");
 if (root) {
   ReactDOM.createRoot(root).render(
