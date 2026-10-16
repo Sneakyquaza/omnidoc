@@ -26,6 +26,7 @@ struct OpenPaths {
 }
 
 /// Chemin du fichier de bindings TypeScript généré.
+#[cfg(any(debug_assertions, test))]
 const BINDINGS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src/ipc/bindings.ts");
 
 fn specta_builder() -> Builder<tauri::Wry> {
@@ -83,6 +84,7 @@ fn specta_builder() -> Builder<tauri::Wry> {
         .dangerously_cast_bigints_to_number()
 }
 
+#[cfg(any(debug_assertions, test))]
 fn export_bindings(builder: &Builder<tauri::Wry>) -> Result<(), specta_typescript::Error> {
     builder.export(
         specta_typescript::Typescript::default().header("// @ts-nocheck\n/* eslint-disable */"),
