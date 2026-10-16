@@ -63,7 +63,8 @@
     "new": "New",
     "recent": "Recent files",
     "noRecent": "No recent files.",
-    "removeRecent": "Remove “{{name}}” from recent files"
+    "removeRecent": "Remove “{{name}}” from recent files",
+    "recentRemoved": "“{{name}}” was not found and has been removed from recent files."
   },
   "newDoc": {
     "text": "Text document",
@@ -118,7 +119,14 @@
     "useExport": "Use “Export to…” to convert this document.",
     "partialTitle": "Partial fidelity",
     "partialMessage": "The {{format}} format does not preserve every element of the document. Saving in this format may cause losses.",
-    "partialConfirm": "Save anyway"
+    "partialConfirm": "Save anyway",
+    "externalTitle": "“{{name}}” changed on disk",
+    "externalMessage": "The file was modified by another program. Saving will overwrite those changes.",
+    "externalReload": "Reload from disk",
+    "externalOverwrite": "Overwrite",
+    "replaceOpenTitle": "Replace the open file?",
+    "replaceOpenMessage": "“{{name}}” is already open in another tab: that tab will be closed.",
+    "replaceOpenConfirm": "Replace"
   },
   "export": {
     "noTarget": "No export format available for this document.",
@@ -148,7 +156,8 @@
     "title": "Quit OmniDoc?",
     "message_one": "A document has unsaved changes.",
     "message_other": "{{count}} documents have unsaved changes.",
-    "confirm": "Quit without saving"
+    "confirm": "Quit without saving",
+    "saveAll": "Save all and quit"
   },
   "recovery": {
     "title": "Restore documents?",

@@ -42,6 +42,13 @@ interface TabsState {
 
 let counter = 0;
 
+/** Révision par onglet : incrémentée à chaque marquage « modifié » (hors état React, pas de rendu). */
+const revisions = new Map<string, number>();
+
+export function tabRevision(id: string): number {
+  return revisions.get(id) ?? 0;
+}
+
 function update(tabs: TabEntry[], id: string, fn: (t: TabEntry) => TabEntry): TabEntry[] {
   return tabs.map((t) => (t.id === id ? fn(t) : t));
 }
@@ -75,6 +82,7 @@ export const useTabs = create<TabsState>((set, get) => ({
     set((s) => {
       const index = s.tabs.findIndex((t) => t.id === id);
       if (index < 0) return s;
+      revisions.delete(id);
       const tabs = s.tabs.filter((t) => t.id !== id);
       const activeId =
         s.activeId === id ? ((tabs[index] ?? tabs[index - 1])?.id ?? null) : s.activeId;
@@ -98,8 +106,10 @@ export const useTabs = create<TabsState>((set, get) => ({
       const next = (current + delta + s.tabs.length) % s.tabs.length;
       return { activeId: s.tabs[next]?.id ?? s.activeId };
     }),
-  setDirty: (id, dirty) =>
-    set((s) => ({ tabs: update(s.tabs, id, (t) => (t.dirty === dirty ? t : { ...t, dirty })) })),
+  setDirty: (id, dirty) => {
+    if (dirty) revisions.set(id, tabRevision(id) + 1);
+    set((s) => ({ tabs: update(s.tabs, id, (t) => (t.dirty === dirty ? t : { ...t, dirty })) }));
+  },
   patchTab: (id, patch) => set((s) => ({ tabs: update(s.tabs, id, (t) => ({ ...t, ...patch })) })),
   reloadTab: (id, patch) =>
     set((s) => ({

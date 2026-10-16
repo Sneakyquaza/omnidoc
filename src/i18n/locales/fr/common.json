@@ -63,7 +63,8 @@
     "new": "Nouveau",
     "recent": "Fichiers récents",
     "noRecent": "Aucun fichier récent.",
-    "removeRecent": "Retirer « {{name}} » des récents"
+    "removeRecent": "Retirer « {{name}} » des récents",
+    "recentRemoved": "« {{name}} » est introuvable et a été retiré des récents."
   },
   "newDoc": {
     "text": "Document texte",
@@ -118,7 +119,14 @@
     "useExport": "Utilisez « Exporter vers… » pour convertir ce document.",
     "partialTitle": "Fidélité partielle",
     "partialMessage": "Le format {{format}} ne conserve pas tous les éléments du document. Enregistrer dans ce format peut entraîner des pertes.",
-    "partialConfirm": "Enregistrer quand même"
+    "partialConfirm": "Enregistrer quand même",
+    "externalTitle": "« {{name}} » a changé sur le disque",
+    "externalMessage": "Le fichier a été modifié par un autre programme. Enregistrer écrasera ces changements.",
+    "externalReload": "Recharger depuis le disque",
+    "externalOverwrite": "Écraser",
+    "replaceOpenTitle": "Remplacer le fichier ouvert ?",
+    "replaceOpenMessage": "« {{name}} » est déjà ouvert dans un autre onglet : cet onglet sera fermé.",
+    "replaceOpenConfirm": "Remplacer"
   },
   "export": {
     "noTarget": "Aucun format d'export disponible pour ce document.",
@@ -148,7 +156,8 @@
     "title": "Quitter OmniDoc ?",
     "message_one": "Un document contient des modifications non enregistrées.",
     "message_other": "{{count}} documents contiennent des modifications non enregistrées.",
-    "confirm": "Quitter sans enregistrer"
+    "confirm": "Quitter sans enregistrer",
+    "saveAll": "Tout enregistrer et quitter"
   },
   "recovery": {
     "title": "Restaurer les documents ?",

@@ -11,7 +11,7 @@ import type {
 } from "../ipc/bindings";
 import { useRecent } from "../stores/recent";
 import { useSettings } from "../stores/settings";
-import { useTabs } from "../stores/tabs";
+import { tabRevision, useTabs } from "../stores/tabs";
 import type { TabEntry } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { reportError } from "./errors";
@@ -36,6 +36,19 @@ function silently(p: Promise<unknown>): void {
   p.catch(() => undefined);
 }
 
+/** Génération par document : invalide les autosaves en vol quand l'entrée de récupération est supprimée. */
+const recoveryGen = new Map<string, number>();
+
+function gen(docId: string): number {
+  return recoveryGen.get(docId) ?? 0;
+}
+
+/** Supprime l'entrée de récupération et invalide les autosaves en cours pour ce document. */
+export function discardRecovery(docId: string): void {
+  recoveryGen.set(docId, gen(docId) + 1);
+  silently(commands.recoveryDiscard(docId));
+}
+
 function fromOpened(doc: OpenedDocument) {
   return {
     path: doc.path,
@@ -55,27 +68,61 @@ function showWarnings(warnings: string[]): void {
   for (const w of warnings) pushToast({ kind: "info", text: t(w, { defaultValue: w }) });
 }
 
-/** Ouvre un fichier dans un onglet (ou active l'onglet existant). */
-export async function openPath(path: string, forcedHandler: string | null = null): Promise<void> {
+const opening = new Map<string, Promise<unknown>>();
+
+/** Ouvre le fichier ; renvoie l'erreur éventuelle (`null` = succès). */
+async function tryOpen(path: string, forcedHandler: string | null): Promise<unknown> {
   const existing = useTabs.getState().tabs.find((tab) => tab.path === path);
   if (existing && forcedHandler === null) {
     useTabs.getState().activateTab(existing.id);
-    return;
+    return null;
   }
   try {
     const doc = await commands.openDocument(path, forcedHandler);
-    if (existing) {
-      clearTabRuntime(existing.id);
-      useTabs.getState().reloadTab(existing.id, { ...fromOpened(doc), dirty: false });
-      useTabs.getState().activateTab(existing.id);
+    const current = useTabs.getState().tabs.find((tab) => tab.path === path);
+    if (current) {
+      clearTabRuntime(current.id);
+      useTabs.getState().reloadTab(current.id, { ...fromOpened(doc), dirty: false });
+      useTabs.getState().activateTab(current.id);
     } else {
       useTabs.getState().openTab(fromOpened(doc));
     }
     silently(commands.watchFile(doc.path));
     useRecent.getState().add(doc.path);
     showWarnings(doc.warnings);
+    return null;
   } catch (e) {
-    reportError(e);
+    return e;
+  }
+}
+
+/** Dédoublonne les ouvertures concurrentes d'un même chemin. */
+function openOnce(path: string, forcedHandler: string | null): Promise<unknown> {
+  const inflight = opening.get(path);
+  if (inflight) {
+    return forcedHandler === null ? inflight : inflight.then(() => openOnce(path, forcedHandler));
+  }
+  const p: Promise<unknown> = tryOpen(path, forcedHandler).finally(() => {
+    if (opening.get(path) === p) opening.delete(path);
+  });
+  opening.set(path, p);
+  return p;
+}
+
+/** Ouvre un fichier dans un onglet (ou active l'onglet existant). */
+export async function openPath(path: string, forcedHandler: string | null = null): Promise<void> {
+  const err = await openOnce(path, forcedHandler);
+  if (err !== null) reportError(err);
+}
+
+/** Ouvre un fichier récent ; s'il est introuvable, le retire de la liste. */
+export async function openRecent(path: string): Promise<void> {
+  const err = await openOnce(path, null);
+  if (err === null) return;
+  reportError(err);
+  if ((err as { code?: unknown } | null)?.code === "notFound") {
+    useRecent.getState().remove(path);
+    pushToast({ kind: "info", text: t("welcome.recentRemoved", { name: basename(path) }) });
   }
 }
 
@@ -125,7 +172,7 @@ export async function reopenTab(tabId: string, handlerId: string | null): Promis
   try {
     const doc = await commands.openDocument(tab.path, handlerId ?? tab.handlerId);
     clearTabRuntime(tabId);
-    silently(commands.recoveryDiscard(tab.docId));
+    discardRecovery(tab.docId);
     useTabs
       .getState()
       .reloadTab(tabId, { ...fromOpened(doc), dirty: false, fidelityConfirmed: false });
@@ -140,14 +187,23 @@ export function reopenTabAs(tabId: string, handlerId: string): Promise<void> {
   return reopenTab(tabId, handlerId);
 }
 
-/** Recharge après modification externe (sans confirmation : l'utilisateur a cliqué sur la bannière). */
-export async function reloadFromDisk(tabId: string): Promise<void> {
+/** Recharge après modification externe (confirmation si l'onglet a des modifications non enregistrées). */
+export async function reloadFromDisk(tabId: string, confirmed = false): Promise<void> {
   const tab = getTab(tabId);
   if (!tab?.path) return;
+  if (tab.dirty && !confirmed) {
+    const ok = await confirm({
+      title: t("reopen.title"),
+      message: t("reopen.message", { name: tab.title }),
+      confirmLabel: t("reopen.confirm"),
+      danger: true,
+    });
+    if (!ok) return;
+  }
   try {
     const doc = await commands.openDocument(tab.path, tab.handlerId);
     clearTabRuntime(tabId);
-    silently(commands.recoveryDiscard(tab.docId));
+    discardRecovery(tab.docId);
     useTabs.getState().reloadTab(tabId, { ...fromOpened(doc), dirty: false });
   } catch (e) {
     reportError(e);
@@ -208,21 +264,41 @@ export async function saveTabAs(tabId: string): Promise<boolean> {
     if (dest === null) return false;
     const handler = pickHandler(candidates, dest, tab.handlerId);
     if (!handler) return false;
+    const other = useTabs.getState().tabs.find((x) => x.id !== tabId && x.path === dest);
+    if (other) {
+      const ok = await confirm({
+        title: t("save.replaceOpenTitle"),
+        message: t("save.replaceOpenMessage", { name: other.title }),
+        confirmLabel: t("save.replaceOpenConfirm"),
+        danger: true,
+      });
+      if (!ok) return false;
+    }
+    const rev = tabRevision(tabId);
     const model = await currentModel(tab);
     await commands.saveDocument(dest, handler.id, model);
     if (tab.path && tab.path !== dest) silently(commands.unwatchFile(tab.path));
     silently(commands.watchFile(dest));
+    // Pas deux onglets sur le même fichier : l'autre est fermé (son contenu vient d'être écrasé).
+    for (const x of useTabs.getState().tabs.filter((y) => y.id !== tabId && y.path === dest)) {
+      useTabs.getState().closeTab(x.id);
+      clearTabRuntime(x.id);
+      discardRecovery(x.docId);
+    }
+    const detected = await commands.detectFile(dest).catch(() => undefined);
+    const clean = tabRevision(tabId) === rev;
     useTabs.getState().patchTab(tabId, {
       path: dest,
       title: basename(dest),
       handlerId: handler.id,
       readOnly: false,
-      dirty: false,
+      ...(clean ? { dirty: false } : {}),
       externalChange: false,
       capabilities: handler.capabilities,
       fidelityConfirmed: true,
+      ...(detected ? { detected } : {}),
     });
-    silently(commands.recoveryDiscard(tab.docId));
+    if (clean) discardRecovery(tab.docId);
     useRecent.getState().add(dest);
     pushToast({ kind: "success", text: t("save.saved", { name: basename(dest) }) });
     return true;
@@ -239,6 +315,23 @@ export async function saveTab(tabId: string): Promise<boolean> {
   const custom = getSaveHandler(tabId);
   if (custom) return (await custom.save?.()) ?? false;
   if (tab.path === null || !tab.capabilities?.write) return saveTabAs(tabId);
+  if (tab.externalChange) {
+    const choice = await choose({
+      title: t("save.externalTitle", { name: tab.title }),
+      message: t("save.externalMessage"),
+      actions: [
+        { id: "cancel", label: t("common.cancel"), variant: "secondary" },
+        { id: "reload", label: t("save.externalReload"), variant: "secondary" },
+        { id: "overwrite", label: t("save.externalOverwrite"), variant: "danger" },
+      ],
+    });
+    if (choice === "reload") {
+      await reloadFromDisk(tabId, true);
+      return false;
+    }
+    if (choice !== "overwrite") return false;
+    useTabs.getState().patchTab(tabId, { externalChange: false });
+  }
   if (
     tab.capabilities.fidelity === "partial" &&
     !tab.fidelityConfirmed &&
@@ -257,10 +350,14 @@ export async function saveTab(tabId: string): Promise<boolean> {
     useTabs.getState().patchTab(tabId, { fidelityConfirmed: true });
   }
   try {
+    const rev = tabRevision(tabId);
     const model = await currentModel(tab);
     await commands.saveDocument(tab.path, tab.handlerId, model);
-    useTabs.getState().patchTab(tabId, { dirty: false });
-    silently(commands.recoveryDiscard(tab.docId));
+    // Modifié pendant l'écriture : l'onglet reste « modifié ».
+    if (tabRevision(tabId) === rev) {
+      useTabs.getState().patchTab(tabId, { dirty: false });
+      discardRecovery(tab.docId);
+    }
     pushToast({ kind: "success", text: t("save.saved", { name: tab.title }) });
     return true;
   } catch (e) {
@@ -352,7 +449,7 @@ export async function closeTabWithConfirm(tabId: string): Promise<boolean> {
   useTabs.getState().closeTab(tabId);
   clearTabRuntime(tabId);
   if (tab.path) silently(commands.unwatchFile(tab.path));
-  silently(commands.recoveryDiscard(tab.docId));
+  discardRecovery(tab.docId);
   return true;
 }
 
@@ -361,8 +458,13 @@ export async function autosaveDirtyTabs(): Promise<void> {
   // Les éditeurs à handler d'enregistrement dédié écrivent eux-mêmes : pas de récupération.
   for (const tab of useTabs.getState().tabs.filter((x) => x.dirty && !getSaveHandler(x.id))) {
     try {
+      const g = gen(tab.docId);
       const model = await currentModel(tab);
+      const alive = () => getTab(tab.id)?.dirty === true && gen(tab.docId) === g;
+      if (!alive()) continue;
       await commands.recoveryStore(tab.docId, tab.path ?? "", model);
+      // Sauvé ou fermé pendant l'écriture : on retire l'entrée qu'on vient de recréer.
+      if (!alive()) silently(commands.recoveryDiscard(tab.docId));
     } catch {
       // l'autosave ne doit jamais gêner l'utilisateur
     }
@@ -400,6 +502,21 @@ export async function restoreRecovery(
       } catch {
         // fichier d'origine disparu : on restaure comme document sans chemin
       }
+    }
+    const existing =
+      path === null ? undefined : useTabs.getState().tabs.find((x) => x.path === path);
+    if (existing) {
+      // Fichier déjà ouvert : l'onglet reçoit le modèle récupéré (et reste modifié).
+      clearTabRuntime(existing.id);
+      useTabs.getState().reloadTab(existing.id, {
+        model: entry.model,
+        modelKind: entry.model.kind,
+        dirty: true,
+      });
+      useTabs.getState().setDirty(existing.id, true);
+      useTabs.getState().activateTab(existing.id);
+      if (existing.docId !== entry.docId) discardRecovery(entry.docId);
+      continue;
     }
     handler ??= defaultHandlerFor(handlers, entry.model.kind);
     const n = path === null ? useTabs.getState().nextUntitled() : 0;

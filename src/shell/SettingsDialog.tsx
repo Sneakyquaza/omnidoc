@@ -14,8 +14,14 @@ import {
 import type { Language, Theme } from "../stores/settings";
 import { useRecent } from "../stores/recent";
 import { useUi } from "../stores/ui";
+import { useRuntime } from "./runtime";
 import { useShellCommands } from "./commands";
-import { eventToShortcut, findShortcutConflicts, formatShortcut } from "./shortcuts";
+import {
+  applyShortcutOverrides,
+  eventToShortcut,
+  findShortcutConflicts,
+  formatShortcut,
+} from "./shortcuts";
 import { Button } from "./ui/Button";
 import styles from "./SettingsDialog.module.css";
 
@@ -201,6 +207,7 @@ function ShortcutsSection() {
   const { t } = useTranslation("settings");
   const { all } = useShellCommands();
   const overrides = useSettings((s) => s.shortcuts);
+  const editorsByTab = useRuntime((s) => s.commands);
   const setShortcut = useSettings((s) => s.setShortcut);
   const resetShortcut = useSettings((s) => s.resetShortcut);
   const resetShortcuts = useSettings((s) => s.resetShortcuts);
@@ -219,9 +226,18 @@ function ShortcutsSection() {
     }
     const shortcut = eventToShortcut(e.nativeEvent);
     if (shortcut === null) return;
-    const clash = findShortcutConflicts(all, id, shortcut)[0];
+    // Aussi contre les raccourcis des éditeurs des autres onglets ouverts.
+    const known = new Set(all.map((c) => c.id));
+    const others = applyShortcutOverrides(
+      Object.values(editorsByTab)
+        .flat()
+        .filter((c) => !known.has(c.id)),
+      overrides,
+    );
+    const candidates = [...all, ...others];
+    const clash = findShortcutConflicts(candidates, id, shortcut)[0];
     if (clash !== undefined) {
-      const title = all.find((c) => c.id === clash)?.title ?? clash;
+      const title = candidates.find((c) => c.id === clash)?.title ?? clash;
       setConflict({ id, with: title });
       return;
     }
