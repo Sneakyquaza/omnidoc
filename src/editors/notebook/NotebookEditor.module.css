@@ -1,0 +1,139 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 24px 48px;
+}
+
+.scroller:focus-visible,
+.outlineButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.cell {
+  max-width: 960px;
+  margin: 0 auto 12px;
+}
+
+.cellKind {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.markdown {
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+.markdown img,
+.htmlOutput img {
+  max-width: 100%;
+}
+
+.markdown a,
+.htmlOutput a {
+  color: var(--color-accent);
+}
+
+.markdown pre,
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.markdown pre {
+  padding: 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  overflow: auto;
+}
+
+.markdown table,
+.htmlOutput table {
+  border-collapse: collapse;
+}
+
+.markdown td,
+.markdown th,
+.htmlOutput td,
+.htmlOutput th {
+  border: 1px solid var(--color-border);
+  padding: 3px 8px;
+}
+
+.code {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.45;
+  overflow: auto;
+  white-space: pre;
+}
+
+.outputs {
+  margin: 4px 0 0 12px;
+  border-left: 3px solid var(--color-border);
+  padding-left: 10px;
+  overflow: auto;
+}
+
+.pre {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  background: #fff;
+}
+
+.htmlOutput {
+  overflow: auto;
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.outline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.outlineButton {
+  display: block;
+  width: 100%;
+  padding: 3px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.outlineButton:hover {
+  background: var(--color-hover);
+}

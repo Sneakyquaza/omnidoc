@@ -1,0 +1,29 @@
+{
+  "tabs": { "label": "Vues de la base", "data": "Données", "query": "Requête", "schema": "Schéma" },
+  "sidebar": {
+    "title": "Tables et vues",
+    "empty": "Aucune table.",
+    "view": "vue",
+    "columns": "Colonnes"
+  },
+  "data": { "empty": "Cette table est vide." },
+  "query": {
+    "editor": "Requête SQL",
+    "run": "Exécuter (Ctrl+Entrée)",
+    "hint": "Une seule instruction SELECT, en lecture seule.",
+    "summary": "{{count}} ligne(s) en {{ms}} ms",
+    "truncated": "(limité à {{limit}} lignes)",
+    "results": "Résultats de la requête",
+    "readOnly": "Base ouverte en lecture seule : seules les requêtes SELECT sont autorisées."
+  },
+  "schema": { "empty": "Aucun schéma." },
+  "export": { "csv": "Exporter en CSV", "done": "Exporté : {{name}}" },
+  "status": { "tables": "{{count}} table(s)", "table": "{{name}} : {{count}} ligne(s)" },
+  "commands": {
+    "data": "Base de données : afficher les données",
+    "query": "Base de données : requête SQL",
+    "schema": "Base de données : afficher le schéma",
+    "exportCsv": "Base de données : exporter la table en CSV"
+  },
+  "noPath": "Aucun fichier associé."
+}

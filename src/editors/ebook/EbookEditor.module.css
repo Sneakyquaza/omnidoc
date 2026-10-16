@@ -1,0 +1,111 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-size: 13px;
+}
+
+.frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: none;
+}
+
+.banner {
+  padding: 6px 12px;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+}
+
+.input,
+.select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.input {
+  flex: 1;
+  max-width: 360px;
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.tocButton:focus-visible,
+.hitButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.hitButton {
+  display: block;
+  width: 100%;
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.hitButton:hover {
+  background: var(--color-hover);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tocButton {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tocButton:hover {
+  background: var(--color-hover);
+}
+
+.tocButton[aria-current="true"] {
+  background: var(--color-hover);
+  font-weight: 600;
+}

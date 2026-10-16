@@ -1,0 +1,44 @@
+{
+  "frame": "Book content",
+  "empty": "This book has no chapters.",
+  "toc": { "title": "Table of contents", "empty": "No chapters.", "untitled": "Chapter {{n}}" },
+  "nav": { "prev": "Previous chapter", "next": "Next chapter" },
+  "settings": {
+    "font": "Font",
+    "serif": "Serif",
+    "sans": "Sans-serif",
+    "smaller": "Decrease text size",
+    "larger": "Increase text size",
+    "lineHeight": "Line spacing",
+    "lineHeightValue": "Line spacing {{v}}",
+    "width": "Column width",
+    "widthValue": "Column {{v}} px",
+    "theme": "Reading theme",
+    "themes": { "auto": "App theme", "light": "Light", "sepia": "Sepia", "dark": "Dark" }
+  },
+  "search": {
+    "button": "Search",
+    "label": "Search in book",
+    "placeholder": "Search in book…",
+    "go": "Search",
+    "count": "{{count}} result(s)",
+    "results": "Search results"
+  },
+  "external": {
+    "title": "Open external link?",
+    "message": "This link will open in your browser: {{url}}",
+    "open": "Open"
+  },
+  "lossy": {
+    "intro": "Some parts of the book are not displayed:",
+    "css": "original stylesheets ignored.",
+    "images-omitted": "images omitted.",
+    "remote-images": "remote images not loaded."
+  },
+  "status": { "chapter": "Chapter {{n}}/{{count}}" },
+  "commands": {
+    "search": "Book: search",
+    "next": "Book: next chapter",
+    "prev": "Book: previous chapter"
+  }
+}

@@ -332,7 +332,8 @@ export type RecordProp = {
 };
 
 export type RecordsDoc = {
-	kind: RecordsKind,
+	/**  Sérialisé en `format` : `kind` entrerait en collision avec le tag de `DocumentModel`. */
+	format: RecordsKind,
 	components: RecordComponent[],
 };
 

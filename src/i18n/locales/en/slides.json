@@ -1,0 +1,20 @@
+{
+  "textOnly": "Text-only preview: layout, images and animations are not shown.",
+  "stage": "Current slide",
+  "empty": "This presentation has no slides.",
+  "present": "Present",
+  "presentation": "Presentation mode",
+  "exitHint": "Esc to exit",
+  "thumbs": {
+    "title": "Slides",
+    "slide": "Slide {{n}}: {{title}}",
+    "fileThumbnail": "File thumbnail"
+  },
+  "notes": { "label": "Notes", "none": "No notes." },
+  "export": { "md": "Export as Markdown", "done": "Exported: {{name}}" },
+  "status": { "position": "Slide {{n}}/{{count}}" },
+  "commands": {
+    "present": "Slides: presentation mode",
+    "exportMd": "Slides: export as Markdown"
+  }
+}

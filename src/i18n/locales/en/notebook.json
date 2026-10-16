@@ -1,0 +1,13 @@
+{
+  "document": "Notebook content",
+  "empty": "This notebook has no cells.",
+  "cell": { "label": "Cell {{n}}" },
+  "output": { "label": "Outputs", "image": "Output image" },
+  "outline": { "title": "Outline", "empty": "No headings." },
+  "export": { "md": "Export as Markdown", "html": "Export as HTML", "done": "Exported: {{name}}" },
+  "status": { "cells": "{{count}} cell(s)", "code": "{{count}} code cell(s)" },
+  "commands": {
+    "exportMd": "Notebook: export as Markdown",
+    "exportHtml": "Notebook: export as HTML"
+  }
+}

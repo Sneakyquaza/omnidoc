@@ -265,6 +265,8 @@ pub struct DbColumn {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct RecordsDoc {
+    /// Sérialisé en `format` : `kind` entrerait en collision avec le tag de `DocumentModel`.
+    #[serde(rename = "format")]
     pub kind: RecordsKind,
     pub components: Vec<RecordComponent>,
 }
@@ -378,6 +380,19 @@ mod tests {
         assert_eq!(v["size"], 3);
         let back: DocumentModel = serde_json::from_value(v).unwrap();
         assert_eq!(back.kind(), ModelKind::Binary);
+    }
+
+    #[test]
+    fn records_model_roundtrips_without_kind_collision() {
+        let m = DocumentModel::Records(RecordsDoc {
+            kind: RecordsKind::Ics,
+            components: vec![],
+        });
+        let v = serde_json::to_value(&m).unwrap();
+        assert_eq!(v["kind"], "records");
+        assert_eq!(v["format"], "ics");
+        let back: DocumentModel = serde_json::from_value(v).unwrap();
+        assert_eq!(back.kind(), ModelKind::Records);
     }
 
     #[test]

@@ -1,0 +1,263 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-size: 13px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.tab {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.tab:focus-visible,
+.listButton:focus-visible,
+.gridScroller:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.barInfo {
+  color: var(--color-text-muted);
+  margin-right: auto;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gridScroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  font-family: var(--font-mono);
+}
+
+.headRow {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.headCell {
+  flex: 0 0 170px;
+  width: 170px;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--color-border);
+  font-family: var(--font-ui);
+}
+
+.colName {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.colType {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cell {
+  flex: 0 0 170px;
+  width: 170px;
+  box-sizing: border-box;
+  padding: 3px 8px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid var(--color-border);
+}
+
+.numCell {
+  flex: 0 0 64px;
+  width: 64px;
+  color: var(--color-text-muted);
+  text-align: right;
+  background: var(--color-surface);
+}
+
+.num {
+  text-align: right;
+}
+
+.null {
+  color: var(--color-text-muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.blob {
+  color: var(--color-text-muted);
+}
+
+.editor {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 110px;
+  max-height: 40%;
+  resize: vertical;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.editor:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.error {
+  padding: 8px 12px;
+  color: var(--color-danger);
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+}
+
+.empty {
+  padding: 16px;
+  color: var(--color-text-muted);
+}
+
+.schema {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px;
+}
+
+.schemaName {
+  margin: 12px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schemaSql {
+  margin: 0;
+  padding: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.listButton {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  align-items: baseline;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listButton:hover {
+  background: var(--color-hover);
+}
+
+.listButton[aria-current="true"] {
+  background: var(--color-hover);
+  font-weight: 600;
+}
+
+.listName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listMeta {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.subTitle {
+  margin: 12px 8px 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.colItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 8px;
+}
+
+.body[hidden],
+.schema[hidden] {
+  display: none;
+}
