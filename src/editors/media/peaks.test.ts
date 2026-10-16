@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computePeaks, computePeaksAsync, msToX, xToMs } from "./waveform";
+import { computePeaks, computePeaksAsync, msToX, xToMs } from "./peaks";
 
 describe("computePeaks", () => {
   it("prend le maximum absolu par tranche", () => {

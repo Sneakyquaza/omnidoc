@@ -3,6 +3,7 @@ import type { KeyboardEvent, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { commands } from "../../ipc/bindings";
+import { readBytes } from "../../ipc/bytes";
 import { Button } from "../../shell/ui/Button";
 import { formatTime } from "./time";
 import styles from "./MediaEditor.module.css";
@@ -44,6 +45,12 @@ export function Player({
   const { t } = useTranslation("media");
   const [src, setSrc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  useEffect(
+    () => () => {
+      if (src?.startsWith("blob:")) URL.revokeObjectURL(src);
+    },
+    [src],
+  );
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
@@ -122,6 +129,14 @@ export function Player({
 
   function onMediaError() {
     const code = mediaRef.current?.error?.code;
+    // WebKitGTK ne lit pas toujours les médias servis par le protocole asset :
+    // repli unique sur une URL blob construite depuis les octets.
+    if (path !== null && src !== null && !src.startsWith("blob:")) {
+      readBytes(path)
+        .then((bytes) => setSrc(URL.createObjectURL(new Blob([bytes]))))
+        .catch(() => setError(t("player.failed")));
+      return;
+    }
     // 3 = MEDIA_ERR_DECODE, 4 = MEDIA_ERR_SRC_NOT_SUPPORTED
     setError(code === 3 || code === 4 ? t("player.unsupported") : t("player.failed"));
   }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { readRange } from "../../ipc/bytes";
-import { MAX_WAVEFORM_BYTES, computePeaksAsync, msToX, xToMs } from "./waveform";
+import { MAX_WAVEFORM_BYTES, computePeaksAsync, msToX, xToMs } from "./peaks";
 import styles from "./MediaEditor.module.css";
 
 const BUCKETS = 2000;
