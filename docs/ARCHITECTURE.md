@@ -94,7 +94,7 @@ pub enum DocumentModel {
 | `ArchiveDoc` | `format`, `entries: [{path, size, compressedSize?, isDir, modified?}]`, `writable: bool` | Écriture : zip, tar, tar.gz. 7z lecture/extraction. |
 | `MediaDoc` | `mime, durationMs?, tags: Vec<{key, value}>, pictures: u32` | Lecture via protocole `asset:` (scope ajouté au fichier ouvert). Tags via `lofty`. |
 | `DbDoc` | `tables: [{name, kind:"table"\|"view", columns:[{name, type}], rowCount}]` | Lignes paginées par commande `db_query`. Ouverture `SQLITE_OPEN_READ_ONLY`. |
-| `RecordsDoc` | `kind: "ics"\|"vcf"`, `components: [{name, props: [{name, params: Vec<(String,String)>, value}], children}]` | Arbre générique, propriétés inconnues conservées telles quelles → aller-retour fidèle. |
+| `RecordsDoc` | `format: "ics"\|"vcf"` (pas `kind` : collision avec le tag serde de `DocumentModel`), `components: [{name, props: [{name, params: Vec<(String,String)>, value}], children}]` | Arbre générique, propriétés inconnues conservées telles quelles → aller-retour fidèle. |
 | `NotebookDoc` | `cells: [{cellType, source, outputs: [{kind, text?, mime?, data?}]}]`, `language` | Lecture seule. |
 | `EbookDoc` | `title, author?, chapters: [{title, html}]` | HTML assaini côté Rust (pas de script), rendu en `iframe sandbox` sans `allow-scripts`. |
 | `SlidesDoc` | `slides: [{index, texts: Vec<String>, notes?}]` | Lecture : extraction texte (pptx/odp). |
