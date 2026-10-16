@@ -1,0 +1,117 @@
+{
+  "sheetBase": "Feuille",
+  "readOnly": "Lecture seule",
+  "grid": { "label": "Tableur", "cellEditor": "Édition de la cellule" },
+  "formulaBar": {
+    "reference": "Référence de la cellule",
+    "content": "Contenu de la cellule ou formule",
+    "invalidReference": "Référence invalide : « {{text}} »."
+  },
+  "toolbar": {
+    "label": "Outils du tableur",
+    "undo": "Annuler",
+    "redo": "Rétablir",
+    "formatGeneral": "Format général",
+    "general": "Gén.",
+    "formatNumber": "Format nombre (1 234,00)",
+    "formatPercent": "Format pourcentage",
+    "formatCurrency": "Format monétaire (€)",
+    "formatDate": "Format date",
+    "date": "Date",
+    "decimalsMore": "Ajouter une décimale",
+    "decimalsLess": "Supprimer une décimale",
+    "sortAsc": "Trier de A à Z (colonne active)",
+    "sortDesc": "Trier de Z à A (colonne active)",
+    "header": "La première ligne est un en-tête (non triée)",
+    "headerShort": "En-tête",
+    "filter": "Filtre automatique",
+    "filterShort": "Filtre"
+  },
+  "filter": {
+    "title": "Filtre de colonne",
+    "button": "Filtrer cette colonne",
+    "search": "Rechercher…",
+    "selectAll": "Tout cocher",
+    "selectNone": "Tout décocher",
+    "none": "Aucune valeur",
+    "apply": "Appliquer",
+    "blank": "(Vides)"
+  },
+  "tabs": {
+    "label": "Feuilles",
+    "add": "Ajouter une feuille",
+    "rename": "Renommer la feuille",
+    "delete": "Supprimer la feuille",
+    "moveLeft": "Déplacer vers la gauche",
+    "moveRight": "Déplacer vers la droite",
+    "deleteTitle": "Supprimer la feuille ?",
+    "deleteMessage": "La feuille « {{name}} » et son contenu seront supprimés.",
+    "nameTaken": "Une feuille porte déjà ce nom.",
+    "nameInvalid": "Nom de feuille invalide (31 caractères max., sans [ ] : * ? / \\)."
+  },
+  "menu": {
+    "label": "Menu contextuel du tableur",
+    "copy": "Copier",
+    "cut": "Couper",
+    "paste": "Coller",
+    "clear": "Effacer le contenu",
+    "insertRowAbove": "Insérer une ligne au-dessus",
+    "insertRowBelow": "Insérer une ligne en dessous",
+    "deleteRows": "Supprimer la ou les lignes",
+    "insertColLeft": "Insérer une colonne à gauche",
+    "insertColRight": "Insérer une colonne à droite",
+    "deleteCols": "Supprimer la ou les colonnes"
+  },
+  "panel": {
+    "title": "Classeur",
+    "sheets": "Feuilles",
+    "dims": "{{rows}} × {{cols}}",
+    "csv": "Options CSV",
+    "delimiter": "Séparateur",
+    "encoding": "Encodage",
+    "header": "Première ligne d'en-tête",
+    "yes": "Oui",
+    "no": "Non",
+    "delimiters": {
+      "comma": "Virgule ( , )",
+      "semicolon": "Point-virgule ( ; )",
+      "tab": "Tabulation",
+      "pipe": "Barre verticale ( | )"
+    }
+  },
+  "lossy": {
+    "title": "Certains éléments ne seront pas conservés à l'enregistrement :",
+    "items": {
+      "merges": "Cellules fusionnées",
+      "styles": "Styles et mises en forme",
+      "charts": "Graphiques",
+      "images": "Images",
+      "macros": "Macros",
+      "conditionalFormatting": "Mises en forme conditionnelles",
+      "dataValidations": "Validations de données",
+      "pivotTables": "Tableaux croisés dynamiques",
+      "comments": "Commentaires"
+    }
+  },
+  "status": {
+    "stats": "Somme : {{sum}} · Moyenne : {{avg}} · Nombre : {{count}}",
+    "count": "Nombre : {{count}}",
+    "lossy": "{{count}} type(s) d'éléments non conservés"
+  },
+  "errors": { "clipboard": "Accès au presse-papiers impossible." },
+  "export": { "done": "Feuille exportée : {{name}}" },
+  "commands": {
+    "undo": "Tableur : annuler",
+    "redo": "Tableur : rétablir",
+    "fillDown": "Tableur : remplir vers le bas",
+    "exportCsv": "Tableur : exporter la feuille en CSV…",
+    "sortAsc": "Tableur : trier de A à Z",
+    "sortDesc": "Tableur : trier de Z à A",
+    "filter": "Tableur : activer/désactiver le filtre automatique",
+    "insertRow": "Tableur : insérer une ligne",
+    "deleteRow": "Tableur : supprimer la ligne",
+    "insertCol": "Tableur : insérer une colonne",
+    "deleteCol": "Tableur : supprimer la colonne",
+    "addSheet": "Tableur : ajouter une feuille"
+  }
+}
