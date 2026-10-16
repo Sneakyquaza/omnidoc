@@ -75,12 +75,11 @@ signature (`TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). S
 `pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":false}}'`. Le build `--no-bundle` (`pnpm e2e:build`)
 n'est pas concerné.
 
-`pnpm tauri build` produit aussi les artefacts de mise à jour (`bundle.createUpdaterArtifacts`) et exige donc la clé de
-signature (`TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). Sans clé, désactiver l'option :
-`pnpm tauri build --config '{"bundle":{"createUpdaterArtifacts":false}}'`. Le build `--no-bundle` (`pnpm e2e:build`)
-n'est pas concerné.
+Les publications sont des releases brouillon créées par `.github/workflows/release.yml` sur un tag `v*`, avec les
+notes tirées de [CHANGELOG.md](CHANGELOG.md). Avant chaque release : [docs/PROCEDURE-VERIFICATION.md](docs/PROCEDURE-VERIFICATION.md).
 
-Les publications sont des releases brouillon créées par `.github/workflows/release.yml` sur un tag `v*`.
+Mises à jour : l'application peut vérifier les nouvelles versions sur GitHub, seulement si vous l'acceptez au premier
+lancement (modifiable dans Préférences → Mises à jour) ou à la demande. Les mises à jour sont signées.
 
 ## Architecture
 
@@ -90,7 +89,8 @@ Le cœur ne connaît aucun format en dur. Détails : [docs/ARCHITECTURE.md](docs
 
 ## Sécurité et vie privée
 
-- Fonctionne hors ligne : aucune requête réseau sans action explicite de l'utilisateur, aucune télémétrie.
+- Fonctionne hors ligne : aucune requête réseau sans action explicite de l'utilisateur, aucune télémétrie. Seule exception
+  consentie : la vérification des mises à jour au démarrage, si vous l'avez acceptée (une requête vers github.com).
 - Aucun programme embarqué dans un document n'est exécuté (macros ignorées) ; HTML et SVG sont assainis/isolés.
 - Limites sur les archives, XML et fichiers volumineux ; parseurs fuzzés (voir [docs/FUZZING.md](docs/FUZZING.md)).
 - Écriture atomique, sauvegarde de l'original, récupération automatique.
@@ -126,7 +126,8 @@ OmniDoc is a universal desktop editor (Tauri 2, Rust + React/TypeScript) that op
 interface adapting to the format: documents (docx, odt, md, html, rtf), spreadsheets (csv, xlsx, ods), code and text,
 images, PDF, archives, audio/video, SQLite, calendars/contacts, notebooks, ebooks, slides, and a hex fallback.
 It works offline, has no telemetry, writes files atomically with a backup of the original, and falls back to an
-explicit read-only mode when a format cannot be written.
+explicit read-only mode when a format cannot be written. Update checks (signed updates from GitHub releases) only run
+at startup if you opt in on first launch, or on demand. Changes: [CHANGELOG.md](CHANGELOG.md).
 
 Install: `pnpm install`, then `pnpm tauri dev` (development) or `pnpm tauri build` (packages). On Linux install
 `libwebkit2gtk-4.1-dev`, `libssl-dev`, `librsvg2-dev`, `libayatana-appindicator3-dev`, `libxdo-dev`.
