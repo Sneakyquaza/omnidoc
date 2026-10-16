@@ -9,10 +9,15 @@ use std::path::Path;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use image::codecs::gif::GifDecoder;
 use image::codecs::jpeg::JpegEncoder;
+use image::codecs::webp::WebPDecoder;
 use image::imageops::FilterType;
 use image::metadata::Orientation;
-use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits, RgbImage};
+use image::{
+    AnimationDecoder, DynamicImage, ImageDecoder, ImageEncoder, ImageFormat, ImageReader, Limits,
+    RgbImage,
+};
 
 use crate::core::atomic;
 use crate::core::handler::{Capabilities, Confidence, Fidelity, FormatHandler};
@@ -23,6 +28,7 @@ use crate::error::{AppError, Result};
 
 const MAX_EXIF_ENTRIES: usize = 500;
 const MAX_DIMENSION: u32 = 20_000;
+const MAX_PIXELS: u64 = 100_000_000;
 const MAX_PREVIEW_SIDE: u32 = 8192;
 const MAX_ICO_SIDE: u32 = 256;
 
@@ -89,11 +95,40 @@ fn decode_file(path: &Path) -> Result<(DynamicImage, ImageFormat)> {
         .map_err(AppError::Io)?;
     let format = reader.format().ok_or(AppError::Unsupported)?;
     let mut decoder = reader.into_decoder().map_err(corrupt)?;
+    let (w, h) = decoder.dimensions();
+    if u64::from(w) * u64::from(h) > MAX_PIXELS {
+        return Err(AppError::TooLarge);
+    }
     decoder.set_limits(limits()).map_err(corrupt)?;
     let orientation = decoder.orientation().unwrap_or(Orientation::NoTransforms);
     let mut img = DynamicImage::from_decoder(decoder).map_err(corrupt)?;
     img.apply_orientation(orientation);
     Ok((img, format))
+}
+
+/// Refuse les GIF/WebP animés : le réencodage ne garde que la première image.
+fn ensure_not_animated(path: &Path, format: ImageFormat) -> Result<()> {
+    let animated = match format {
+        ImageFormat::Gif => {
+            let dec = GifDecoder::new(BufReader::new(File::open(path)?)).map_err(corrupt)?;
+            dec.into_frames().take(2).filter(|f| f.is_ok()).count() > 1
+        }
+        ImageFormat::WebP => WebPDecoder::new(BufReader::new(File::open(path)?))
+            .map_err(corrupt)?
+            .has_animation(),
+        _ => false,
+    };
+    if animated {
+        return Err(AppError::Limit("animated_image".into()));
+    }
+    Ok(())
+}
+
+/// Profil ICC d'un JPEG (conservé au réencodage).
+fn jpeg_icc(path: &Path) -> Option<Vec<u8>> {
+    let reader = ImageReader::open(path).ok()?.with_guessed_format().ok()?;
+    let mut decoder = reader.into_decoder().ok()?;
+    decoder.icc_profile().ok().flatten()
 }
 
 fn decode_png_bytes(bytes: &[u8]) -> Result<DynamicImage> {
@@ -114,14 +149,25 @@ fn flatten_on_white(img: &DynamicImage) -> RgbImage {
 }
 
 fn encode(img: &DynamicImage, format: ImageFormat, quality: Option<u8>) -> Result<Vec<u8>> {
+    encode_with_icc(img, format, quality, None)
+}
+
+fn encode_with_icc(
+    img: &DynamicImage,
+    format: ImageFormat,
+    quality: Option<u8>,
+    icc: Option<Vec<u8>>,
+) -> Result<Vec<u8>> {
     let mut buf = Cursor::new(Vec::new());
     match format {
         ImageFormat::Jpeg => {
             let rgb = flatten_on_white(img);
             let q = quality.unwrap_or(90).clamp(1, 100);
-            JpegEncoder::new_with_quality(&mut buf, q)
-                .encode_image(&rgb)
-                .map_err(corrupt)?;
+            let mut enc = JpegEncoder::new_with_quality(&mut buf, q);
+            if let Some(icc) = icc {
+                let _ = enc.set_icc_profile(icc);
+            }
+            enc.encode_image(&rgb).map_err(corrupt)?;
         }
         ImageFormat::Png => img.write_to(&mut buf, format).map_err(corrupt)?,
         ImageFormat::Ico => {
@@ -169,15 +215,20 @@ pub fn save_from_png_base64(
 }
 
 pub fn convert_file(path: &Path, dest: &Path, format: &str, quality: Option<u8>) -> Result<()> {
-    let (img, _) = decode_file(path)?;
+    let (img, src_format) = decode_file(path)?;
+    ensure_not_animated(path, src_format)?;
     let out = encode(&img, target_format(format)?, quality)?;
     atomic::write(dest, &out)
 }
 
 pub fn strip_metadata(path: &Path, dest: &Path) -> Result<()> {
     let (img, format) = decode_file(path)?;
+    ensure_not_animated(path, format)?;
     let quality = (format == ImageFormat::Jpeg).then_some(95);
-    let out = encode(&img, format, quality)?;
+    let icc = (format == ImageFormat::Jpeg)
+        .then(|| jpeg_icc(path))
+        .flatten();
+    let out = encode_with_icc(&img, format, quality, icc)?;
     atomic::write(dest, &out)
 }
 
@@ -381,6 +432,74 @@ mod tests {
         out.extend_from_slice(&app1);
         out.extend_from_slice(&jpg[2..]);
         out
+    }
+
+    fn crc32(data: &[u8]) -> u32 {
+        let mut c = !0u32;
+        for b in data {
+            c ^= u32::from(*b);
+            for _ in 0..8 {
+                c = if c & 1 != 0 {
+                    0xEDB8_8320 ^ (c >> 1)
+                } else {
+                    c >> 1
+                };
+            }
+        }
+        !c
+    }
+
+    fn png_chunk(out: &mut Vec<u8>, kind: &[u8; 4], body: &[u8]) {
+        out.extend_from_slice(&(body.len() as u32).to_be_bytes());
+        let mut crc_in = kind.to_vec();
+        crc_in.extend_from_slice(body);
+        out.extend_from_slice(&crc_in);
+        out.extend_from_slice(&crc32(&crc_in).to_be_bytes());
+    }
+
+    #[test]
+    fn huge_pixel_count_is_refused_before_decoding() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut png = b"\x89PNG\r\n\x1a\n".to_vec();
+        let mut ihdr = Vec::new();
+        ihdr.extend_from_slice(&11_000u32.to_be_bytes());
+        ihdr.extend_from_slice(&11_000u32.to_be_bytes());
+        ihdr.extend_from_slice(&[8, 6, 0, 0, 0]);
+        png_chunk(&mut png, b"IHDR", &ihdr);
+        png_chunk(&mut png, b"IDAT", &[0x78, 0x9c, 0, 0]);
+        let p = dir.path().join("big.png");
+        std::fs::write(&p, png).unwrap();
+        assert!(matches!(decode_file(&p), Err(AppError::TooLarge)));
+    }
+
+    #[test]
+    fn animated_gif_is_refused_and_icc_is_kept() {
+        use image::codecs::gif::GifEncoder;
+        use image::{Frame, RgbaImage};
+        let dir = tempfile::tempdir().unwrap();
+        let gif = dir.path().join("anim.gif");
+        let mut enc = GifEncoder::new(File::create(&gif).unwrap());
+        let frames =
+            (0..2).map(|i| Frame::new(RgbaImage::from_pixel(4, 4, Rgba([i * 100, 0, 0, 255]))));
+        enc.encode_frames(frames).unwrap();
+        drop(enc);
+        let out = dir.path().join("o.gif");
+        assert!(strip_metadata(&gif, &out).is_err());
+        assert!(convert_file(&gif, &dir.path().join("o.png"), "png", None).is_err());
+        assert!(!out.exists());
+
+        let img = DynamicImage::ImageRgb8(RgbImage::from_pixel(8, 8, image::Rgb([1, 2, 3])));
+        let icc = b"fake-icc-profile-0123456789".to_vec();
+        let jpg = dir.path().join("a.jpg");
+        std::fs::write(
+            &jpg,
+            encode_with_icc(&img, ImageFormat::Jpeg, Some(90), Some(icc.clone())).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(jpeg_icc(&jpg), Some(icc.clone()));
+        let stripped = dir.path().join("b.jpg");
+        strip_metadata(&jpg, &stripped).unwrap();
+        assert_eq!(jpeg_icc(&stripped), Some(icc));
     }
 
     #[test]

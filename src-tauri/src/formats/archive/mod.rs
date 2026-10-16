@@ -228,6 +228,14 @@ fn apply_adds(sink: &mut dyn Sink, adds: &[NewEntry]) -> Result<()> {
     Ok(())
 }
 
+/// Vrai si `path` est remplacé par un ajout : même nom, ou descendant d'un nom ajouté.
+fn skipped(skip: &HashSet<&str>, path: &str) -> bool {
+    skip.contains(path)
+        || path
+            .match_indices('/')
+            .any(|(i, _)| skip.contains(&path[..i]))
+}
+
 /// Recopie (décompresse puis recompresse) les entrées d'une archive vers `sink`.
 fn copy_into(
     sink: &mut dyn Sink,
@@ -237,7 +245,7 @@ fn copy_into(
     skip: &HashSet<&str>,
 ) -> Result<()> {
     visit(src, src_fmt, true, &mut |it, rd| {
-        if skip.contains(it.path.as_str()) {
+        if skipped(skip, &it.path) {
             return Ok(Flow::Continue);
         }
         let name = match decide(&it.path) {
@@ -294,8 +302,11 @@ fn rewrite(
         }
         Fmt::Tar | Fmt::TarGz => {
             let mut sink = tar::TarSink::new(file, out_fmt == Fmt::TarGz);
-            if let Some((p, f)) = old {
-                copy_into(&mut sink, p, f, decide, &skip)?;
+            match old {
+                Some((p, Fmt::Tar)) => sink.raw_rewrite(p, false, decide, &skip)?,
+                Some((p, Fmt::TarGz)) => sink.raw_rewrite(p, true, decide, &skip)?,
+                Some((p, f)) => copy_into(&mut sink, p, f, decide, &skip)?,
+                None => {}
             }
             apply_adds(&mut sink, adds)?;
             sink.finish()?;
@@ -436,6 +447,46 @@ pub fn extract(path: &Path, entries: Option<Vec<String>>, dest_dir: &Path) -> Re
         Ok(Flow::Continue)
     })?;
     Ok(count)
+}
+
+/// Supprime les copies temporaires de `read_entry` plus vieilles que `max_age` (les onglets de
+/// la session courante, plus récents, ne sont pas touchés).
+pub fn cleanup_entries_in(root: &Path, max_age: std::time::Duration) {
+    let Ok(rd) = std::fs::read_dir(root) else {
+        return;
+    };
+    for e in rd.flatten() {
+        let old = e
+            .metadata()
+            .and_then(|m| m.modified())
+            .ok()
+            .and_then(|t| t.elapsed().ok())
+            .is_some_and(|age| age >= max_age);
+        if !old {
+            continue;
+        }
+        let dir = e.path();
+        // Fichiers en lecture seule : on lève la protection (Windows) avant suppression.
+        if let Ok(files) = std::fs::read_dir(&dir) {
+            for f in files.flatten() {
+                if let Ok(m) = f.metadata() {
+                    let mut p = m.permissions();
+                    #[allow(clippy::permissions_set_readonly_false)]
+                    p.set_readonly(false);
+                    let _ = std::fs::set_permissions(f.path(), p);
+                }
+            }
+        }
+        let _ = std::fs::remove_dir_all(dir);
+    }
+}
+
+/// Au démarrage : purge les copies de plus de 12 h.
+pub fn cleanup_entries() {
+    cleanup_entries_in(
+        &std::env::temp_dir().join("omnidoc-entries"),
+        std::time::Duration::from_secs(12 * 3600),
+    );
 }
 
 pub fn read_entry(path: &Path, entry: &str) -> Result<String> {

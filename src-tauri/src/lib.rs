@@ -134,6 +134,7 @@ pub fn run() {
             }
         })
         .setup(|app| {
+            formats::archive::cleanup_entries();
             let data = app.path().app_data_dir()?;
             let backups_dir = data.join("backups");
             let recovery_dir = data.join("recovery");

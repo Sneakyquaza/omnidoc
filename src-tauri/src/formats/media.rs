@@ -1,5 +1,6 @@
 //! Audio/vidéo : métadonnées via `lofty` (lecture, tags, pochette) ; découpe/conversion via ffmpeg.
 
+use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -363,6 +364,31 @@ fn ffmpeg_path() -> Result<String> {
         .ok_or_else(|| AppError::External("ffmpeg".into()))
 }
 
+/// Refuse les playlists / scripts de concaténation (HLS, concat, SDP…) qui référencent d'autres
+/// ressources : détectés par extension et par signature.
+fn reject_playlist(input: &Path) -> Result<()> {
+    let ext = input
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    let mut head = [0u8; 16];
+    let n = File::open(input)
+        .and_then(|mut f| f.read(&mut head))
+        .unwrap_or(0);
+    let head = &head[..n];
+    let head = head.strip_prefix(b"\xEF\xBB\xBF").unwrap_or(head);
+    if matches!(
+        ext.as_str(),
+        "m3u" | "m3u8" | "ffconcat" | "sdp" | "pls" | "mpd"
+    ) || head.starts_with(b"#EXTM3U")
+        || head.starts_with(b"ffconcat")
+        || head.starts_with(b"v=0")
+    {
+        return Err(AppError::Unsupported);
+    }
+    Ok(())
+}
+
 /// Lance ffmpeg (args séparés, sans shell) vers un fichier temporaire de même extension que
 /// `dest`, puis remplace `dest` de façon atomique.
 fn run_ffmpeg(
@@ -372,6 +398,7 @@ fn run_ffmpeg(
     dest: &Path,
     suffix: &str,
 ) -> Result<()> {
+    reject_playlist(input)?;
     let ffmpeg = ffmpeg_path()?;
     let parent = match dest.parent() {
         Some(p) if !p.as_os_str().is_empty() => p,
@@ -385,6 +412,8 @@ fn run_ffmpeg(
     // `-y` ne concerne que notre fichier temporaire, jamais la destination réelle.
     cmd.args(["-nostdin", "-hide_banner", "-loglevel", "error", "-y"])
         .args(pre_input)
+        // Pas de réseau ni de protocoles annexes (`concat:`, `subfile:`…) via un fichier piégé.
+        .args(["-protocol_whitelist", "file"])
         .arg("-i")
         .arg(input)
         .args(post_input)

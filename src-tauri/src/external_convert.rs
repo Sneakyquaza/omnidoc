@@ -59,11 +59,14 @@ fn build_args(
             ]
         }
         Engine::Pandoc => {
-            let mut args: Vec<OsString> = vec![src.into(), "-o".into()];
+            let mut args: Vec<OsString> = vec!["-o".into()];
             args.push(output_path(src, out_dir, target_ext).into());
             if matches!(target_ext, "html" | "epub") {
                 args.push("--standalone".into());
             }
+            // `--` : une entrée ne peut jamais être prise pour une option.
+            args.push("--".into());
+            args.push(src.into());
             args
         }
     }
@@ -108,6 +111,27 @@ fn run_with_timeout(mut cmd: Command, timeout: Duration, stderr_file: &Path) -> 
     }
 }
 
+/// Chemin absolu canonique (le fichier peut ne pas exister : on canonicalise son dossier).
+fn absolute(p: &Path) -> Result<PathBuf> {
+    let full = match p.canonicalize() {
+        Ok(c) => c,
+        Err(_) => {
+            let name = p.file_name().ok_or(AppError::NotFound)?;
+            let parent = match p.parent() {
+                Some(d) if !d.as_os_str().is_empty() => d,
+                _ => Path::new("."),
+            };
+            parent.canonicalize()?.join(name)
+        }
+    };
+    // Windows : le préfixe verbatim `\\?\` n'est pas compris par tous les moteurs.
+    #[cfg(windows)]
+    if let Some(stripped) = full.to_string_lossy().strip_prefix(r"\\?\") {
+        return Ok(PathBuf::from(stripped));
+    }
+    Ok(full)
+}
+
 /// Convertit `src` vers `dest` avec l'outil détecté `tool` (`soffice`, `libreoffice`, `pandoc`).
 pub fn convert(tool: &str, src: &Path, dest: &Path, target_ext: &str) -> Result<()> {
     let engine = engine_of(tool)
@@ -124,6 +148,13 @@ pub fn convert(tool: &str, src: &Path, dest: &Path, target_ext: &str) -> Result<
     }
     if !src.is_file() {
         return Err(AppError::NotFound);
+    }
+    // Chemin absolu canonique : jamais lu comme une option par le moteur, et comparable à `dest`.
+    let src = &absolute(src)?;
+    if absolute(dest).is_ok_and(|d| d == *src) {
+        return Err(AppError::External(
+            "la destination est le fichier source".to_string(),
+        ));
     }
     let exe = external::find_tools()
         .into_iter()
@@ -188,7 +219,7 @@ mod tests {
         );
         assert_eq!(
             strs(&args),
-            ["/d/note.md", "-o", "/t/out/note.epub", "--standalone"]
+            ["-o", "/t/out/note.epub", "--standalone", "--", "/d/note.md"]
         );
     }
 
@@ -208,6 +239,20 @@ mod tests {
         std::fs::write(&src, "x").unwrap();
         let err = convert("pandoc", &src, &dir.path().join("o.exe"), "exe").unwrap_err();
         assert!(matches!(err, AppError::External(_)));
+    }
+
+    #[test]
+    fn same_source_and_dest_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("a.md");
+        std::fs::write(&src, "x").unwrap();
+        // `pandoc` peut être absent : le refus intervient avant la recherche de l'outil.
+        let err = convert("pandoc", &src, &dir.path().join("./a.md"), "md").unwrap_err();
+        assert!(
+            matches!(&err, AppError::External(m) if m.contains("source")),
+            "{err:?}"
+        );
+        assert_eq!(std::fs::read_to_string(&src).unwrap(), "x");
     }
 
     #[cfg(unix)]

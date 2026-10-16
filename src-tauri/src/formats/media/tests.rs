@@ -233,6 +233,27 @@ fn run_ffmpeg_missing() -> Result<()> {
 }
 
 #[test]
+fn playlists_are_refused_before_ffmpeg() {
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("out.wav");
+    for (name, body) in [
+        ("a.m3u8", &b"#EXTM3U\nhttp://x/y"[..]),
+        ("b.wav", b"ffconcat version 1.0\nfile /etc/passwd"),
+        ("c.txt", b"#EXTM3U\n"),
+    ] {
+        let src = dir.path().join(name);
+        std::fs::write(&src, body).unwrap();
+        assert!(
+            matches!(
+                run_ffmpeg(&[], &src, &[], &dest, ".wav"),
+                Err(AppError::Unsupported)
+            ),
+            "{name}"
+        );
+    }
+}
+
+#[test]
 fn corrupt_adts_does_not_hang() {
     // Régression fuzz : flux AAC (ADTS) corrompu qui faisait boucler `lofty` indéfiniment.
     let data: &[u8] = &[
