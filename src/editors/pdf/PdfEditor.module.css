@@ -1,0 +1,146 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-surface);
+}
+
+.message {
+  padding: 24px;
+  color: var(--color-text-muted);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.pageInput {
+  width: 48px;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  text-align: right;
+}
+
+.select,
+.searchInput {
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.pageInput:focus-visible,
+.select:focus-visible,
+.searchInput:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.colorLabel input {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  background: none;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--color-border);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.tab {
+  flex: 1;
+  padding: 4px 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.searchInput {
+  flex: 0 1 280px;
+}
+
+.searchCount {
+  min-width: 90px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.scroller {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.scroller:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.inner {
+  position: relative;
+  min-width: 100%;
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
