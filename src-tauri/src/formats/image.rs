@@ -119,7 +119,7 @@ fn ensure_not_animated(path: &Path, format: ImageFormat) -> Result<()> {
         _ => false,
     };
     if animated {
-        return Err(AppError::Limit("animated_image".into()));
+        return Err(AppError::Invalid("animatedImage".into()));
     }
     Ok(())
 }
@@ -314,7 +314,7 @@ impl FormatHandler for ImageHandler {
 async fn blocking<T: Send + 'static>(f: impl FnOnce() -> Result<T> + Send + 'static) -> Result<T> {
     tauri::async_runtime::spawn_blocking(f)
         .await
-        .map_err(|e| AppError::External(e.to_string()))?
+        .map_err(|_| AppError::Internal)?
 }
 
 #[tauri::command]

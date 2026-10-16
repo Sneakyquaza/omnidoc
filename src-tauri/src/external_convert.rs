@@ -152,9 +152,7 @@ pub fn convert(tool: &str, src: &Path, dest: &Path, target_ext: &str) -> Result<
     // Chemin absolu canonique : jamais lu comme une option par le moteur, et comparable à `dest`.
     let src = &absolute(src)?;
     if absolute(dest).is_ok_and(|d| d == *src) {
-        return Err(AppError::External(
-            "la destination est le fichier source".to_string(),
-        ));
+        return Err(AppError::Invalid("destinationIsSource".into()));
     }
     let exe = external::find_tools()
         .into_iter()
@@ -249,7 +247,7 @@ mod tests {
         // `pandoc` peut être absent : le refus intervient avant la recherche de l'outil.
         let err = convert("pandoc", &src, &dir.path().join("./a.md"), "md").unwrap_err();
         assert!(
-            matches!(&err, AppError::External(m) if m.contains("source")),
+            matches!(&err, AppError::Invalid(m) if m == "destinationIsSource"),
             "{err:?}"
         );
         assert_eq!(std::fs::read_to_string(&src).unwrap(), "x");

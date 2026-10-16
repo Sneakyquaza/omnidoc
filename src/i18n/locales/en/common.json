@@ -57,7 +57,11 @@
     "invalid": "Invalid or out-of-range value",
     "mixedLineEnding": "Mixed line endings: choose LF, CRLF or CR before saving",
     "internal": "Internal error",
-    "unknown": "Unexpected error"
+    "unknown": "Unexpected error",
+    "detail": {
+      "animatedImage": "Animated images cannot be converted or cleaned (only the first frame would be kept).",
+      "destinationIsSource": "The destination is the source file."
+    }
   },
   "welcome": {
     "subtitle": "Universal file editor",

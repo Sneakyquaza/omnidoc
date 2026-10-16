@@ -117,7 +117,7 @@ pub async fn svg_render_png(path: String, dest: String, scale: f32) -> Result<()
         render_png(Path::new(&path), Path::new(&dest), scale)
     })
     .await
-    .map_err(|e| AppError::External(e.to_string()))?
+    .map_err(|_| AppError::Internal)?
 }
 
 #[cfg(test)]

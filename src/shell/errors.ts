@@ -13,6 +13,8 @@ function isPayload(e: unknown): e is { code: string; message: string } {
 /** Texte traduit (`errors.<code>`) + détail technique. */
 export function describeError(e: unknown): { text: string; detail?: string } {
   if (isPayload(e)) {
+    const key = e.code === "invalid" ? `errors.detail.${e.message.split(" : ").pop()}` : "";
+    if (key && i18n.exists(key)) return { text: i18n.t(key), detail: e.message };
     return {
       text: i18n.t(`errors.${e.code}`, { defaultValue: i18n.t("errors.unknown") }),
       detail: e.message,
