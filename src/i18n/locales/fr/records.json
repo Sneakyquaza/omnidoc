@@ -1,0 +1,112 @@
+{
+  "readOnly": "Lecture seule",
+  "search": { "placeholder": "Rechercher…", "label": "Rechercher dans la liste" },
+  "list": { "empty": "Aucun élément.", "select": "Sélectionnez ou ajoutez un élément." },
+  "vcf": { "title": "Contacts", "add": "Nouveau contact", "unnamed": "(sans nom)" },
+  "ics": {
+    "title": "Événements et tâches",
+    "addEvent": "Nouvel événement",
+    "addTodo": "Nouvelle tâche",
+    "untitled": "(sans titre)",
+    "noDate": "sans date",
+    "taskMark": "☑"
+  },
+  "delete": {
+    "button": "Supprimer",
+    "title": "Supprimer l'élément ?",
+    "message": "Cet élément sera retiré du fichier à l'enregistrement.",
+    "confirm": "Supprimer"
+  },
+  "commands": {
+    "addContact": "Fiches : nouveau contact",
+    "addEvent": "Fiches : nouvel événement",
+    "addTodo": "Fiches : nouvelle tâche",
+    "delete": "Fiches : supprimer l'élément sélectionné"
+  },
+  "status": {
+    "contacts": "{{count}} contact(s)",
+    "items": "{{events}} événement(s), {{todos}} tâche(s)"
+  },
+  "advanced": {
+    "title": "Avancé",
+    "add": "Ajouter une propriété",
+    "hint": "Propriétés non gérées par le formulaire, modifiables en brut (valeurs non décodées).",
+    "children": "{{count}} sous-composant(s) conservé(s) tel(s) quel(s) (ex. alarmes).",
+    "empty": "Aucune propriété supplémentaire.",
+    "name": "Nom de la propriété",
+    "params": "Paramètres (A=B;C=D)",
+    "value": "Valeur brute",
+    "remove": "Supprimer la propriété"
+  },
+  "contact": {
+    "none": "Aucun.",
+    "type": "Type",
+    "remove": "Supprimer",
+    "identity": "Identité",
+    "photo": "Photo du contact",
+    "fn": "Nom complet",
+    "n": {
+      "family": "Nom",
+      "given": "Prénom",
+      "additional": "Autres prénoms",
+      "prefix": "Préfixe",
+      "suffix": "Suffixe"
+    },
+    "work": "Professionnel",
+    "org": "Organisation",
+    "unit": "Service",
+    "title": "Fonction",
+    "bday": "Anniversaire",
+    "tel": "Téléphones",
+    "addTel": "Ajouter un téléphone",
+    "email": "E-mails",
+    "addEmail": "Ajouter un e-mail",
+    "adr": "Adresses",
+    "addAdr": "Ajouter une adresse",
+    "adrFields": {
+      "pobox": "Boîte postale",
+      "extended": "Complément",
+      "street": "Rue",
+      "city": "Ville",
+      "region": "Région",
+      "postal": "Code postal",
+      "country": "Pays"
+    },
+    "url": "Sites web",
+    "addUrl": "Ajouter une URL",
+    "note": "Note"
+  },
+  "event": {
+    "date": "{{label}} : date",
+    "time": "{{label}} : heure",
+    "tz": "Fuseau : {{tz}}",
+    "utc": "Heure UTC",
+    "event": "Événement",
+    "todo": "Tâche",
+    "summary": "Titre",
+    "allDay": "Journée entière",
+    "start": "Début",
+    "end": "Fin",
+    "due": "Échéance",
+    "allDayHint": "En journée entière, la date de fin est exclusive (norme iCalendar).",
+    "location": "Lieu",
+    "description": "Description",
+    "rrule": "Récurrence (RRULE)",
+    "status": "Statut",
+    "statusNone": "(aucun)",
+    "statuses": {
+      "TENTATIVE": "Provisoire",
+      "CONFIRMED": "Confirmé",
+      "CANCELLED": "Annulé",
+      "NEEDS-ACTION": "À faire",
+      "IN-PROCESS": "En cours",
+      "COMPLETED": "Terminé"
+    }
+  },
+  "month": {
+    "prev": "Mois précédent",
+    "next": "Mois suivant",
+    "today": "Aujourd'hui",
+    "more": "+{{count}} autre(s)"
+  }
+}

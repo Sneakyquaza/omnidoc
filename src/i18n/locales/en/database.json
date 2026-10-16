@@ -1,0 +1,29 @@
+{
+  "tabs": { "label": "Database views", "data": "Data", "query": "Query", "schema": "Schema" },
+  "sidebar": {
+    "title": "Tables and views",
+    "empty": "No tables.",
+    "view": "view",
+    "columns": "Columns"
+  },
+  "data": { "empty": "This table is empty." },
+  "query": {
+    "editor": "SQL query",
+    "run": "Run (Ctrl+Enter)",
+    "hint": "A single SELECT statement, read-only.",
+    "summary": "{{count}} row(s) in {{ms}} ms",
+    "truncated": "(limited to {{limit}} rows)",
+    "results": "Query results",
+    "readOnly": "Database is read-only: only SELECT queries are allowed."
+  },
+  "schema": { "empty": "No schema." },
+  "export": { "csv": "Export as CSV", "done": "Exported: {{name}}" },
+  "status": { "tables": "{{count}} table(s)", "table": "{{name}}: {{count}} row(s)" },
+  "commands": {
+    "data": "Database: show data",
+    "query": "Database: SQL query",
+    "schema": "Database: show schema",
+    "exportCsv": "Database: export table as CSV"
+  },
+  "noPath": "No associated file."
+}

@@ -1,0 +1,112 @@
+{
+  "readOnly": "Read-only",
+  "search": { "placeholder": "Search…", "label": "Search the list" },
+  "list": { "empty": "No items.", "select": "Select or add an item." },
+  "vcf": { "title": "Contacts", "add": "New contact", "unnamed": "(unnamed)" },
+  "ics": {
+    "title": "Events and tasks",
+    "addEvent": "New event",
+    "addTodo": "New task",
+    "untitled": "(untitled)",
+    "noDate": "no date",
+    "taskMark": "☑"
+  },
+  "delete": {
+    "button": "Delete",
+    "title": "Delete item?",
+    "message": "This item will be removed from the file when saved.",
+    "confirm": "Delete"
+  },
+  "commands": {
+    "addContact": "Records: new contact",
+    "addEvent": "Records: new event",
+    "addTodo": "Records: new task",
+    "delete": "Records: delete selected item"
+  },
+  "status": {
+    "contacts": "{{count}} contact(s)",
+    "items": "{{events}} event(s), {{todos}} task(s)"
+  },
+  "advanced": {
+    "title": "Advanced",
+    "add": "Add property",
+    "hint": "Properties not handled by the form, editable as raw text (values are not decoded).",
+    "children": "{{count}} sub-component(s) kept untouched (e.g. alarms).",
+    "empty": "No additional properties.",
+    "name": "Property name",
+    "params": "Parameters (A=B;C=D)",
+    "value": "Raw value",
+    "remove": "Remove property"
+  },
+  "contact": {
+    "none": "None.",
+    "type": "Type",
+    "remove": "Remove",
+    "identity": "Identity",
+    "photo": "Contact photo",
+    "fn": "Full name",
+    "n": {
+      "family": "Family name",
+      "given": "Given name",
+      "additional": "Additional names",
+      "prefix": "Prefix",
+      "suffix": "Suffix"
+    },
+    "work": "Work",
+    "org": "Organization",
+    "unit": "Department",
+    "title": "Job title",
+    "bday": "Birthday",
+    "tel": "Phones",
+    "addTel": "Add phone",
+    "email": "Emails",
+    "addEmail": "Add email",
+    "adr": "Addresses",
+    "addAdr": "Add address",
+    "adrFields": {
+      "pobox": "PO box",
+      "extended": "Extended address",
+      "street": "Street",
+      "city": "City",
+      "region": "Region",
+      "postal": "Postal code",
+      "country": "Country"
+    },
+    "url": "Websites",
+    "addUrl": "Add URL",
+    "note": "Note"
+  },
+  "event": {
+    "date": "{{label}}: date",
+    "time": "{{label}}: time",
+    "tz": "Time zone: {{tz}}",
+    "utc": "UTC time",
+    "event": "Event",
+    "todo": "Task",
+    "summary": "Title",
+    "allDay": "All day",
+    "start": "Start",
+    "end": "End",
+    "due": "Due",
+    "allDayHint": "For all-day items, the end date is exclusive (iCalendar standard).",
+    "location": "Location",
+    "description": "Description",
+    "rrule": "Recurrence (RRULE)",
+    "status": "Status",
+    "statusNone": "(none)",
+    "statuses": {
+      "TENTATIVE": "Tentative",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Cancelled",
+      "NEEDS-ACTION": "Needs action",
+      "IN-PROCESS": "In progress",
+      "COMPLETED": "Completed"
+    }
+  },
+  "month": {
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today",
+    "more": "+{{count}} more"
+  }
+}

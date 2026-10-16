@@ -1,0 +1,53 @@
+{
+  "frame": "Contenu du livre",
+  "empty": "Ce livre ne contient aucun chapitre.",
+  "toc": {
+    "title": "Table des matières",
+    "empty": "Aucun chapitre.",
+    "untitled": "Chapitre {{n}}"
+  },
+  "nav": { "prev": "Chapitre précédent", "next": "Chapitre suivant" },
+  "settings": {
+    "font": "Police",
+    "serif": "Serif",
+    "sans": "Sans-serif",
+    "smaller": "Réduire le texte",
+    "larger": "Agrandir le texte",
+    "lineHeight": "Interligne",
+    "lineHeightValue": "Interligne {{v}}",
+    "width": "Largeur de colonne",
+    "widthValue": "Colonne {{v}} px",
+    "theme": "Thème de lecture",
+    "themes": {
+      "auto": "Thème de l'application",
+      "light": "Clair",
+      "sepia": "Sépia",
+      "dark": "Sombre"
+    }
+  },
+  "search": {
+    "button": "Rechercher",
+    "label": "Rechercher dans le livre",
+    "placeholder": "Rechercher dans le livre…",
+    "go": "Chercher",
+    "count": "{{count}} résultat(s)",
+    "results": "Résultats de la recherche"
+  },
+  "external": {
+    "title": "Ouvrir un lien externe ?",
+    "message": "Ce lien sera ouvert dans votre navigateur : {{url}}",
+    "open": "Ouvrir"
+  },
+  "lossy": {
+    "intro": "Certains éléments du livre ne sont pas affichés :",
+    "css": "feuilles de style d'origine ignorées.",
+    "images-omitted": "images omises.",
+    "remote-images": "images distantes non chargées."
+  },
+  "status": { "chapter": "Chapitre {{n}}/{{count}}" },
+  "commands": {
+    "search": "Livre : rechercher",
+    "next": "Livre : chapitre suivant",
+    "prev": "Livre : chapitre précédent"
+  }
+}

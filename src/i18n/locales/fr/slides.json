@@ -1,0 +1,20 @@
+{
+  "textOnly": "Aperçu texte uniquement : mise en page, images et animations ne sont pas affichées.",
+  "stage": "Diapositive courante",
+  "empty": "Cette présentation ne contient aucune diapositive.",
+  "present": "Présenter",
+  "presentation": "Mode présentation",
+  "exitHint": "Échap pour quitter",
+  "thumbs": {
+    "title": "Diapositives",
+    "slide": "Diapositive {{n}} : {{title}}",
+    "fileThumbnail": "Miniature du fichier"
+  },
+  "notes": { "label": "Notes", "none": "Aucune note." },
+  "export": { "md": "Exporter en Markdown", "done": "Exporté : {{name}}" },
+  "status": { "position": "Diapositive {{n}}/{{count}}" },
+  "commands": {
+    "present": "Diapositives : mode présentation",
+    "exportMd": "Diapositives : exporter en Markdown"
+  }
+}
