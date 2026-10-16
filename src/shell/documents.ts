@@ -18,7 +18,7 @@ import { reportError } from "./errors";
 import { getHandlers } from "./handlers";
 import { NEW_DOCUMENTS } from "./newDocuments";
 import { basename, extOf } from "./paths";
-import { clearTabRuntime, getSerializer } from "./runtime";
+import { clearTabRuntime, getSaveHandler, getSerializer } from "./runtime";
 import { choose, confirm } from "./ui/dialogStore";
 import { pushToast } from "./ui/toastStore";
 
@@ -193,6 +193,8 @@ function pickHandler(
 export async function saveTabAs(tabId: string): Promise<boolean> {
   const tab = getTab(tabId);
   if (!tab) return false;
+  const custom = getSaveHandler(tabId);
+  if (custom) return (await custom.saveAs?.()) ?? false;
   try {
     const candidates = writable(await getHandlers(), tab);
     if (candidates.length === 0) {
@@ -234,6 +236,8 @@ export async function saveTabAs(tabId: string): Promise<boolean> {
 export async function saveTab(tabId: string): Promise<boolean> {
   const tab = getTab(tabId);
   if (!tab) return false;
+  const custom = getSaveHandler(tabId);
+  if (custom) return (await custom.save?.()) ?? false;
   if (tab.path === null || !tab.capabilities?.write) return saveTabAs(tabId);
   if (
     tab.capabilities.fidelity === "partial" &&
@@ -354,7 +358,8 @@ export async function closeTabWithConfirm(tabId: string): Promise<boolean> {
 
 /** Autosave de récupération des onglets modifiés. */
 export async function autosaveDirtyTabs(): Promise<void> {
-  for (const tab of useTabs.getState().tabs.filter((x) => x.dirty)) {
+  // Les éditeurs à handler d'enregistrement dédié écrivent eux-mêmes : pas de récupération.
+  for (const tab of useTabs.getState().tabs.filter((x) => x.dirty && !getSaveHandler(x.id))) {
     try {
       const model = await currentModel(tab);
       await commands.recoveryStore(tab.docId, tab.path ?? "", model);

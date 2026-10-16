@@ -5,15 +5,23 @@ import type { EditorCommand, StatusItem } from "../editors/types";
 interface RuntimeState {
   commands: Record<string, EditorCommand[]>;
   status: Record<string, StatusItem[]>;
+  /** État d'édition déclaré par l'éditeur (absent = `tab.readOnly` fait foi). */
+  editable: Record<string, boolean>;
   setCommands(tabId: string, cmds: EditorCommand[]): void;
   setStatus(tabId: string, items: StatusItem[]): void;
+  setEditable(tabId: string, editable: boolean): void;
 }
 
 export const useRuntime = create<RuntimeState>((set) => ({
   commands: {},
   status: {},
+  editable: {},
   setCommands: (tabId, cmds) => set((s) => ({ commands: { ...s.commands, [tabId]: cmds } })),
   setStatus: (tabId, items) => set((s) => ({ status: { ...s.status, [tabId]: items } })),
+  setEditable: (tabId, editable) =>
+    set((s) =>
+      s.editable[tabId] === editable ? s : { editable: { ...s.editable, [tabId]: editable } },
+    ),
 }));
 
 type Serializer = () => unknown;
@@ -28,14 +36,33 @@ export function getSerializer(tabId: string): Serializer | undefined {
   return serializers.get(tabId);
 }
 
+export interface SaveHandler {
+  save?: () => Promise<boolean>;
+  saveAs?: () => Promise<boolean>;
+}
+
+const saveHandlers = new Map<string, SaveHandler>();
+
+export function registerSaveHandler(tabId: string, handler: SaveHandler | null): void {
+  if (handler) saveHandlers.set(tabId, handler);
+  else saveHandlers.delete(tabId);
+}
+
+export function getSaveHandler(tabId: string): SaveHandler | undefined {
+  return saveHandlers.get(tabId);
+}
+
 /** Oublie tout ce qu'un onglet a enregistré (fermeture ou rechargement). */
 export function clearTabRuntime(tabId: string): void {
   serializers.delete(tabId);
+  saveHandlers.delete(tabId);
   useRuntime.setState((s) => {
     const commands = { ...s.commands };
     const status = { ...s.status };
+    const editable = { ...s.editable };
     delete commands[tabId];
     delete status[tabId];
-    return { commands, status };
+    delete editable[tabId];
+    return { commands, status, editable };
   });
 }

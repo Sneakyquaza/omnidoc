@@ -2,6 +2,7 @@ import fs from "node:fs";
 import {
   alertTexts,
   consoleErrors,
+  readOnlyFlag,
   saveWithShortcut,
   sessionFile,
   waitForEditor,
@@ -25,6 +26,7 @@ describe("parcours image", () => {
       timeoutMsg: `dimensions sur disque : ${pngSize(file)}`,
     });
     expect(pngSize(file)).toEqual([48, 64]);
+    expect(await readOnlyFlag()).toBe(false);
     expect(await alertTexts()).toEqual([]);
     expect(await consoleErrors()).toEqual([]);
   });

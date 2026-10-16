@@ -64,6 +64,7 @@ interface Actions {
   goto(): void;
   zoomBy(factor: number): void;
   save(): void;
+  saveHandler(forceSaveAs?: boolean): Promise<boolean>;
   rotatePages(degrees: number): void;
   remove(): void;
   extract(): void;
@@ -80,6 +81,8 @@ export default function PdfEditor({
   setDirty,
   registerSerializer,
   registerCommands,
+  registerSaveHandler,
+  setEditable,
   setStatus,
 }: EditorProps<PdfDoc>) {
   const { t } = useTranslation("pdf");
@@ -365,24 +368,28 @@ export default function PdfEditor({
     }
   }
 
-  async function saveAnnotations() {
-    if (!path || pending.length === 0) return;
-    const choice = await choose({
-      title: t("annotate.confirmTitle"),
-      message: t("annotate.confirmMessage", { count: pending.length }),
-      actions: [
-        { id: "saveAs", label: t("annotate.saveAs"), variant: "secondary" },
-        { id: "save", label: t("annotate.save"), variant: "primary" },
-      ],
-    });
-    if (choice === null) return;
+  /** `true` si rien ne reste à enregistrer (annotations écrites ou aucune en attente). */
+  async function saveAnnotations(forceSaveAs = false): Promise<boolean> {
+    if (!path) return false;
+    if (pending.length === 0) return !forceSaveAs;
+    const choice = forceSaveAs
+      ? "saveAs"
+      : await choose({
+          title: t("annotate.confirmTitle"),
+          message: t("annotate.confirmMessage", { count: pending.length }),
+          actions: [
+            { id: "saveAs", label: t("annotate.saveAs"), variant: "secondary" },
+            { id: "save", label: t("annotate.save"), variant: "primary" },
+          ],
+        });
+    if (choice === null) return false;
     let dest = path;
     if (choice === "saveAs") {
       const picked = await saveDialog({
         defaultPath: path,
         filters: [{ name: "PDF", extensions: ["pdf"] }],
       });
-      if (picked === null) return;
+      if (picked === null) return false;
       dest = picked;
     }
     const ok = await ops.run(async () => {
@@ -393,6 +400,7 @@ export default function PdfEditor({
     if (ok && dest !== path) {
       pushToast({ kind: "success", text: t("ops.saved", { name: basename(dest) }) });
     }
+    return ok;
   }
 
   // --- Commandes, état ---
@@ -401,6 +409,7 @@ export default function PdfEditor({
     goto: () => {},
     zoomBy: () => {},
     save: () => {},
+    saveHandler: () => Promise.resolve(false),
     rotatePages: () => {},
     remove: () => {},
     extract: () => {},
@@ -414,6 +423,7 @@ export default function PdfEditor({
       goto: () => pageInputRef.current?.select(),
       zoomBy: (f) => setZoom({ mode: "custom", pct: clamp(Math.round(pct * f), MIN_PCT, MAX_PCT) }),
       save: () => void saveAnnotations(),
+      saveHandler: saveAnnotations,
       rotatePages: (d) => void ops.rotate(targets(), d),
       remove: () => void ops.remove(targets()),
       extract: () => void ops.extract(targets()),
@@ -422,6 +432,14 @@ export default function PdfEditor({
       exportPng: () => void exportPng(),
     };
   });
+
+  useEffect(() => {
+    registerSaveHandler({
+      save: () => actions.current.saveHandler(),
+      saveAs: () => actions.current.saveHandler(true),
+    });
+    setEditable(true);
+  }, [registerSaveHandler, setEditable]);
 
   useEffect(() => {
     const a = () => actions.current;
@@ -629,6 +647,7 @@ export default function PdfEditor({
           {TOOLS.map((id) => (
             <Button
               key={id}
+              data-testid={`pdf-tool-${id}`}
               variant={tool === id ? "primary" : "ghost"}
               aria-pressed={tool === id}
               onClick={() => {

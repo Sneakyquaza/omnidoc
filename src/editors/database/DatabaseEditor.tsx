@@ -107,12 +107,19 @@ function QueryPane({ path, active }: { path: string; active: boolean }) {
         onKeyDown={onKeyDown}
         spellCheck={false}
         aria-label={t("query.editor")}
+        data-testid="db-query-editor"
       />
       <div className={styles.bar}>
-        <Button variant="primary" icon="command" onClick={() => void run()} disabled={running}>
+        <Button
+          variant="primary"
+          icon="command"
+          onClick={() => void run()}
+          disabled={running}
+          data-testid="db-query-run"
+        >
           {t("query.run")}
         </Button>
-        <span className={styles.barInfo} role="status">
+        <span className={styles.barInfo} role="status" data-testid="db-query-status">
           {result
             ? t("query.summary", {
                 count: rows.length,
@@ -125,7 +132,7 @@ function QueryPane({ path, active }: { path: string; active: boolean }) {
         </span>
       </div>
       {error ? (
-        <div className={styles.error} role="alert">
+        <div className={styles.error} role="alert" data-testid="db-query-error">
           {error}
         </div>
       ) : null}
@@ -260,6 +267,7 @@ export default function DatabaseEditor({
             key={v}
             type="button"
             role="tab"
+            data-testid={`db-tab-${v}`}
             className={styles.tab}
             aria-selected={view === v}
             onClick={() => setView(v)}

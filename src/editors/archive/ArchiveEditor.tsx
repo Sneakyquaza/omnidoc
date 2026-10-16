@@ -40,6 +40,8 @@ export default function ArchiveEditor({
   model,
   registerSerializer,
   registerCommands,
+  registerSaveHandler,
+  setEditable,
   setStatus,
 }: EditorProps<ArchiveDoc>) {
   const { t } = useTranslation("archive");
@@ -47,6 +49,14 @@ export default function ArchiveEditor({
   // `tab.readOnly` est toujours vrai ici (capabilities.write = false : l'édition passe par
   // les commandes archive_*), seul `writable` décide.
   const writable = model.writable && path !== null;
+
+  // Écritures immédiates : rien à enregistrer (handler vide = Enregistrer sans effet).
+  useEffect(() => {
+    registerSaveHandler({});
+  }, [registerSaveHandler]);
+  useEffect(() => {
+    setEditable(writable);
+  }, [setEditable, writable]);
 
   const [entries, setEntries] = useState<ArchiveEntry[]>(model.entries);
   const [dir, setDir] = useState("");
@@ -369,11 +379,17 @@ export default function ArchiveEditor({
     <div className={styles.root}>
       <EditorToolbar>
         <div className={styles.toolbar} role="toolbar" aria-label={tab.title}>
-          <Button icon="export" disabled={busy} onClick={() => void extractSelectionOrAll()}>
+          <Button
+            icon="export"
+            disabled={busy}
+            data-testid="archive-extract"
+            onClick={() => void extractSelectionOrAll()}
+          >
             {hasSelection ? t("actions.extractSelection") : t("actions.extractAll")}
           </Button>
           <Button
             icon="plus"
+            data-testid="archive-add-files"
             disabled={!writable || busy}
             title={writeHint}
             onClick={() => void addFiles(false)}

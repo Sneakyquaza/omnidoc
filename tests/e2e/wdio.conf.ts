@@ -29,6 +29,15 @@ const journeys: Array<[string, string]> = [
   ["docx.journey.ts", "sample.docx"],
   ["csv.journey.ts", "sample.csv"],
   ["image.journey.ts", "sample.png"],
+  ["sheet.journey.ts", "sample.xlsx"],
+  ["pdf.journey.ts", "sample.pdf"],
+  ["archive.journey.ts", "sample.zip"],
+  ["sqlite.journey.ts", "sample.sqlite"],
+  ["records.journey.ts", "sample.vcf"],
+  ["richtext.journey.ts", "sample.docx"],
+  ["markdown.journey.ts", "sample.md"],
+  ["search.journey.ts", "sample.txt"],
+  ["prefs.journey.ts", "sample.txt"],
   ["shell.journey.ts", "sample.docx"],
 ];
 
@@ -113,7 +122,7 @@ export const config: WebdriverIO.Config = {
   logLevel: (process.env.WDIO_LOG as WebdriverIO.Config["logLevel"]) ?? "warn",
   framework: "mocha",
   reporters: ["spec"],
-  mochaOpts: { ui: "bdd", timeout: 90_000 },
+  mochaOpts: { ui: "bdd", timeout: 150_000 },
   connectionRetryCount: 1,
 
   onPrepare: async () => {

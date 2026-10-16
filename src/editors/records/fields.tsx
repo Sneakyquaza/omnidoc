@@ -24,6 +24,7 @@ interface FieldProps {
   type?: string;
   placeholder?: string;
   list?: string;
+  testId?: string;
 }
 
 export function Field({
@@ -35,6 +36,7 @@ export function Field({
   type,
   placeholder,
   list,
+  testId,
 }: FieldProps) {
   const id = useId();
   return (
@@ -60,6 +62,7 @@ export function Field({
           readOnly={readOnly}
           placeholder={placeholder}
           list={list}
+          data-testid={testId}
           onChange={(e) => onChange(e.target.value)}
         />
       )}

@@ -382,6 +382,7 @@ export function Grid(props: GridProps) {
               height: ROW_H,
             }}
             aria-label={t("grid.cellEditor")}
+            data-testid="sheet-cell-input"
             value={editing.text}
             autoFocus
             spellCheck={false}

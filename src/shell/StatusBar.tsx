@@ -7,6 +7,7 @@ export function StatusBar() {
   const { t } = useTranslation();
   const tab = useTabs((s) => s.tabs.find((x) => x.id === s.activeId));
   const items = useRuntime((s) => (tab ? s.status[tab.id] : undefined));
+  const editable = useRuntime((s) => (tab ? s.editable[tab.id] : undefined));
   if (!tab) return <footer className={styles.bar} />;
 
   const detected = tab.detected;
@@ -22,7 +23,11 @@ export function StatusBar() {
           {t(detected.labelKey, { defaultValue: detected.handlerId })}
         </span>
       )}
-      {tab.readOnly && <span className={styles.flag}>{t("status.readOnly")}</span>}
+      {(editable === undefined ? tab.readOnly : !editable) && (
+        <span className={styles.flag} data-testid="status-readonly">
+          {t("status.readOnly")}
+        </span>
+      )}
       {tab.capabilities?.fidelity === "partial" && (
         <span className={styles.flag} title={t("status.partialFidelityHint")}>
           {t("status.partialFidelity")}

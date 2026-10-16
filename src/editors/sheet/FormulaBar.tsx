@@ -46,6 +46,7 @@ export function FormulaBar(props: FormulaBarProps) {
       <input
         className={styles.formulaInput}
         aria-label={t("formulaBar.content")}
+        data-testid="sheet-formula-input"
         value={props.content}
         readOnly={props.readOnly}
         spellCheck={false}

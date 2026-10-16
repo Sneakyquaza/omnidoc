@@ -130,3 +130,79 @@ const noPlayback = spawnSync("gst-inspect-1.0", ["wavparse"]).status !== 0;
 export async function unexpectedAlerts(kind: string): Promise<string[]> {
   return kind === "media" && noPlayback ? [] : alertTexts();
 }
+
+/** Appelle une commande Tauri depuis la page (même chemin que le frontend). */
+export async function invoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
+  // execute classique n'attend pas les promesses : le résultat est déposé sur window puis relevé.
+  const key = `__e2eInvoke${Math.random().toString(36).slice(2)}`;
+  await browser.execute(
+    (c: string, a: Record<string, unknown>, k: string) => {
+      const w = window as unknown as Record<string, unknown> & {
+        __TAURI_INTERNALS__: { invoke(c: string, a: unknown): Promise<unknown> };
+      };
+      w.__TAURI_INTERNALS__.invoke(c, a).then(
+        (r) => (w[k] = { ok: r }),
+        (e) => (w[k] = { err: JSON.stringify(e) }),
+      );
+    },
+    cmd,
+    args,
+    key,
+  );
+  let res: { ok?: T; err?: string } | undefined;
+  await browser.waitUntil(
+    async () => {
+      res = (await browser.execute(
+        (k: string) => (window as unknown as Record<string, unknown>)[k],
+        key,
+      )) as typeof res;
+      return res !== undefined && res !== null;
+    },
+    { timeout: 30_000, timeoutMsg: `invoke ${cmd} sans réponse` },
+  );
+  if (res?.err !== undefined) throw new Error(`invoke ${cmd} : ${res.err}`);
+  return res?.ok as T;
+}
+
+/**
+ * Le prochain dialogue natif d'ouverture / d'enregistrement renverra `result` (sans l'afficher).
+ * `__TAURI_INTERNALS__.invoke` est figé : on intercepte `fetch` (protocole IPC personnalisé de Tauri).
+ */
+export async function mockNextDialog(result: string | string[] | null): Promise<void> {
+  await browser.execute((r: unknown) => {
+    const w = window as unknown as { __e2eDialogs?: unknown[] };
+    if (!w.__e2eDialogs) {
+      const queue: unknown[] = [];
+      w.__e2eDialogs = queue;
+      const original = window.fetch.bind(window);
+      window.fetch = (input, init) => {
+        const url = decodeURIComponent(
+          typeof input === "string" ? input : input instanceof URL ? input.href : input.url,
+        );
+        if (/plugin:dialog\|(open|save)$/.test(url) && queue.length > 0) {
+          return Promise.resolve(
+            new Response(JSON.stringify(queue.shift()), {
+              headers: { "Content-Type": "application/json", "Tauri-Response": "ok" },
+            }),
+          );
+        }
+        return original(input, init);
+      };
+    }
+    w.__e2eDialogs.push(r);
+  }, result);
+}
+
+/** Clique le dernier bouton (confirmation) du dialogue modal affiché. */
+export async function confirmDialog(): Promise<void> {
+  const dialog = await $('[role="dialog"]');
+  await dialog.waitForExist({ timeout: 10_000 });
+  const buttons = await dialog.$$("button");
+  const last = buttons[buttons.length - 1];
+  if (last) await last.click();
+}
+
+/** Indicateur « Lecture seule » de la barre d'état présent ? */
+export async function readOnlyFlag(): Promise<boolean> {
+  return $('[data-testid="status-readonly"]').isExisting();
+}

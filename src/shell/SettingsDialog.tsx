@@ -117,6 +117,7 @@ function AppearanceSection() {
         <label htmlFor={ids.language}>{t("appearance.language")}</label>
         <select
           id={ids.language}
+          data-testid="settings-language"
           value={s.language}
           onChange={(e) => s.setLanguage(e.target.value as Language)}
         >

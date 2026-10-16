@@ -48,6 +48,23 @@ export function findByShortcut<T extends { shortcut?: string }>(
   );
 }
 
+const NATIVE_EDIT_KEYS = ["z", "y", "a", "c", "v", "x", "d"];
+
+/** Mod+Z/Y/A/C/V/X/D (avec ou sans Shift) : raccourcis que les champs de saisie gèrent nativement. */
+export function isNativeEditShortcut(e: KeyEventLike): boolean {
+  return (e.ctrlKey || e.metaKey) && !e.altKey && NATIVE_EDIT_KEYS.includes(e.key.toLowerCase());
+}
+
+/** `true` si l'élément est un champ de saisie (input texte, textarea, contenteditable). */
+export function isTextEntry(el: Element | null): boolean {
+  if (!el) return false;
+  if (el instanceof HTMLTextAreaElement) return true;
+  if (el instanceof HTMLInputElement) {
+    return !["button", "checkbox", "radio", "range", "submit", "reset", "file"].includes(el.type);
+  }
+  return el instanceof HTMLElement && el.isContentEditable;
+}
+
 export function isMac(): boolean {
   return typeof navigator !== "undefined" && /mac/i.test(navigator.platform);
 }

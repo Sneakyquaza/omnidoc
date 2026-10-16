@@ -9,7 +9,7 @@ import { useTabs } from "../stores/tabs";
 import { useUi } from "../stores/ui";
 import { useShellCommands } from "./commands";
 import { autosaveDirtyTabs, openPaths, restoreRecovery } from "./documents";
-import { findByShortcut } from "./shortcuts";
+import { findByShortcut, isNativeEditShortcut, isTextEntry } from "./shortcuts";
 import { choose, confirm, useDialogs } from "./ui/dialogStore";
 
 /** Applique thème (`data-theme`) et langue. */
@@ -50,7 +50,7 @@ export function useAppearance(): void {
 
 /** Raccourcis clavier centralisés (commandes de l'éditeur actif prioritaires). */
 export function useGlobalShortcuts(): void {
-  const { all } = useShellCommands();
+  const { all, editor } = useShellCommands();
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (useDialogs.getState().queue.length > 0) return;
@@ -59,12 +59,16 @@ export function useGlobalShortcuts(): void {
       if (ui.settingsOpen || ui.exportTabId !== null) return;
       const cmd = findByShortcut(all, e);
       if (!cmd) return;
+      // Dans un champ de saisie, l'undo/copier-coller natif prime sur les commandes d'éditeur.
+      if (editor.includes(cmd) && isNativeEditShortcut(e) && isTextEntry(document.activeElement)) {
+        return;
+      }
       e.preventDefault();
       cmd.run();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [all]);
+  }, [all, editor]);
 }
 
 /** Autosave de récupération selon l'intervalle des préférences (0 = désactivé). */

@@ -7,7 +7,7 @@ import type { AnyEditorView, EditorProps } from "../editors/types";
 import { useTabs } from "../stores/tabs";
 import type { TabEntry } from "../stores/tabs";
 import { NoEditor } from "./NoEditor";
-import { registerSerializer, useRuntime } from "./runtime";
+import { registerSaveHandler, registerSerializer, useRuntime } from "./runtime";
 import { TabScope } from "./slots";
 import styles from "./EditorHost.module.css";
 
@@ -56,6 +56,9 @@ function TabEditor({ tab }: { tab: TabEntry }) {
       registerSerializer: (fn: () => unknown) => registerSerializer(id, fn),
       registerCommands: (cmds: Parameters<EditorProps<unknown>["registerCommands"]>[0]) =>
         useRuntime.getState().setCommands(id, cmds),
+      registerSaveHandler: (h: Parameters<EditorProps<unknown>["registerSaveHandler"]>[0]) =>
+        registerSaveHandler(id, h),
+      setEditable: (editable: boolean) => useRuntime.getState().setEditable(id, editable),
       setStatus: (items: Parameters<EditorProps<unknown>["setStatus"]>[0]) =>
         useRuntime.getState().setStatus(id, items),
     }),

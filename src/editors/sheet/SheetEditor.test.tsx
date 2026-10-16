@@ -42,6 +42,8 @@ describe("SheetEditor", () => {
         serializer = fn;
       },
       registerCommands: vi.fn(),
+      registerSaveHandler: vi.fn(),
+      setEditable: vi.fn(),
       setStatus: vi.fn(),
     };
     render(<SheetEditor {...props} />);

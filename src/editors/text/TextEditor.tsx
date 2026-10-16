@@ -592,6 +592,7 @@ export default function TextEditor({
           {isMarkdown && (
             <Button
               aria-pressed={preview}
+              data-testid="text-preview-toggle"
               variant={preview ? "primary" : "secondary"}
               onClick={() => setPreview((p) => !p)}
             >

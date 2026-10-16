@@ -43,6 +43,7 @@ export function MarkdownPreview({ getText, version, containerRef }: Props) {
       className={styles.preview}
       role="region"
       aria-label={t("preview.label")}
+      data-testid="markdown-preview"
       tabIndex={0}
       onClick={onClick}
       onAuxClick={(e) => e.preventDefault()}

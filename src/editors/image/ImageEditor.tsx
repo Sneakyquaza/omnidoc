@@ -68,6 +68,8 @@ export default function ImageEditor({
   setDirty,
   registerSerializer,
   registerCommands,
+  registerSaveHandler,
+  setEditable,
   setStatus,
 }: EditorProps<ImageDoc>) {
   const { t } = useTranslation("image");
@@ -248,14 +250,18 @@ export default function ImageEditor({
     return base ? flatten(base, live) : null;
   }
 
-  async function writeTo(dest: string, format: SaveFormat, quality: number | null) {
+  async function writeTo(
+    dest: string,
+    format: SaveFormat,
+    quality: number | null,
+  ): Promise<boolean> {
     try {
       if (!dirty && stack.cursor === 0 && path !== null && !isSvg) {
         // Aucune modification : conversion fidèle du fichier d'origine
         await commands.imageConvert(path, dest, format, quality);
       } else {
         const canvas = exportCanvas();
-        if (!canvas) return;
+        if (!canvas) return false;
         await commands.imageSave(dest, canvasToPngBase64(canvas), format, quality);
       }
       if (dest === path) {
@@ -265,17 +271,19 @@ export default function ImageEditor({
         void refreshFileSize();
       }
       pushToast({ kind: "success", text: t("save.done", { name: basename(dest) }) });
+      return true;
     } catch (e) {
       reportError(e);
+      return false;
     }
   }
 
   const canSaveInPlace =
     !readOnly && !isSvg && path !== null && dirty && saveFormatOf(model.format) !== null;
 
-  async function saveInPlace() {
+  async function saveInPlace(): Promise<boolean> {
     const format = saveFormatOf(model.format);
-    if (!canSaveInPlace || path === null || format === null) return;
+    if (!canSaveInPlace || path === null || format === null) return !dirty;
     if (!reencodeConfirmed.current) {
       const ok = await confirm({
         title: t("save.reencodeTitle"),
@@ -283,14 +291,14 @@ export default function ImageEditor({
         confirmLabel: t("save.reencodeConfirm"),
         danger: true,
       });
-      if (!ok) return;
+      if (!ok) return false;
       reencodeConfirmed.current = true;
     }
-    await writeTo(path, format, isLossy(format) ? DEFAULT_QUALITY : null);
+    return writeTo(path, format, isLossy(format) ? DEFAULT_QUALITY : null);
   }
 
-  async function saveAs() {
-    if (!base) return;
+  async function saveAs(): Promise<boolean> {
+    if (!base) return false;
     try {
       const current = saveFormatOf(model.format) ?? "png";
       const ordered = [
@@ -306,16 +314,20 @@ export default function ImageEditor({
           extensions: [...f.extensions],
         })),
       });
-      if (dest === null) return;
+      if (dest === null) return false;
       const format = formatFromPath(dest);
       if (format === null) {
         pushToast({ kind: "error", text: t("save.unsupportedExtension") });
-        return;
+        return false;
       }
-      if (isLossy(format)) setDialog({ kind: "quality", dest, format });
-      else await writeTo(dest, format, null);
+      if (isLossy(format)) {
+        setDialog({ kind: "quality", dest, format });
+        return false;
+      }
+      return await writeTo(dest, format, null);
     } catch (e) {
       reportError(e);
+      return false;
     }
   }
 
@@ -390,6 +402,17 @@ export default function ImageEditor({
   useEffect(() => {
     actionsRef.current = actions;
   });
+  const saveRef = useRef({ save: saveInPlace, saveAs });
+  useEffect(() => {
+    saveRef.current = { save: saveInPlace, saveAs };
+  });
+  useEffect(() => {
+    registerSaveHandler({
+      save: () => saveRef.current.save(),
+      saveAs: () => saveRef.current.saveAs(),
+    });
+    setEditable(true);
+  }, [registerSaveHandler, setEditable]);
   const toolRef = useRef(setTool);
   useEffect(() => {
     toolRef.current = setTool;
@@ -401,13 +424,6 @@ export default function ImageEditor({
     registerCommands([
       { id: "image.undo", title: t("commands.undo"), shortcut: "Mod+Z", run: run("undo") },
       { id: "image.redo", title: t("commands.redo"), shortcut: "Mod+Shift+Z", run: run("redo") },
-      { id: "image.save", title: t("commands.save"), shortcut: "Mod+S", run: run("save") },
-      {
-        id: "image.saveAs",
-        title: t("commands.saveAs"),
-        shortcut: "Mod+Shift+S",
-        run: run("saveAs"),
-      },
       { id: "image.strip", title: t("commands.strip"), run: run("stripMetadata") },
       { id: "image.exportPng", title: t("commands.exportPng"), run: run("exportPng") },
       {

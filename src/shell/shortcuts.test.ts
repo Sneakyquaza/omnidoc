@@ -5,6 +5,7 @@ import {
   findByShortcut,
   findShortcutConflicts,
   formatShortcut,
+  isNativeEditShortcut,
   matchesShortcut,
   parseShortcut,
 } from "./shortcuts";
@@ -79,5 +80,14 @@ describe("raccourcis configurables", () => {
     ];
     expect(findShortcutConflicts(items, "c", "ctrl+s")).toEqual(["a"]);
     expect(findShortcutConflicts(items, "a", "Mod+S")).toEqual([]);
+  });
+});
+
+describe("raccourcis natifs de saisie", () => {
+  it("reconnaît les raccourcis d edition", () => {
+    expect(isNativeEditShortcut(ev("z", { ctrlKey: true }))).toBe(true);
+    expect(isNativeEditShortcut(ev("Z", { ctrlKey: true, shiftKey: true }))).toBe(true);
+    expect(isNativeEditShortcut(ev("s", { ctrlKey: true }))).toBe(false);
+    expect(isNativeEditShortcut(ev("z"))).toBe(false);
   });
 });

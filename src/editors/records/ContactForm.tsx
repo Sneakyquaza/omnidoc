@@ -143,6 +143,7 @@ export function ContactForm({ comp, onChange, readOnly }: Props) {
         {photo ? <img className={styles.photo} src={photo} alt={t("contact.photo")} /> : null}
         <Field
           label={t("contact.fn")}
+          testId="records-fn"
           value={textOf(comp, "FN")}
           readOnly={readOnly}
           onChange={(v) => onChange((c) => setText(c, "FN", v, { keepEmpty: true }))}
