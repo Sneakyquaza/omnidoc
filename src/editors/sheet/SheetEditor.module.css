@@ -1,0 +1,468 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Barre de formule ---------- */
+
+.formulaBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.nameBox {
+  width: 96px;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  text-align: center;
+}
+
+.fx {
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 0 2px;
+}
+
+.formulaInput {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.nameBox:focus-visible,
+.formulaInput:focus-visible,
+.cellInput:focus-visible,
+.tabInput:focus-visible,
+.scroller:focus-visible,
+.field:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -1px;
+}
+
+.readOnlyTag {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+/* ---------- Barre d'outils ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 6px;
+  background: var(--color-border);
+}
+
+.tbBtn {
+  padding: 3px 8px;
+}
+
+.pressed {
+  background: var(--color-hover);
+  border-color: var(--color-border);
+}
+
+/* ---------- Grille ---------- */
+
+.scroller {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-bg);
+  user-select: none;
+}
+
+.colStrip {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--color-surface);
+}
+
+.corner {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+.colHeader,
+.rowHeader {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  top: 0;
+  cursor: default;
+}
+
+.rowHeader {
+  left: 0;
+}
+
+.headerSelected {
+  background: var(--color-hover);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.resizer {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 2;
+}
+
+.resizer:hover {
+  background: var(--color-accent);
+  opacity: 0.5;
+}
+
+.body {
+  position: relative;
+}
+
+.rowStrip {
+  position: sticky;
+  left: 0;
+  height: 0;
+  z-index: 3;
+}
+
+.cell {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 0 6px;
+  line-height: 21px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.num {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.range {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+  background: var(--color-accent);
+  opacity: 0.14;
+}
+
+.hidden {
+  display: none;
+}
+
+.active {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 2;
+  border: 2px solid var(--color-accent);
+}
+
+.cellInput {
+  position: absolute;
+  z-index: 6;
+  box-sizing: border-box;
+  padding: 0 5px;
+  border: 2px solid var(--color-accent);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-family: var(--font-mono);
+}
+
+.filterBtn {
+  position: absolute;
+  right: 1px;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.filterActive {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+}
+
+/* ---------- Onglets de feuilles ---------- */
+
+.tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px 8px 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  overflow-x: auto;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: var(--color-hover);
+}
+
+.tabActive {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  font-weight: 600;
+}
+
+.tab:focus-visible,
+.tabClose:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.tabDrop {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.tabClose {
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.tabClose:hover {
+  color: var(--color-danger);
+}
+
+.tabInput {
+  width: 110px;
+  padding: 1px 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+/* ---------- Menus flottants ---------- */
+
+.popup {
+  position: fixed;
+  z-index: 60;
+  min-width: 190px;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover:not(:disabled),
+.menuItem:focus-visible {
+  background: var(--color-hover);
+  outline: none;
+}
+
+.menuItem:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.menuSep {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--color-border);
+}
+
+.filterList {
+  max-height: 220px;
+  overflow: auto;
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filterList li label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+}
+
+.field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.popupActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* ---------- Panneau latéral ---------- */
+
+.sheetList {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.sheetItem {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sheetItem:hover {
+  background: var(--color-hover);
+}
+
+.sheetItemActive {
+  background: var(--color-hover);
+  font-weight: 600;
+}
+
+.sheetDims {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.subtitle {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.panelRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.banner {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.banner ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}

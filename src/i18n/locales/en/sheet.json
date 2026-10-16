@@ -1,0 +1,117 @@
+{
+  "sheetBase": "Sheet",
+  "readOnly": "Read-only",
+  "grid": { "label": "Spreadsheet", "cellEditor": "Cell editor" },
+  "formulaBar": {
+    "reference": "Cell reference",
+    "content": "Cell content or formula",
+    "invalidReference": "Invalid reference: \"{{text}}\"."
+  },
+  "toolbar": {
+    "label": "Spreadsheet tools",
+    "undo": "Undo",
+    "redo": "Redo",
+    "formatGeneral": "General format",
+    "general": "Gen.",
+    "formatNumber": "Number format (1,234.00)",
+    "formatPercent": "Percent format",
+    "formatCurrency": "Currency format (€)",
+    "formatDate": "Date format",
+    "date": "Date",
+    "decimalsMore": "Increase decimals",
+    "decimalsLess": "Decrease decimals",
+    "sortAsc": "Sort A to Z (active column)",
+    "sortDesc": "Sort Z to A (active column)",
+    "header": "First row is a header (not sorted)",
+    "headerShort": "Header",
+    "filter": "Auto filter",
+    "filterShort": "Filter"
+  },
+  "filter": {
+    "title": "Column filter",
+    "button": "Filter this column",
+    "search": "Search…",
+    "selectAll": "Check all",
+    "selectNone": "Uncheck all",
+    "none": "No values",
+    "apply": "Apply",
+    "blank": "(Blanks)"
+  },
+  "tabs": {
+    "label": "Sheets",
+    "add": "Add a sheet",
+    "rename": "Rename sheet",
+    "delete": "Delete sheet",
+    "moveLeft": "Move left",
+    "moveRight": "Move right",
+    "deleteTitle": "Delete the sheet?",
+    "deleteMessage": "The sheet \"{{name}}\" and its content will be deleted.",
+    "nameTaken": "A sheet already has this name.",
+    "nameInvalid": "Invalid sheet name (max. 31 characters, no [ ] : * ? / \\)."
+  },
+  "menu": {
+    "label": "Spreadsheet context menu",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "clear": "Clear contents",
+    "insertRowAbove": "Insert row above",
+    "insertRowBelow": "Insert row below",
+    "deleteRows": "Delete row(s)",
+    "insertColLeft": "Insert column left",
+    "insertColRight": "Insert column right",
+    "deleteCols": "Delete column(s)"
+  },
+  "panel": {
+    "title": "Workbook",
+    "sheets": "Sheets",
+    "dims": "{{rows}} × {{cols}}",
+    "csv": "CSV options",
+    "delimiter": "Delimiter",
+    "encoding": "Encoding",
+    "header": "First row is a header",
+    "yes": "Yes",
+    "no": "No",
+    "delimiters": {
+      "comma": "Comma ( , )",
+      "semicolon": "Semicolon ( ; )",
+      "tab": "Tab",
+      "pipe": "Pipe ( | )"
+    }
+  },
+  "lossy": {
+    "title": "Some elements will not be preserved when saving:",
+    "items": {
+      "merges": "Merged cells",
+      "styles": "Styles and formatting",
+      "charts": "Charts",
+      "images": "Images",
+      "macros": "Macros",
+      "conditionalFormatting": "Conditional formatting",
+      "dataValidations": "Data validations",
+      "pivotTables": "Pivot tables",
+      "comments": "Comments"
+    }
+  },
+  "status": {
+    "stats": "Sum: {{sum}} · Average: {{avg}} · Count: {{count}}",
+    "count": "Count: {{count}}",
+    "lossy": "{{count}} kind(s) of elements not preserved"
+  },
+  "errors": { "clipboard": "Clipboard access failed." },
+  "export": { "done": "Sheet exported: {{name}}" },
+  "commands": {
+    "undo": "Spreadsheet: undo",
+    "redo": "Spreadsheet: redo",
+    "fillDown": "Spreadsheet: fill down",
+    "exportCsv": "Spreadsheet: export sheet as CSV…",
+    "sortAsc": "Spreadsheet: sort A to Z",
+    "sortDesc": "Spreadsheet: sort Z to A",
+    "filter": "Spreadsheet: toggle auto filter",
+    "insertRow": "Spreadsheet: insert row",
+    "deleteRow": "Spreadsheet: delete row",
+    "insertCol": "Spreadsheet: insert column",
+    "deleteCol": "Spreadsheet: delete column",
+    "addSheet": "Spreadsheet: add sheet"
+  }
+}
