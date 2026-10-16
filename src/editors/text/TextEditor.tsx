@@ -466,7 +466,7 @@ export default function TextEditor({
       list.push({
         id: "text.preview",
         title: t("commands.preview"),
-        shortcut: "Mod+Shift+V",
+        shortcut: "Mod+Shift+M",
         run: () => setPreview((p) => !p),
       });
     }
