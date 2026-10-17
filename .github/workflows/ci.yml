@@ -82,7 +82,7 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libssl-dev librsvg2-dev \
             libayatana-appindicator3-dev libxdo-dev pkg-config \
             webkit2gtk-driver xvfb unzip gstreamer1.0-tools gstreamer1.0-plugins-good \
-            gstreamer1.0-libav
+            gstreamer1.0-libav dbus-x11
 
       - uses: pnpm/action-setup@v4
         with:
@@ -117,4 +117,5 @@ jobs:
         run: pnpm e2e:build
 
       - name: Tests E2E
-        run: pnpm e2e
+        # Sans bus de session, chaque lancement de l'app attend ~30 s (délai D-Bus).
+        run: dbus-run-session -- pnpm e2e
