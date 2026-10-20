@@ -38,9 +38,12 @@ describe("parcours sqlite", () => {
     expect((await err.getText()).length).toBeGreaterThan(0);
     // les données sont intactes
     await runQuery("SELECT count(*) AS n FROM people");
-    await browser.waitUntil(async () => !(await $('[data-testid="db-query-error"]').isExisting()), {
-      timeout: 10_000,
-    });
+    await browser.waitUntil(
+      async () =>
+        !(await $('[data-testid="db-query-error"]').isExisting()) &&
+        (await $('[data-testid="db-query-status"]').getText()).includes("1"),
+      { timeout: 10_000 },
+    );
     expect(await gridsText()).toContain("3");
     expect(await alertTexts()).toEqual([]);
     expect(await consoleErrors()).toEqual([]);
