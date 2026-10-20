@@ -337,6 +337,9 @@ pub struct DbTable {
     /// Faux si le comptage a dépassé le délai (`row_count` vaut alors 0 et est inconnu).
     #[serde(default)]
     pub row_count_exact: bool,
+    /// Table ordinaire avec rowid : cellules, lignes et colonnes éditables (jamais les vues).
+    #[serde(default)]
+    pub editable: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Type)]

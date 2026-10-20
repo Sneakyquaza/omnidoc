@@ -1,13 +1,22 @@
 {
-  "toolbar": { "label": "Database tools" },
-  "tabs": { "label": "Database views", "data": "Data", "query": "Query", "schema": "Schema" },
+  "toolbar": {
+    "label": "Database tools"
+  },
+  "tabs": {
+    "label": "Database views",
+    "data": "Data",
+    "query": "Query",
+    "schema": "Schema"
+  },
   "sidebar": {
     "title": "Tables and views",
     "empty": "No tables.",
     "view": "view",
     "columns": "Columns"
   },
-  "data": { "empty": "This table is empty." },
+  "data": {
+    "empty": "This table is empty."
+  },
   "query": {
     "editor": "SQL query",
     "run": "Run (Ctrl+Enter)",
@@ -17,14 +26,75 @@
     "results": "Query results",
     "readOnly": "Database is read-only: only SELECT queries are allowed."
   },
-  "schema": { "empty": "No schema." },
-  "export": { "csv": "Export as CSV", "done": "Exported: {{name}}" },
-  "status": { "tables": "{{count}} table(s)", "table": "{{name}}: {{count}} row(s)" },
+  "schema": {
+    "empty": "No schema."
+  },
+  "export": {
+    "csv": "Export as CSV",
+    "done": "Exported: {{name}}"
+  },
+  "status": {
+    "tables": "{{count}} table(s)",
+    "table": "{{name}}: {{count}} row(s)"
+  },
   "commands": {
     "data": "Database: show data",
     "query": "Database: SQL query",
     "schema": "Database: show schema",
-    "exportCsv": "Database: export table as CSV"
+    "exportCsv": "Database: export table as CSV",
+    "newTable": "Database: new table"
   },
-  "noPath": "No associated file."
+  "noPath": "No associated file.",
+  "edit": {
+    "readOnlyView": "Views cannot be edited.",
+    "readOnlyNoRowid": "This table has no rowid: read-only.",
+    "setNull": "Set to NULL",
+    "menu": "Cell menu"
+  },
+  "save": {
+    "done": "Database saved: {{name}}"
+  },
+  "rows": {
+    "add": "Add row",
+    "deleteButton": "Delete rows ({{count}})",
+    "deleteTitle": "Delete rows",
+    "deleteConfirm": "Delete {{count}} selected row(s)?",
+    "delete": "Delete",
+    "insertTitle": "Add row",
+    "insert": "Insert",
+    "insertHint": "An empty field uses the column's default value."
+  },
+  "column": {
+    "name": "Name",
+    "type": "Type",
+    "typeOther": "Other…",
+    "typeFree": "Custom type",
+    "notNull": "NOT NULL",
+    "default": "Default value (optional)",
+    "notNullHint": "SQLite requires a default value to add a NOT NULL column.",
+    "rename": "Rename",
+    "renameTitle": "Rename column",
+    "drop": "Delete",
+    "dropTitle": "Delete column",
+    "dropConfirm": "Delete column \"{{name}}\" and all its data?",
+    "add": "Add",
+    "addMenu": "Add column…",
+    "addTitle": "Add column"
+  },
+  "table": {
+    "new": "New table",
+    "newTitle": "New table",
+    "name": "Table name",
+    "columns": "Columns",
+    "addColumn": "Add column",
+    "removeColumn": "Remove column",
+    "primaryKey": "Primary key",
+    "create": "Create",
+    "menu": "Table menu",
+    "rename": "Rename",
+    "renameTitle": "Rename table",
+    "drop": "Delete",
+    "dropTitle": "Delete table",
+    "dropConfirm": "Delete table \"{{name}}\" and all its data?"
+  }
 }

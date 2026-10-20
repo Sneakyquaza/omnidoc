@@ -50,6 +50,16 @@ export const commands = {
 	dbExportCsv: (path: string, table: string, dest: string) => __TAURI_INVOKE<null>("db_export_csv", { path, table, dest }),
 	/**  Instructions SQL de création (tables, vues, index, triggers). */
 	dbSchema: (path: string) => __TAURI_INVOKE<DbSchemaEntry[]>("db_schema", { path }),
+	/**  Crée la copie de travail de la base (première modification) et renvoie son chemin. */
+	dbEditBegin: (path: string) => __TAURI_INVOKE<DbEditSession>("db_edit_begin", { path }),
+	/**  Applique une opération d'édition à la copie de travail (transaction unique). */
+	dbEdit: (session: string, op: DbEditOp) => __TAURI_INVOKE<DbEditResult>("db_edit", { session, op }),
+	/**  Remplace l'original par la copie de travail (refusé si l'original a changé entre-temps). */
+	dbEditCommit: (session: string) => __TAURI_INVOKE<null>("db_edit_commit", { session }),
+	/**  Abandonne la session et supprime la copie de travail. */
+	dbEditDiscard: (session: string) => __TAURI_INVOKE<null>("db_edit_discard", { session }),
+	/**  Liste des tables et vues (rafraîchissement après une modification de structure). */
+	dbTables: (path: string) => __TAURI_INVOKE<DbDoc>("db_tables", { path }),
 	archiveExtract: (path: string, entries: string[] | null, destDir: string) => __TAURI_INVOKE<number>("archive_extract", { path, entries, destDir }),
 	archiveReadEntry: (path: string, entry: string) => __TAURI_INVOKE<string>("archive_read_entry", { path, entry }),
 	archiveAdd: (path: string, files: string[], prefix: string) => __TAURI_INVOKE<null>("archive_add", { path, files, prefix }),
@@ -130,9 +140,34 @@ export type DbColumn = {
 	type: string,
 };
 
+/**  Colonne d'une nouvelle table. */
+export type DbColumnDef = {
+	name: string,
+	colType: string,
+	primaryKey: boolean,
+	notNull: boolean,
+};
+
 export type DbDoc = {
 	tables: DbTable[],
 };
+
+/**  Opération d'édition appliquée à la copie de travail (pas de champ `kind` : collision serde). */
+export type DbEditOp = { op: "updateCell"; table: string; rowid: DbInt; column: string; value: DbInput } | { op: "insertRow"; table: string; values: ([string, DbInput])[] } | { op: "deleteRows"; table: string; rowids: DbInt[] } | { op: "addColumn"; table: string; name: string; colType: string; notNull: boolean; default: string | null } | { op: "renameColumn"; table: string; from: string; to: string } | { op: "dropColumn"; table: string; name: string } | { op: "createTable"; name: string; columns: DbColumnDef[] } | { op: "renameTable"; from: string; to: string } | { op: "dropTable"; name: string };
+
+export type DbEditResult = {
+	/**  Rowid de la ligne insérée (`insertRow`). */
+	rowid: DbInt | null,
+};
+
+export type DbEditSession = {
+	id: string,
+	/**  Chemin de la copie de travail, à passer aux commandes de lecture. */
+	workPath: string,
+};
+
+/**  Valeur saisie : `{type: "null"|"text"|"int"|"real", value}`. */
+export type DbInput = { type: "null" } | { type: "text"; value: string } | { type: "int"; value: DbInt } | { type: "real"; value: number | null };
 
 /**  Entier SQLite : nombre si dans la plage sûre JS, sinon chaîne décimale. */
 export type DbInt = number | null | string;
@@ -142,6 +177,8 @@ export type DbResult = {
 	rows: DbValue[][],
 	/**  Nombre total de lignes si connu (comptage dans le délai imparti). */
 	total: number | null,
+	/**  Rowid de chaque ligne si la table est éditable (None : vue, WITHOUT ROWID, requête). */
+	rowids: DbInt[] | null,
 };
 
 export type DbSchemaEntry = {
@@ -156,6 +193,8 @@ export type DbTable = {
 	rowCount: number,
 	/**  Faux si le comptage a dépassé le délai (`row_count` vaut alors 0 et est inconnu). */
 	rowCountExact?: boolean,
+	/**  Table ordinaire avec rowid : cellules, lignes et colonnes éditables (jamais les vues). */
+	editable?: boolean,
 };
 
 export type DbTableKind = "table" | "view";

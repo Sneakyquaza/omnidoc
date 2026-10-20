@@ -59,6 +59,8 @@
     "internal": "Erreur interne",
     "unknown": "Erreur inattendue",
     "detail": {
+      "dbChanged": "Le fichier a été modifié depuis son ouverture : rouvrez la base pour ne pas écraser ces changements.",
+      "dbWal": "Un journal WAL non vide existe à côté de la base : impossible d'enregistrer en place.",
       "animatedImage": "Les images animées ne peuvent pas être converties ni nettoyées (seule la première image serait gardée).",
       "destinationIsSource": "La destination est le fichier source."
     }

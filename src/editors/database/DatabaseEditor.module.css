@@ -261,3 +261,52 @@
 .schema[hidden] {
   display: none;
 }
+
+.cellActive {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.cellInput {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  line-height: 18px;
+}
+
+.cellInput:focus-visible {
+  outline: none;
+}
+
+.rowSelected {
+  background: var(--color-hover);
+}
+
+.rowSelected .numCell {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.numCell {
+  cursor: default;
+  user-select: none;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+}
+
+.listRow .listButton {
+  flex: 1;
+  min-width: 0;
+}
+
+.sideActions {
+  padding: 4px 8px;
+}

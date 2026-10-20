@@ -1,13 +1,22 @@
 {
-  "toolbar": { "label": "Outils de la base" },
-  "tabs": { "label": "Vues de la base", "data": "Données", "query": "Requête", "schema": "Schéma" },
+  "toolbar": {
+    "label": "Outils de la base"
+  },
+  "tabs": {
+    "label": "Vues de la base",
+    "data": "Données",
+    "query": "Requête",
+    "schema": "Schéma"
+  },
   "sidebar": {
     "title": "Tables et vues",
     "empty": "Aucune table.",
     "view": "vue",
     "columns": "Colonnes"
   },
-  "data": { "empty": "Cette table est vide." },
+  "data": {
+    "empty": "Cette table est vide."
+  },
   "query": {
     "editor": "Requête SQL",
     "run": "Exécuter (Ctrl+Entrée)",
@@ -17,14 +26,75 @@
     "results": "Résultats de la requête",
     "readOnly": "Base ouverte en lecture seule : seules les requêtes SELECT sont autorisées."
   },
-  "schema": { "empty": "Aucun schéma." },
-  "export": { "csv": "Exporter en CSV", "done": "Exporté : {{name}}" },
-  "status": { "tables": "{{count}} table(s)", "table": "{{name}} : {{count}} ligne(s)" },
+  "schema": {
+    "empty": "Aucun schéma."
+  },
+  "export": {
+    "csv": "Exporter en CSV",
+    "done": "Exporté : {{name}}"
+  },
+  "status": {
+    "tables": "{{count}} table(s)",
+    "table": "{{name}} : {{count}} ligne(s)"
+  },
   "commands": {
     "data": "Base de données : afficher les données",
     "query": "Base de données : requête SQL",
     "schema": "Base de données : afficher le schéma",
-    "exportCsv": "Base de données : exporter la table en CSV"
+    "exportCsv": "Base de données : exporter la table en CSV",
+    "newTable": "Base de données : créer une table"
   },
-  "noPath": "Aucun fichier associé."
+  "noPath": "Aucun fichier associé.",
+  "edit": {
+    "readOnlyView": "Les vues ne sont pas modifiables.",
+    "readOnlyNoRowid": "Cette table n'a pas de rowid : lecture seule.",
+    "setNull": "Mettre à NULL",
+    "menu": "Menu de la cellule"
+  },
+  "save": {
+    "done": "Base enregistrée : {{name}}"
+  },
+  "rows": {
+    "add": "Ajouter une ligne",
+    "deleteButton": "Supprimer les lignes ({{count}})",
+    "deleteTitle": "Supprimer les lignes",
+    "deleteConfirm": "Supprimer {{count}} ligne(s) sélectionnée(s) ?",
+    "delete": "Supprimer",
+    "insertTitle": "Ajouter une ligne",
+    "insert": "Insérer",
+    "insertHint": "Un champ vide utilise la valeur par défaut de la colonne."
+  },
+  "column": {
+    "name": "Nom",
+    "type": "Type",
+    "typeOther": "Autre…",
+    "typeFree": "Type personnalisé",
+    "notNull": "NOT NULL",
+    "default": "Valeur par défaut (optionnel)",
+    "notNullHint": "SQLite exige une valeur par défaut pour ajouter une colonne NOT NULL.",
+    "rename": "Renommer",
+    "renameTitle": "Renommer la colonne",
+    "drop": "Supprimer",
+    "dropTitle": "Supprimer la colonne",
+    "dropConfirm": "Supprimer la colonne « {{name}} » et toutes ses données ?",
+    "add": "Ajouter",
+    "addMenu": "Ajouter une colonne…",
+    "addTitle": "Ajouter une colonne"
+  },
+  "table": {
+    "new": "Nouvelle table",
+    "newTitle": "Nouvelle table",
+    "name": "Nom de la table",
+    "columns": "Colonnes",
+    "addColumn": "Ajouter une colonne",
+    "removeColumn": "Retirer la colonne",
+    "primaryKey": "Clé primaire",
+    "create": "Créer",
+    "menu": "Menu de la table",
+    "rename": "Renommer",
+    "renameTitle": "Renommer la table",
+    "drop": "Supprimer",
+    "dropTitle": "Supprimer la table",
+    "dropConfirm": "Supprimer la table « {{name}} » et toutes ses données ?"
+  }
 }

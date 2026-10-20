@@ -1,6 +1,14 @@
-//! SQLite : exploration en lecture seule (tables, vues, lignes paginées, requêtes SELECT).
+//! SQLite : exploration (tables, vues, lignes paginées, requêtes SELECT) et édition à la souris.
 //!
-//! Garanties de non-écriture :
+//! Lecture : ultra-stricte, le fichier original n'est jamais ouvert en écriture.
+//! Écriture : à la première modification, `db_edit_begin` fait un `backup` SQLite de l'original
+//! vers une copie de travail temporaire ; toutes les opérations (`db_edit`) ne touchent que cette
+//! copie. `db_edit_commit` refuse si l'original a changé entre-temps (mtime/taille, `-wal`), puis
+//! sauvegarde la copie vers un fichier voisin de l'original et le substitue par rename atomique
+//! (`atomic::replace_with`, sauvegarde de l'original). `db_edit_discard` supprime la copie.
+//! Valeurs toujours liées par paramètres ; noms d'objets vérifiés puis quotés.
+//!
+//! Garanties de non-écriture (lecture sur l'original) :
 //! - ouverture `SQLITE_OPEN_READ_ONLY | SQLITE_OPEN_NO_MUTEX` + `PRAGMA query_only=ON` ;
 //! - URI `mode=ro&immutable=1` par défaut : SQLite ne prend aucun verrou et ne crée jamais de
 //!   `-wal`/`-shm`. Compromis : `immutable` ignore un éventuel journal WAL ; si un `-wal`
@@ -8,11 +16,14 @@
 //! - `db_query` : une seule instruction, `stmt.readonly()` + autorisateur SQLite qui n'accepte
 //!   que SELECT/lectures/fonctions (refuse ATTACH, PRAGMA, transactions…), délai de 5 s.
 
-use std::path::Path;
-use std::time::{Duration, Instant};
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
+use std::time::{Duration, Instant, SystemTime};
 
 use rusqlite::hooks::{AuthAction, AuthContext, Authorization};
-use rusqlite::types::ValueRef;
+use rusqlite::types::{Value, ValueRef};
 use rusqlite::{Connection, ErrorCode, OpenFlags};
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -77,6 +88,8 @@ pub struct DbResult {
     pub rows: Vec<Vec<DbValue>>,
     /// Nombre total de lignes si connu (comptage dans le délai imparti).
     pub total: Option<u64>,
+    /// Rowid de chaque ligne si la table est éditable (None : vue, WITHOUT ROWID, requête).
+    pub rowids: Option<Vec<DbInt>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -245,6 +258,7 @@ fn collect(
         columns,
         rows: rows_out,
         total: None,
+        rowids: None,
     })
 }
 
@@ -266,6 +280,7 @@ fn list_tables(conn: &Connection) -> Result<DbDoc> {
     for (name, kind) in names {
         let quoted = quote_ident(&name);
         let columns = columns_of(conn, &quoted);
+        let editable = table_kind(conn, &name).is_some_and(|(ty, rowid)| ty == "table" && rowid);
         let count = if started.elapsed() < COUNT_TOTAL_BUDGET {
             count_rows(conn, &quoted, COUNT_TIMEOUT)
         } else {
@@ -281,6 +296,7 @@ fn list_tables(conn: &Connection) -> Result<DbDoc> {
             columns,
             row_count: count.unwrap_or(0),
             row_count_exact: count.is_some(),
+            editable,
         });
     }
     Ok(DbDoc { tables })
@@ -305,6 +321,27 @@ fn columns_of(conn: &Connection, quoted: &str) -> Vec<DbColumn> {
             .collect(),
         Err(_) => Vec::new(),
     }
+}
+
+/// Type (`table`, `view`, `virtual`, `shadow`) et présence d'un rowid d'un objet du schéma `main`.
+fn table_kind(conn: &Connection, name: &str) -> Option<(String, bool)> {
+    conn.query_row(
+        "SELECT type, wr FROM pragma_table_list WHERE schema = 'main' AND name = ?1",
+        [name],
+        |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? == 0)),
+    )
+    .ok()
+}
+
+/// Nom d'accès au rowid (`rowid`, `_rowid_` ou `oid`) non masqué par une vraie colonne.
+fn rowid_alias(conn: &Connection, quoted: &str) -> Option<&'static str> {
+    let names: Vec<String> = columns_of(conn, quoted)
+        .into_iter()
+        .map(|c| c.name.to_ascii_lowercase())
+        .collect();
+    ["rowid", "_rowid_", "oid"]
+        .into_iter()
+        .find(|a| !names.iter().any(|n| n == a))
 }
 
 pub struct SqliteHandler;
@@ -357,9 +394,15 @@ fn rows_impl(path: &str, table: &str, offset: u32, limit: u32) -> Result<DbResul
     let quoted = checked_table(&conn, table)?;
     let total = count_rows(&conn, &quoted, COUNT_TIMEOUT);
     set_deadline(&conn, QUERY_TIMEOUT)?;
-    let mut stmt = conn
-        .prepare(&format!("SELECT * FROM {quoted} LIMIT ?1 OFFSET ?2"))
-        .map_err(db_err)?;
+    let alias = match table_kind(&conn, table) {
+        Some((ty, true)) if ty == "table" => rowid_alias(&conn, &quoted),
+        _ => None,
+    };
+    let sql = match alias {
+        Some(a) => format!("SELECT {a}, * FROM {quoted} ORDER BY {a} LIMIT ?1 OFFSET ?2"),
+        None => format!("SELECT * FROM {quoted} LIMIT ?1 OFFSET ?2"),
+    };
+    let mut stmt = conn.prepare(&sql).map_err(db_err)?;
     let limit = limit.clamp(1, MAX_PAGE_ROWS);
     let mut res = collect(
         &mut stmt,
@@ -367,6 +410,17 @@ fn rows_impl(path: &str, table: &str, offset: u32, limit: u32) -> Result<DbResul
         limit as usize,
     )?;
     res.total = total;
+    if alias.is_some() {
+        res.columns.remove(0);
+        let mut ids = Vec::with_capacity(res.rows.len());
+        for row in &mut res.rows {
+            match row.remove(0) {
+                DbValue::Int(i) => ids.push(i),
+                _ => return Err(AppError::Internal),
+            }
+        }
+        res.rowids = Some(ids);
+    }
     Ok(res)
 }
 
@@ -463,6 +517,473 @@ fn schema_impl(path: &str) -> Result<Vec<DbSchemaEntry>> {
     Ok(v)
 }
 
+// ---------------------------------------------------------------------------------------------
+// Édition : copie de travail + opérations + commit atomique
+// ---------------------------------------------------------------------------------------------
+
+const EDIT_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Valeur saisie : `{type: "null"|"text"|"int"|"real", value}`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
+#[serde(tag = "type", content = "value", rename_all = "lowercase")]
+pub enum DbInput {
+    Null,
+    Text(String),
+    Int(DbInt),
+    Real(f64),
+}
+
+/// Colonne d'une nouvelle table.
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DbColumnDef {
+    pub name: String,
+    pub col_type: String,
+    pub primary_key: bool,
+    pub not_null: bool,
+}
+
+/// Opération d'édition appliquée à la copie de travail (pas de champ `kind` : collision serde).
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(tag = "op", rename_all = "camelCase")]
+pub enum DbEditOp {
+    UpdateCell {
+        table: String,
+        rowid: DbInt,
+        column: String,
+        value: DbInput,
+    },
+    InsertRow {
+        table: String,
+        values: Vec<(String, DbInput)>,
+    },
+    DeleteRows {
+        table: String,
+        rowids: Vec<DbInt>,
+    },
+    AddColumn {
+        table: String,
+        name: String,
+        #[serde(rename = "colType")]
+        col_type: String,
+        #[serde(rename = "notNull")]
+        not_null: bool,
+        default: Option<String>,
+    },
+    RenameColumn {
+        table: String,
+        from: String,
+        to: String,
+    },
+    DropColumn {
+        table: String,
+        name: String,
+    },
+    CreateTable {
+        name: String,
+        columns: Vec<DbColumnDef>,
+    },
+    RenameTable {
+        from: String,
+        to: String,
+    },
+    DropTable {
+        name: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DbEditResult {
+    /// Rowid de la ligne insérée (`insertRow`).
+    pub rowid: Option<DbInt>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct DbEditSession {
+    pub id: String,
+    /// Chemin de la copie de travail, à passer aux commandes de lecture.
+    pub work_path: String,
+}
+
+struct WorkCopy {
+    orig: PathBuf,
+    /// Supprimée du disque à la destruction.
+    work: tempfile::TempPath,
+    mtime: Option<SystemTime>,
+    size: u64,
+}
+
+static SESSIONS: Mutex<Option<HashMap<String, WorkCopy>>> = Mutex::new(None);
+static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
+
+fn with_sessions<T>(f: impl FnOnce(&mut HashMap<String, WorkCopy>) -> Result<T>) -> Result<T> {
+    let mut guard = SESSIONS.lock().map_err(|_| AppError::Internal)?;
+    f(guard.get_or_insert_with(HashMap::new))
+}
+
+fn stamp(path: &Path) -> Result<(Option<SystemTime>, u64)> {
+    let m = std::fs::metadata(path)?;
+    Ok((m.modified().ok(), m.len()))
+}
+
+fn begin_impl(path: &str) -> Result<DbEditSession> {
+    let orig = PathBuf::from(path);
+    let conn = open_ro(&orig)?;
+    let (mtime, size) = stamp(&orig)?;
+    let work = tempfile::Builder::new()
+        .prefix("omnidoc-db-")
+        .suffix(".sqlite")
+        .tempfile()?
+        .into_temp_path();
+    conn.backup(rusqlite::MAIN_DB, &work, None)
+        .map_err(db_err)?;
+    drop(conn);
+    let id = format!("dbedit-{}", NEXT_SESSION.fetch_add(1, Ordering::Relaxed));
+    let work_path = work.to_string_lossy().into_owned();
+    with_sessions(|m| {
+        m.insert(
+            id.clone(),
+            WorkCopy {
+                orig,
+                work,
+                mtime,
+                size,
+            },
+        );
+        Ok(())
+    })?;
+    Ok(DbEditSession { id, work_path })
+}
+
+fn work_path_of(session: &str) -> Result<PathBuf> {
+    with_sessions(|m| {
+        m.get(session)
+            .map(|w| w.work.to_path_buf())
+            .ok_or(AppError::NotFound)
+    })
+}
+
+fn open_rw(path: &Path) -> Result<Connection> {
+    let conn = Connection::open_with_flags(
+        path,
+        OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_NO_MUTEX,
+    )
+    .map_err(db_err)?;
+    conn.pragma_update(None, "trusted_schema", false)
+        .map_err(db_err)?;
+    conn.pragma_update(None, "foreign_keys", true)
+        .map_err(db_err)?;
+    set_deadline(&conn, EDIT_TIMEOUT)?;
+    Ok(conn)
+}
+
+fn int_of(v: &DbInt) -> Result<i64> {
+    match v {
+        DbInt::Num(f) if f.fract() == 0.0 && f.abs() <= JS_SAFE_INT as f64 => Ok(*f as i64),
+        DbInt::Str(s) => s.trim().parse().map_err(|_| AppError::Invalid(s.clone())),
+        DbInt::Num(f) => Err(AppError::Invalid(f.to_string())),
+    }
+}
+
+fn input_value(v: &DbInput) -> Result<Value> {
+    Ok(match v {
+        DbInput::Null => Value::Null,
+        DbInput::Text(s) => Value::Text(s.clone()),
+        DbInput::Int(i) => Value::Integer(int_of(i)?),
+        DbInput::Real(f) if f.is_finite() => Value::Real(*f),
+        DbInput::Real(f) => return Err(AppError::Invalid(f.to_string())),
+    })
+}
+
+/// Nom d'objet saisi par l'utilisateur : non vide, sans NUL, hors espace réservé `sqlite_`.
+fn valid_name(name: &str) -> Result<()> {
+    if name.trim().is_empty()
+        || name.contains('\0')
+        || name.to_ascii_lowercase().starts_with("sqlite_")
+    {
+        return Err(AppError::Invalid(name.to_string()));
+    }
+    Ok(())
+}
+
+/// Type de colonne libre : lettres, chiffres, espace, `_`, parenthèses et virgules uniquement.
+fn valid_col_type(t: &str) -> Result<&str> {
+    let t = t.trim();
+    let mut depth = 0i32;
+    for c in t.chars() {
+        match c {
+            '(' => depth += 1,
+            ')' => depth -= 1,
+            c if c.is_alphanumeric() || matches!(c, ' ' | '_' | ',') => {}
+            _ => return Err(AppError::Invalid(t.to_string())),
+        }
+        if depth < 0 {
+            return Err(AppError::Invalid(t.to_string()));
+        }
+    }
+    if depth != 0 || t.len() > 64 {
+        return Err(AppError::Invalid(t.to_string()));
+    }
+    Ok(t)
+}
+
+/// Littéral SQL sûr pour une valeur par défaut : nombre tel quel, sinon chaîne quotée.
+fn default_literal(s: &str) -> String {
+    let t = s.trim();
+    if let Ok(i) = t.parse::<i64>() {
+        return i.to_string();
+    }
+    if let Ok(f) = t.parse::<f64>() {
+        if f.is_finite() {
+            return format!("{f:?}");
+        }
+    }
+    format!("'{}'", s.replace('\'', "''"))
+}
+
+/// Table ordinaire éditable (pas de vue, table virtuelle ou interne) : nom quoté + présence de rowid.
+fn edit_table(conn: &Connection, table: &str) -> Result<(String, bool)> {
+    match table_kind(conn, table) {
+        Some((ty, rowid))
+            if ty == "table" && !table.to_ascii_lowercase().starts_with("sqlite_") =>
+        {
+            Ok((quote_ident(table), rowid))
+        }
+        _ => Err(AppError::NotFound),
+    }
+}
+
+/// Table avec rowid : renvoie le nom quoté et l'alias de rowid utilisable.
+fn rowid_table(conn: &Connection, table: &str) -> Result<(String, &'static str)> {
+    let (quoted, rowid) = edit_table(conn, table)?;
+    if !rowid {
+        return Err(AppError::Unsupported);
+    }
+    let alias = rowid_alias(conn, &quoted).ok_or(AppError::Unsupported)?;
+    Ok((quoted, alias))
+}
+
+fn checked_column(conn: &Connection, quoted: &str, column: &str) -> Result<String> {
+    columns_of(conn, quoted)
+        .iter()
+        .any(|c| c.name == column)
+        .then(|| quote_ident(column))
+        .ok_or(AppError::NotFound)
+}
+
+fn apply_op(conn: &mut Connection, op: &DbEditOp) -> Result<DbEditResult> {
+    let tx = conn.transaction().map_err(db_err)?;
+    let mut rowid = None;
+    match op {
+        DbEditOp::UpdateCell {
+            table,
+            rowid: id,
+            column,
+            value,
+        } => {
+            let (q, alias) = rowid_table(&tx, table)?;
+            let col = checked_column(&tx, &q, column)?;
+            let n = tx
+                .execute(
+                    &format!("UPDATE {q} SET {col} = ?1 WHERE {alias} = ?2"),
+                    rusqlite::params![input_value(value)?, int_of(id)?],
+                )
+                .map_err(db_err)?;
+            if n != 1 {
+                return Err(AppError::NotFound);
+            }
+        }
+        DbEditOp::InsertRow { table, values } => {
+            let (q, _) = edit_table(&tx, table)?;
+            if values.is_empty() {
+                tx.execute(&format!("INSERT INTO {q} DEFAULT VALUES"), [])
+                    .map_err(db_err)?;
+            } else {
+                let mut cols = Vec::new();
+                let mut params = Vec::new();
+                for (i, (name, _)) in values.iter().enumerate() {
+                    cols.push(checked_column(&tx, &q, name)?);
+                    params.push(format!("?{}", i + 1));
+                }
+                let vals = values
+                    .iter()
+                    .map(|(_, v)| input_value(v))
+                    .collect::<Result<Vec<_>>>()?;
+                tx.execute(
+                    &format!(
+                        "INSERT INTO {q} ({}) VALUES ({})",
+                        cols.join(", "),
+                        params.join(", ")
+                    ),
+                    rusqlite::params_from_iter(vals),
+                )
+                .map_err(db_err)?;
+            }
+            rowid = Some(convert_int(tx.last_insert_rowid()));
+        }
+        DbEditOp::DeleteRows { table, rowids } => {
+            let (q, alias) = rowid_table(&tx, table)?;
+            let mut stmt = tx
+                .prepare(&format!("DELETE FROM {q} WHERE {alias} = ?1"))
+                .map_err(db_err)?;
+            for id in rowids {
+                stmt.execute([int_of(id)?]).map_err(db_err)?;
+            }
+        }
+        DbEditOp::AddColumn {
+            table,
+            name,
+            col_type,
+            not_null,
+            default,
+        } => {
+            valid_name(name)?;
+            let (q, _) = edit_table(&tx, table)?;
+            let mut sql = format!(
+                "ALTER TABLE {q} ADD COLUMN {} {}",
+                quote_ident(name),
+                valid_col_type(col_type)?
+            );
+            if *not_null {
+                sql.push_str(" NOT NULL");
+            }
+            if let Some(d) = default.as_deref().filter(|d| !d.is_empty()) {
+                sql.push_str(&format!(" DEFAULT {}", default_literal(d)));
+            }
+            tx.execute(&sql, []).map_err(db_err)?;
+        }
+        DbEditOp::RenameColumn { table, from, to } => {
+            valid_name(to)?;
+            let (q, _) = edit_table(&tx, table)?;
+            let from = checked_column(&tx, &q, from)?;
+            tx.execute(
+                &format!(
+                    "ALTER TABLE {q} RENAME COLUMN {from} TO {}",
+                    quote_ident(to)
+                ),
+                [],
+            )
+            .map_err(db_err)?;
+        }
+        DbEditOp::DropColumn { table, name } => {
+            let (q, _) = edit_table(&tx, table)?;
+            let col = checked_column(&tx, &q, name)?;
+            tx.execute(&format!("ALTER TABLE {q} DROP COLUMN {col}"), [])
+                .map_err(db_err)?;
+        }
+        DbEditOp::CreateTable { name, columns } => {
+            valid_name(name)?;
+            if columns.is_empty() {
+                return Err(AppError::Invalid(name.clone()));
+            }
+            let pk_count = columns.iter().filter(|c| c.primary_key).count();
+            let mut defs = Vec::new();
+            for c in columns {
+                valid_name(&c.name)?;
+                let mut d = quote_ident(&c.name);
+                let ty = valid_col_type(&c.col_type)?;
+                if !ty.is_empty() {
+                    d.push(' ');
+                    d.push_str(ty);
+                }
+                if c.primary_key && pk_count == 1 {
+                    d.push_str(" PRIMARY KEY");
+                }
+                if c.not_null {
+                    d.push_str(" NOT NULL");
+                }
+                defs.push(d);
+            }
+            if pk_count > 1 {
+                let pks: Vec<String> = columns
+                    .iter()
+                    .filter(|c| c.primary_key)
+                    .map(|c| quote_ident(&c.name))
+                    .collect();
+                defs.push(format!("PRIMARY KEY ({})", pks.join(", ")));
+            }
+            tx.execute(
+                &format!("CREATE TABLE {} ({})", quote_ident(name), defs.join(", ")),
+                [],
+            )
+            .map_err(db_err)?;
+        }
+        DbEditOp::RenameTable { from, to } => {
+            valid_name(to)?;
+            let (q, _) = edit_table(&tx, from)?;
+            tx.execute(
+                &format!("ALTER TABLE {q} RENAME TO {}", quote_ident(to)),
+                [],
+            )
+            .map_err(db_err)?;
+        }
+        DbEditOp::DropTable { name } => {
+            let (q, _) = edit_table(&tx, name)?;
+            tx.execute(&format!("DROP TABLE {q}"), []).map_err(db_err)?;
+        }
+    }
+    tx.commit().map_err(db_err)?;
+    Ok(DbEditResult { rowid })
+}
+
+fn convert_int(i: i64) -> DbInt {
+    if (-JS_SAFE_INT..=JS_SAFE_INT).contains(&i) {
+        DbInt::Num(i as f64)
+    } else {
+        DbInt::Str(i.to_string())
+    }
+}
+
+fn edit_impl(session: &str, op: &DbEditOp) -> Result<DbEditResult> {
+    let work = work_path_of(session)?;
+    let mut conn = open_rw(&work)?;
+    apply_op(&mut conn, op)
+}
+
+fn commit_impl(session: &str) -> Result<()> {
+    with_sessions(|m| {
+        let w = m.get_mut(session).ok_or(AppError::NotFound)?;
+        let (mtime, size) = stamp(&w.orig)?;
+        if mtime != w.mtime || size != w.size {
+            return Err(AppError::Invalid("dbChanged".into()));
+        }
+        if has_wal(&w.orig) {
+            return Err(AppError::Invalid("dbWal".into()));
+        }
+        let dir = w.orig.parent().unwrap_or_else(|| Path::new("."));
+        let tmp = tempfile::Builder::new()
+            .prefix(".omnidoc-")
+            .suffix(".tmp")
+            .tempfile_in(dir)?
+            .into_temp_path();
+        {
+            let src = Connection::open_with_flags(
+                &w.work,
+                OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX,
+            )
+            .map_err(db_err)?;
+            src.backup(rusqlite::MAIN_DB, &tmp, None).map_err(db_err)?;
+        }
+        std::fs::OpenOptions::new()
+            .write(true)
+            .open(&tmp)?
+            .sync_all()?;
+        let tmp_path = tmp.keep().map_err(|e| AppError::Io(e.error))?;
+        atomic::replace_with(&w.orig, &tmp_path)?;
+        (w.mtime, w.size) = stamp(&w.orig)?;
+        Ok(())
+    })
+}
+
+fn discard_impl(session: &str) -> Result<()> {
+    with_sessions(|m| {
+        m.remove(session);
+        Ok(())
+    })
+}
+
 /// Lignes paginées d'une table ou vue (`limit` plafonné à 1000).
 #[tauri::command]
 #[specta::specta]
@@ -489,6 +1010,41 @@ pub async fn db_export_csv(path: String, table: String, dest: String) -> Result<
 #[specta::specta]
 pub async fn db_schema(path: String) -> Result<Vec<DbSchemaEntry>> {
     blocking(move || schema_impl(&path)).await
+}
+
+/// Crée la copie de travail de la base (première modification) et renvoie son chemin.
+#[tauri::command]
+#[specta::specta]
+pub async fn db_edit_begin(path: String) -> Result<DbEditSession> {
+    blocking(move || begin_impl(&path)).await
+}
+
+/// Applique une opération d'édition à la copie de travail (transaction unique).
+#[tauri::command]
+#[specta::specta]
+pub async fn db_edit(session: String, op: DbEditOp) -> Result<DbEditResult> {
+    blocking(move || edit_impl(&session, &op)).await
+}
+
+/// Remplace l'original par la copie de travail (refusé si l'original a changé entre-temps).
+#[tauri::command]
+#[specta::specta]
+pub async fn db_edit_commit(session: String) -> Result<()> {
+    blocking(move || commit_impl(&session)).await
+}
+
+/// Abandonne la session et supprime la copie de travail.
+#[tauri::command]
+#[specta::specta]
+pub async fn db_edit_discard(session: String) -> Result<()> {
+    blocking(move || discard_impl(&session)).await
+}
+
+/// Liste des tables et vues (rafraîchissement après une modification de structure).
+#[tauri::command]
+#[specta::specta]
+pub async fn db_tables(path: String) -> Result<DbDoc> {
+    blocking(move || list_tables(&open_ro(Path::new(&path))?)).await
 }
 
 #[cfg(test)]
@@ -613,5 +1169,306 @@ mod tests {
         bytes.truncate(100);
         std::fs::write(&p, &bytes).unwrap();
         let _ = SqliteHandler.open(&p);
+    }
+
+    fn txt(s: &str) -> DbInput {
+        DbInput::Text(s.into())
+    }
+
+    fn cell(path: &str, table: &str, row: usize, col: usize) -> DbValue {
+        rows_impl(path, table, 0, 100).unwrap().rows[row][col].clone()
+    }
+
+    #[test]
+    fn edit_workflow_on_copy_then_commit() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = make_db(dir.path());
+        let ps = p.to_string_lossy().into_owned();
+        let before = hash(&p);
+
+        let s = begin_impl(&ps).unwrap();
+        let work = s.work_path.clone();
+        assert!(Path::new(&work).is_file());
+        let ed = |op: DbEditOp| edit_impl(&s.id, &op).unwrap();
+
+        // rowids exposés pour les tables, pas pour les vues
+        let r = rows_impl(&work, "people", 0, 10).unwrap();
+        assert_eq!(r.columns.len(), 5);
+        assert_eq!(r.rowids.as_ref().unwrap().len(), 3);
+        assert_eq!(rows_impl(&work, "v", 0, 10).unwrap().rowids, None);
+        assert_eq!(query_impl(&work, "SELECT 1", 10).unwrap().rowids, None);
+
+        ed(DbEditOp::UpdateCell {
+            table: "people".into(),
+            rowid: DbInt::Num(2.0),
+            column: "name".into(),
+            value: txt("Zed"),
+        });
+        assert_eq!(cell(&work, "people", 1, 1), DbValue::Text("Zed".into()));
+        // affinité INTEGER : le texte « 42 » devient un entier
+        ed(DbEditOp::UpdateCell {
+            table: "people".into(),
+            rowid: DbInt::Num(2.0),
+            column: "big".into(),
+            value: txt("42"),
+        });
+        assert_eq!(cell(&work, "people", 1, 3), DbValue::Int(DbInt::Num(42.0)));
+        ed(DbEditOp::UpdateCell {
+            table: "people".into(),
+            rowid: DbInt::Num(2.0),
+            column: "name".into(),
+            value: DbInput::Null,
+        });
+        assert_eq!(cell(&work, "people", 1, 1), DbValue::Null);
+
+        let ins = ed(DbEditOp::InsertRow {
+            table: "people".into(),
+            values: vec![
+                ("id".into(), DbInput::Int(DbInt::Num(10.0))),
+                ("name".into(), txt("New")),
+            ],
+        });
+        assert_eq!(ins.rowid, Some(DbInt::Num(10.0)));
+        let ins = ed(DbEditOp::InsertRow {
+            table: "people".into(),
+            values: vec![],
+        });
+        assert_eq!(ins.rowid, Some(DbInt::Num(11.0)));
+        ed(DbEditOp::DeleteRows {
+            table: "people".into(),
+            rowids: vec![DbInt::Num(1.0), DbInt::Str("3".into())],
+        });
+        assert_eq!(rows_impl(&work, "people", 0, 10).unwrap().total, Some(3));
+
+        ed(DbEditOp::AddColumn {
+            table: "people".into(),
+            name: "age".into(),
+            col_type: "INTEGER".into(),
+            not_null: true,
+            default: Some("7".into()),
+        });
+        ed(DbEditOp::AddColumn {
+            table: "people".into(),
+            name: "note".into(),
+            col_type: "TEXT".into(),
+            not_null: false,
+            default: Some("it's".into()),
+        });
+        assert_eq!(cell(&work, "people", 0, 5), DbValue::Int(DbInt::Num(7.0)));
+        assert_eq!(cell(&work, "people", 0, 6), DbValue::Text("it's".into()));
+        ed(DbEditOp::RenameColumn {
+            table: "people".into(),
+            from: "age".into(),
+            to: "years".into(),
+        });
+        ed(DbEditOp::DropColumn {
+            table: "people".into(),
+            name: "note".into(),
+        });
+        ed(DbEditOp::CreateTable {
+            name: "extra".into(),
+            columns: vec![
+                DbColumnDef {
+                    name: "id".into(),
+                    col_type: "INTEGER".into(),
+                    primary_key: true,
+                    not_null: false,
+                },
+                DbColumnDef {
+                    name: "label".into(),
+                    col_type: "TEXT".into(),
+                    primary_key: false,
+                    not_null: true,
+                },
+            ],
+        });
+        ed(DbEditOp::RenameTable {
+            from: "extra".into(),
+            to: "extra2".into(),
+        });
+        ed(DbEditOp::DropTable {
+            name: "we\"ird".into(),
+        });
+        // erreur de contrainte lisible, cellule inchangée
+        assert!(edit_impl(
+            &s.id,
+            &DbEditOp::InsertRow {
+                table: "extra2".into(),
+                values: vec![]
+            }
+        )
+        .is_err());
+
+        let conn = open_ro(Path::new(&work)).unwrap();
+        let doc = list_tables(&conn).unwrap();
+        let names: Vec<&str> = doc.tables.iter().map(|t| t.name.as_str()).collect();
+        assert_eq!(names, ["extra2", "people", "v"]);
+        assert!(
+            doc.tables
+                .iter()
+                .find(|t| t.name == "people")
+                .unwrap()
+                .editable
+        );
+        assert!(!doc.tables.iter().find(|t| t.name == "v").unwrap().editable);
+        drop(conn);
+
+        // l'original n'a pas bougé avant le commit
+        assert_eq!(before, hash(&p));
+
+        commit_impl(&s.id).unwrap();
+        assert_ne!(before, hash(&p));
+        let c = rows_impl(&ps, "people", 0, 10).unwrap();
+        assert_eq!(c.rows.len(), 3);
+        assert!(c.columns.contains(&"years".to_string()));
+        assert!(rows_impl(&ps, "extra2", 0, 10).is_ok());
+        assert!(rows_impl(&ps, "we\"ird", 0, 10).is_err());
+        // session toujours valide : nouvelle modif puis nouveau commit
+        edit_impl(
+            &s.id,
+            &DbEditOp::UpdateCell {
+                table: "people".into(),
+                rowid: DbInt::Num(10.0),
+                column: "name".into(),
+                value: txt("Again"),
+            },
+        )
+        .unwrap();
+        commit_impl(&s.id).unwrap();
+        assert_eq!(
+            rows_impl(&ps, "people", 0, 10)
+                .unwrap()
+                .rows
+                .iter()
+                .filter(|r| r[1] == DbValue::Text("Again".into()))
+                .count(),
+            1
+        );
+
+        discard_impl(&s.id).unwrap();
+        assert!(!Path::new(&work).exists());
+        assert!(edit_impl(&s.id, &DbEditOp::DropTable { name: "v".into() }).is_err());
+        let mut names: Vec<String> = std::fs::read_dir(dir.path())
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        names.sort();
+        assert_eq!(names, ["t.sqlite"]);
+    }
+
+    #[test]
+    fn commit_refused_when_original_changed() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = make_db(dir.path());
+        let ps = p.to_string_lossy().into_owned();
+        let s = begin_impl(&ps).unwrap();
+        edit_impl(
+            &s.id,
+            &DbEditOp::UpdateCell {
+                table: "people".into(),
+                rowid: DbInt::Num(1.0),
+                column: "name".into(),
+                value: txt("x"),
+            },
+        )
+        .unwrap();
+        let c = Connection::open(&p).unwrap();
+        c.execute_batch("INSERT INTO people(id) VALUES (99)")
+            .unwrap();
+        drop(c);
+        let changed = hash(&p);
+        assert!(commit_impl(&s.id).is_err());
+        assert_eq!(changed, hash(&p));
+        discard_impl(&s.id).unwrap();
+    }
+
+    #[test]
+    fn edit_rejects_injection_views_and_without_rowid() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = make_db(dir.path());
+        let c = Connection::open(&p).unwrap();
+        c.execute_batch(
+            "CREATE TABLE wr(k TEXT PRIMARY KEY, v) WITHOUT ROWID; INSERT INTO wr VALUES ('a',1);",
+        )
+        .unwrap();
+        drop(c);
+        let ps = p.to_string_lossy().into_owned();
+        let s = begin_impl(&ps).unwrap();
+        let bad = "a\"; DROP TABLE people;--";
+        for op in [
+            DbEditOp::UpdateCell {
+                table: bad.into(),
+                rowid: DbInt::Num(1.0),
+                column: "name".into(),
+                value: DbInput::Null,
+            },
+            DbEditOp::UpdateCell {
+                table: "people".into(),
+                rowid: DbInt::Num(1.0),
+                column: bad.into(),
+                value: DbInput::Null,
+            },
+            DbEditOp::UpdateCell {
+                table: "v".into(),
+                rowid: DbInt::Num(1.0),
+                column: "name".into(),
+                value: DbInput::Null,
+            },
+            DbEditOp::UpdateCell {
+                table: "wr".into(),
+                rowid: DbInt::Num(1.0),
+                column: "v".into(),
+                value: DbInput::Null,
+            },
+            DbEditOp::DropTable { name: "v".into() },
+            DbEditOp::DropTable {
+                name: "sqlite_master".into(),
+            },
+            DbEditOp::AddColumn {
+                table: "people".into(),
+                name: "c".into(),
+                col_type: "TEXT); DROP TABLE people;--".into(),
+                not_null: false,
+                default: None,
+            },
+            DbEditOp::RenameTable {
+                from: "people".into(),
+                to: "sqlite_x".into(),
+            },
+        ] {
+            assert!(edit_impl(&s.id, &op).is_err(), "{op:?}");
+        }
+        // un nom hostile est simplement un identifiant quoté
+        edit_impl(
+            &s.id,
+            &DbEditOp::RenameColumn {
+                table: "people".into(),
+                from: "name".into(),
+                to: bad.into(),
+            },
+        )
+        .unwrap();
+        edit_impl(
+            &s.id,
+            &DbEditOp::CreateTable {
+                name: bad.into(),
+                columns: vec![DbColumnDef {
+                    name: "a".into(),
+                    col_type: "".into(),
+                    primary_key: false,
+                    not_null: false,
+                }],
+            },
+        )
+        .unwrap();
+        let r = rows_impl(&s.work_path, "people", 0, 10).unwrap();
+        assert_eq!(r.rows.len(), 3);
+        assert!(r.columns.contains(&bad.to_string()));
+        let wr = rows_impl(&s.work_path, "wr", 0, 10).unwrap();
+        assert_eq!(wr.rowids, None);
+        assert_eq!(default_literal("12"), "12");
+        assert_eq!(default_literal("a'b"), "'a''b'");
+        assert_eq!(default_literal("inf"), "'inf'");
+        discard_impl(&s.id).unwrap();
     }
 }

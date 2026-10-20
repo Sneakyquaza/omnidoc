@@ -39,6 +39,7 @@ const journeys: Array<[string, string]> = [
   ["pdf.journey.ts", "sample.pdf"],
   ["archive.journey.ts", "sample.zip"],
   ["sqlite.journey.ts", "sample.sqlite"],
+  ["sqlite-edit.journey.ts", "sample.sqlite"],
   ["records.journey.ts", "sample.vcf"],
   ["richtext.journey.ts", "sample.docx"],
   ["markdown.journey.ts", "sample.md"],

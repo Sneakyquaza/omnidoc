@@ -59,6 +59,8 @@
     "internal": "Internal error",
     "unknown": "Unexpected error",
     "detail": {
+      "dbChanged": "The file was modified since it was opened: reopen the database to avoid overwriting those changes.",
+      "dbWal": "A non-empty WAL journal exists next to the database: cannot save in place.",
       "animatedImage": "Animated images cannot be converted or cleaned (only the first frame would be kept).",
       "destinationIsSource": "The destination is the source file."
     }
